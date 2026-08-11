@@ -18,13 +18,47 @@
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <myfaces.version>4.1.0</myfaces.version>
+        <joinfaces.version>5.2.0</joinfaces.version>
         <primefaces.version>15.0.5</primefaces.version>
-        <!-- VERSÃO EXPLÍCITA DO DRIVER MYSQL -->
         <mysql.version>8.3.0</mysql.version>
     </properties>
     <dependencies>
-        <!-- Spring Boot Starters -->
+        <!-- ============================================ -->
+        <!-- JOINFACES: Integra JSF/MyFaces + Spring Boot -->
+        <!-- ============================================ -->
+        <dependency>
+            <groupId>org.joinfaces</groupId>
+            <artifactId>myfaces-spring-boot-starter</artifactId>
+            <version>${joinfaces.version}</version>
+        </dependency>
+
+        <!-- ============================================ -->
+        <!-- JAKARTA CDI / INJECT (necessario para @Named, -->
+        <!-- @Inject, @SessionScoped, etc. no teu codigo) -->
+        <!-- ============================================ -->
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+
+        <!-- ============================================ -->
+        <!-- MYFACES IMPL (para StartupServletContextListener) -->
+        <!-- ============================================ -->
+        <dependency>
+            <groupId>org.apache.myfaces.core</groupId>
+            <artifactId>myfaces-impl</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+
+        <!-- ============================================ -->
+        <!-- SPRING BOOT STARTERS                           -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -46,7 +80,20 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Banco de Dados -->
+
+        <!-- ============================================ -->
+        <!-- PRIMEFACES (classifier jakarta = Jakarta EE)   -->
+        <!-- ============================================ -->
+        <dependency>
+            <groupId>org.primefaces</groupId>
+            <artifactId>primefaces</artifactId>
+            <version>${primefaces.version}</version>
+            <classifier>jakarta</classifier>
+        </dependency>
+
+        <!-- ============================================ -->
+        <!-- BANCO DE DADOS                                 -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
@@ -57,48 +104,10 @@
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- JSF / MyFaces -->
-        <dependency>
-            <groupId>org.apache.myfaces.core</groupId>
-            <artifactId>myfaces-bundle</artifactId>
-            <version>${myfaces.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>cdi-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.weld</groupId>
-                    <artifactId>weld-core-impl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-atinject_1.0_spec</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-interceptor_1.2_spec</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-annotation_1.3_spec</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- PrimeFaces -->
-        <dependency>
-            <groupId>org.primefaces</groupId>
-            <artifactId>primefaces</artifactId>
-            <version>${primefaces.version}</version>
-            <classifier>jakarta</classifier>
-        </dependency>
-        <!-- CDI / Jakarta EE APIs -->
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <version>4.0.1</version>
-            <scope>provided</scope>
-        </dependency>
+
+        <!-- ============================================ -->
+        <!-- JAKARTA JSON (necessario para PrimeFaces)      -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
@@ -113,12 +122,18 @@
             <artifactId>parsson</artifactId>
             <version>1.1.1</version>
         </dependency>
-        <!-- Validação -->
+
+        <!-- ============================================ -->
+        <!-- VALIDACAO                                      -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
-        <!-- Utilitários -->
+
+        <!-- ============================================ -->
+        <!-- UTILITARIOS                                    -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -133,7 +148,10 @@
             <artifactId>commons-io</artifactId>
             <version>2.15.1</version>
         </dependency>
-        <!-- Gráficos -->
+
+        <!-- ============================================ -->
+        <!-- GRAFICOS                                       -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>software.xdev</groupId>
             <artifactId>chartjs-java-model</artifactId>
@@ -144,7 +162,10 @@
             <artifactId>jfreechart</artifactId>
             <version>1.5.4</version>
         </dependency>
-        <!-- Relatórios -->
+
+        <!-- ============================================ -->
+        <!-- RELATORIOS                                     -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
@@ -160,31 +181,40 @@
             <artifactId>itextpdf</artifactId>
             <version>5.5.13.3</version>
         </dependency>
-        <!-- Excel -->
+
+        <!-- ============================================ -->
+        <!-- EXCEL / CSV                                    -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.5</version>
         </dependency>
-        <!-- CSV -->
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.7.1</version>
         </dependency>
-        <!-- Firebase -->
+
+        <!-- ============================================ -->
+        <!-- FIREBASE                                       -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
             <version>9.2.0</version>
         </dependency>
-        <!-- SNMP -->
+
+        <!-- ============================================ -->
+        <!-- SNMP                                           -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>org.snmp4j</groupId>
             <artifactId>snmp4j</artifactId>
             <version>3.6.4</version>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -203,12 +233,19 @@
             </plugin>
         </plugins>
         <resources>
+            <!-- Mapeia src/main/webapp para META-INF/resources no JAR -->
             <resource>
                 <directory>src/main/webapp</directory>
                 <targetPath>META-INF/resources</targetPath>
+                <includes>
+                    <include>**/*</include>
+                </includes>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
             </resource>
         </resources>
     </build>
