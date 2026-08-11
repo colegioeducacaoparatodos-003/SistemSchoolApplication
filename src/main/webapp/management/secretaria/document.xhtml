@@ -163,7 +163,7 @@
             .sc-loading-overlay {
                 position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
                 background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-                z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center;
                 opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s ease;
             }
             .sc-loading-overlay.active { opacity: 1; visibility: visible; }
@@ -317,7 +317,8 @@
                                 actionListener="#{documentController.openCreateDialog}"
                                 process="@this"
                                 update=":documentCreateForm"
-                                oncomplete="PF('createDocumentDialog').show()"
+                                onstart="showScLoading()"
+                                oncomplete="hideScLoading(); PF('createDocumentDialog').show()"
                                 styleClass="ui-button-success" />
                         </div>
                     </div>
@@ -328,7 +329,7 @@
                             <f:selectItem itemLabel="#{msg.allDocumentTypes}" itemValue="" />
                             <f:selectItems value="#{documentController.tiposDocumento}" var="t"
                                 itemLabel="#{t.descricao}" itemValue="#{t}" />
-                            <p:ajax event="change" listener="#{documentController.applyFilters}" update="dtDocuments messages" process="@this" />
+                            <p:ajax event="change" listener="#{documentController.applyFilters}" update="dtDocuments messages" process="@this" onstart="showScLoading()" oncomplete="hideScLoading()" />
                         </p:selectOneMenu>
 
                         <p:selectOneMenu value="#{documentController.filterExpiryStatus}" placeholder="#{msg.expiryStatus}" style="min-width:160px;">
@@ -337,28 +338,30 @@
                             <f:selectItem itemLabel="#{msg.expiringSoon}" itemValue="soon" />
                             <f:selectItem itemLabel="#{msg.expired}" itemValue="expired" />
                             <f:selectItem itemLabel="#{msg.noExpiry}" itemValue="none" />
-                            <p:ajax event="change" listener="#{documentController.applyFilters}" update="dtDocuments messages" process="@this" />
+                            <p:ajax event="change" listener="#{documentController.applyFilters}" update="dtDocuments messages" process="@this" onstart="showScLoading()" oncomplete="hideScLoading()" />
                         </p:selectOneMenu>
 
                         <p:datePicker value="#{documentController.filterIssueStartDate}" placeholder="#{msg.issueDateStart}"
                             pattern="dd/MM/yyyy" showIcon="true" locale="pt">
-                            <p:ajax event="dateSelect" listener="#{documentController.applyFilters}" update="dtDocuments messages" process="@this" />
+                            <p:ajax event="dateSelect" listener="#{documentController.applyFilters}" update="dtDocuments messages" process="@this" onstart="showScLoading()" oncomplete="hideScLoading()" />
                         </p:datePicker>
 
                         <p:datePicker value="#{documentController.filterIssueEndDate}" placeholder="#{msg.issueDateEnd}"
                             pattern="dd/MM/yyyy" showIcon="true" locale="pt">
-                            <p:ajax event="dateSelect" listener="#{documentController.applyFilters}" update="dtDocuments messages" process="@this" />
+                            <p:ajax event="dateSelect" listener="#{documentController.applyFilters}" update="dtDocuments messages" process="@this" onstart="showScLoading()" oncomplete="hideScLoading()" />
                         </p:datePicker>
 
                         <p:inputText value="#{documentController.filterStudentName}" placeholder="#{msg.searchStudent}..." style="min-width:200px;">
-                            <p:ajax event="keyup" delay="400" listener="#{documentController.applyFilters}" update="dtDocuments messages" process="@this" />
+                            <p:ajax event="keyup" delay="400" listener="#{documentController.applyFilters}" update="dtDocuments messages" process="@this" onstart="showScLoading()" oncomplete="hideScLoading()" />
                         </p:inputText>
 
                         <p:commandButton icon="pi pi-filter" value="#{msg.apply}"
                             action="#{documentController.applyFilters}" update="dtDocuments messages"
+                            onstart="showScLoading()" oncomplete="hideScLoading()"
                             styleClass="ui-button-primary" />
                         <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}"
                             action="#{documentController.clearFilters}" update="@form"
+                            onstart="showScLoading()" oncomplete="hideScLoading()"
                             styleClass="ui-button-outlined ui-button-secondary" />
                     </div>
 
@@ -424,11 +427,13 @@
                                     action="#{documentController.openViewDialog(document.phDocument)}"
                                     process="@this"
                                     update=":viewFormDocument"
-                                    oncomplete="PF('viewDocumentDialog').show()" />
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('viewDocumentDialog').show()" />
 
                                 <p:commandButton styleClass="doc-act download" icon="pi pi-download"
                                     title="#{msg.download}" ajax="false"
-                                    action="#{documentController.downloadDocumento}">
+                                    action="#{documentController.downloadDocumento}"
+                                    onclick="showScLoading()">
                                     <f:param name="documentId" value="#{document.phDocument}" />
                                 </p:commandButton>
 
@@ -436,13 +441,15 @@
                                     action="#{documentController.openEditDialog(document.phDocument)}"
                                     process="@this"
                                     update=":documentEditForm"
-                                    oncomplete="PF('editDocumentDialog').show()" />
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('editDocumentDialog').show()" />
 
                                 <p:commandButton styleClass="doc-act delete" icon="pi pi-trash" title="#{msg.delete}"
                                     action="#{documentController.prepareDelete(document.phDocument)}"
                                     process="@this"
                                     update=":deleteForm"
-                                    oncomplete="PF('deleteDocumentDialog').show()" />
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('deleteDocumentDialog').show()" />
                             </div>
                         </p:column>
 
@@ -539,7 +546,8 @@
                             styleClass="ui-button-outlined ui-button-secondary" />
                         <p:commandButton value="#{msg.yesDelete}" icon="pi pi-trash" styleClass="ui-button-danger"
                             action="#{documentController.delete}" process="@this"
-                            oncomplete="PF('deleteDocumentDialog').hide()"
+                            onstart="showScLoading()"
+                            oncomplete="hideScLoading(); PF('deleteDocumentDialog').hide()"
                             update=":formDocuments:dtDocuments :formDocuments:messages" />
                     </div>
                 </p:dialog>
@@ -559,21 +567,46 @@
                 var overlay = document.getElementById('scLoadingOverlay');
                 if (overlay) overlay.classList.remove('active');
             }
+
+            // Intercepta TODAS as requisições AJAX do PrimeFaces
             if (window.PrimeFaces) {
-                PrimeFaces.ajax.Queue.originalAdd = PrimeFaces.ajax.Queue.add;
-                PrimeFaces.ajax.Queue.add = function (req) {
-                    req.originalOncomplete = req.onsuccess;
-                    req.onsuccess = function (xhr, status, args) {
-                        hideScLoading();
-                        if (req.originalOncomplete) req.originalOncomplete(xhr, status, args);
+                // Queue
+                if (PrimeFaces.ajax.Queue && PrimeFaces.ajax.Queue.add) {
+                    PrimeFaces.ajax.Queue.originalAdd = PrimeFaces.ajax.Queue.add;
+                    PrimeFaces.ajax.Queue.add = function (req) {
+                        showScLoading();
+                        req.originalOncomplete = req.onsuccess;
+                        req.onsuccess = function (xhr, status, args) {
+                            hideScLoading();
+                            if (req.originalOncomplete) req.originalOncomplete(xhr, status, args);
+                        };
+                        req.originalOnerror = req.onerror;
+                        req.onerror = function (xhr, status, error) {
+                            hideScLoading();
+                            if (req.originalOnerror) req.originalOnerror(xhr, status, error);
+                        };
+                        PrimeFaces.ajax.Queue.originalAdd(req);
                     };
-                    req.originalOnerror = req.onerror;
-                    req.onerror = function (xhr, status, error) {
-                        hideScLoading();
-                        if (req.originalOnerror) req.originalOnerror(xhr, status, error);
+                }
+
+                // Request.send (fallback para garantir cobertura total)
+                if (PrimeFaces.ajax.Request && PrimeFaces.ajax.Request.send) {
+                    var originalSend = PrimeFaces.ajax.Request.send;
+                    PrimeFaces.ajax.Request.send = function(cfg) {
+                        showScLoading();
+                        var originalOnsuccess = cfg.onsuccess;
+                        cfg.onsuccess = function(xhr, status, args) {
+                            hideScLoading();
+                            if (originalOnsuccess) originalOnsuccess(xhr, status, args);
+                        };
+                        var originalOnerror = cfg.onerror;
+                        cfg.onerror = function(xhr, status, error) {
+                            hideScLoading();
+                            if (originalOnerror) originalOnerror(xhr, status, error);
+                        };
+                        originalSend(cfg);
                     };
-                    PrimeFaces.ajax.Queue.originalAdd(req);
-                };
+                }
             }
             //]]>
         </script>
