@@ -222,13 +222,22 @@ public class UserController implements Serializable {
     }
 
     // ========== CRUD DE USUÁRIOS ==========
-
     public String createUser() {
         try {
             logger.info("Criando novo usuário com email: {}", newUserEmail);
 
             if (!isNewUserDataValid()) {
                 return null;
+            }
+
+            // ── BLOQUEIO DE SEGURANÇA: só ADMIN pode criar outro ADMIN ──
+            if (newUserPerfil == Perfil.ADMIN) {
+                UserDTO.UserResponseDTO current = sessionBean.getLoggedUser();
+                if (current == null || current.getPerfil() != Perfil.ADMIN) {
+                    addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
+                            "Não tem permissão para criar um utilizador Administrador.");
+                    return null;
+                }
             }
 
             UserDTO.CreateUserDTO createUserDTO = new UserDTO.CreateUserDTO();
@@ -243,7 +252,6 @@ public class UserController implements Serializable {
             users.add(createdUser);
 
             resetNewUserFields();
-            PrimeFaces.current().executeScript("PF('createUserDialog').hide()");
             addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Usuário criado com sucesso!");
 
             return "/login.xhtml?faces-redirect=true";
