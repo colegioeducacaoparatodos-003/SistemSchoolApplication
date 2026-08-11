@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <p:dialog id="editDocumentDialog" widgetVar="editDocumentDialog" header="#{msg.editDocument}" modal="true"
+        showEffect="fade" hideEffect="fade" closeOnEscape="true" style="width: 90vw; max-width: 800px;" dynamic="true"
+        resizable="false" appendTo="@(body)" styleClass="sc-dialog-edit" responsive="true" fitViewport="true">
+
+        <h:form id="documentEditForm" styleClass="ui-fluid" enctype="multipart/form-data">
+            <p:messages id="msgsEdit" showDetail="true" closable="true" globalOnly="true" />
+
+            <div class="sc-dialog-body">
+                <div class="sc-section-title">
+                    <i class="pi pi-file"></i> #{msg.documentDetails}
+                </div>
+
+                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
+                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+
+                    <p:outputLabel for="studentEdit" value="#{msg.student}" styleClass="sc-label" />
+                    <p:inputText id="studentEdit" value="#{documentController.editDto.studentName}" readonly="true"
+                        styleClass="sc-readonly-field sc-input" style="background:#f3f4f6;" />
+
+                    <p:outputLabel for="documentNumberEdit" value="#{msg.documentNumber}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:inputText id="documentNumberEdit" value="#{documentController.editDto.documentNumber}"
+                            required="true" requiredMessage="#{msg.documentNumberRequired}" placeholder="#{msg.documentNumberPlaceholder}" styleClass="sc-input" />
+                        <p:message for="documentNumberEdit" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="documentTypeEdit" value="#{msg.documentType}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:selectOneMenu id="documentTypeEdit" value="#{documentController.editDto.documentType}"
+                            required="true" requiredMessage="#{msg.documentTypeRequired}" style="width:100%;">
+                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{documentController.tiposDocumento}" var="t"
+                                itemLabel="#{t.descricao}" itemValue="#{t}" />
+                        </p:selectOneMenu>
+                        <p:message for="documentTypeEdit" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="issueDateEdit" value="#{msg.issueDate}" styleClass="sc-label" />
+                    <p:datePicker id="issueDateEdit" value="#{documentController.editDto.issueDate}"
+                        pattern="dd/MM/yyyy" showIcon="true" locale="pt" style="width:100%;" yearNavigator="true" monthNavigator="true"
+                        yearRange="2020:2035" />
+
+                    <p:outputLabel for="expiryDateEdit" value="#{msg.expiryDate}" styleClass="sc-label" />
+                    <p:datePicker id="expiryDateEdit" value="#{documentController.editDto.expiryDate}"
+                        pattern="dd/MM/yyyy" showIcon="true" locale="pt" style="width:100%;" yearNavigator="true" monthNavigator="true"
+                        yearRange="2020:2035" />
+
+                </p:panelGrid>
+
+                <div class="sc-section-title" style="margin-top:1.2rem;">
+                    <i class="pi pi-file-o"></i> #{msg.currentFile}
+                </div>
+
+                <div style="display:flex; align-items:center; gap:.6rem; padding:.4rem 0;">
+                    <i class="pi pi-paperclip" style="color:var(--enr-muted)" />
+                    <h:outputText value="#{documentController.editDto.fileName}"
+                        style="font-size:.85rem; color:var(--enr-text);" />
+                </div>
+
+                <div class="sc-section-title" style="margin-top:1.2rem;">
+                    <i class="pi pi-upload"></i> #{msg.replaceFile}
+                </div>
+
+                <p:fileUpload id="uploadEdit" listener="#{documentController.handleFileUpload}" mode="advanced"
+                    auto="true" dragDropSupport="true" multiple="false" label="#{msg.chooseFile}"
+                    uploadLabel="#{msg.upload}" cancelLabel="#{msg.cancel}"
+                    update=":documentEditForm:msgsEdit" process="@this" style="width:100%;">
+                    <p:validateFile sizeLimit="10000000" allowTypes="/(\.|\/)(pdf|jpe?g|png|docx?)$/" />
+                </p:fileUpload>
+
+                <div class="sc-section-title" style="margin-top:1.2rem;">
+                    <i class="pi pi-info-circle"></i> #{msg.additionalInformation}
+                </div>
+
+                <div class="sc-fullwidth-field">
+                    <p:outputLabel for="notesEdit" value="#{msg.notes}" styleClass="sc-label" />
+                    <p:inputTextarea id="notesEdit" value="#{documentController.editDto.obs}" rows="3"
+                        maxlength="500" counter="notesCounterEdit" counterTemplate="{0} / 500"
+                        placeholder="#{msg.additionalNotesPlaceholder}" autoResize="true" styleClass="sc-input" />
+                    <h:outputText id="notesCounterEdit" styleClass="sc-counter" />
+                </div>
+            </div>
+
+            <div class="sc-dialog-footer">
+                <p:commandButton value="#{msg.cancel}" icon="pi pi-times" type="button"
+                    onclick="PF('editDocumentDialog').hide()" styleClass="ui-button-outlined ui-button-secondary" />
+                <p:commandButton value="#{msg.save}" icon="pi pi-save" styleClass="ui-button-success"
+                    action="#{documentController.saveUpdate}" process="@form"
+                    update=":documentEditForm:msgsEdit :formDocuments:dtDocuments :formDocuments:messages"
+                    oncomplete="if (!args.validationFailed) { PF('editDocumentDialog').hide(); }" />
+            </div>
+        </h:form>
+
+        <style type="text/css">
+            /* <![CDATA[ */
+            .sc-dialog-edit .ui-dialog-content { padding: 0 !important; }
+            .sc-dialog-body {
+                padding: 1.2rem 1.5rem 1rem;
+                max-height: calc(90vh - 120px);
+                overflow-y: auto;
+            }
+            .sc-section-title {
+                font-size: 1rem; font-weight: 700; margin-bottom: 1rem;
+                display: flex; align-items: center; gap: .5rem;
+                color: var(--enr-text, #141414);
+            }
+            .sc-section-title i { color: var(--enr-red, #c8102e); }
+            .sc-label {
+                font-size: .88rem; font-weight: 600; color: #374151;
+                margin-bottom: .35rem; display: block;
+            }
+            .sc-label.req::after { content: " *"; color: #dc2626; }
+            .sc-field-msg {
+                display: block; margin-top: 4px; font-size: 12px; color: #dc2626;
+            }
+            .sc-input { width: 100%; }
+            .sc-readonly-field { opacity: .8; cursor: not-allowed; }
+            .sc-fullwidth-field { margin-top: 1.2rem; }
+            .sc-counter {
+                display: block; text-align: right; font-size: 11px;
+                color: #888; margin-top: 2px;
+            }
+            .sc-dialog-footer {
+                display: flex; justify-content: flex-end; gap: .6rem;
+                padding: 1rem 1.5rem; border-top: 1px solid #e5e7eb;
+                flex-wrap: wrap; background: #fafafa;
+                border-radius: 0 0 12px 12px;
+            }
+            .sc-dialog-footer .ui-button { min-width: 120px; }
+
+            .sc-dialog-body::-webkit-scrollbar { width: 5px; }
+            .sc-dialog-body::-webkit-scrollbar-track { background: transparent; }
+            .sc-dialog-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+
+            @media (max-width: 768px) {
+                .sc-dialog-edit { width: 95vw !important; max-width: 95vw !important; }
+                .sc-dialog-edit .ui-dialog-content { padding: 0 !important; }
+                .sc-dialog-body { padding: 1rem; max-height: calc(85vh - 100px); }
+                .sc-dialog-footer { padding: .8rem 1rem; flex-direction: column; gap: .5rem; }
+                .sc-dialog-footer .ui-button { width: 100%; min-width: unset; }
+                .sc-section-title { font-size: .95rem; }
+                .sc-label { font-size: .85rem; }
+            }
+            @media (max-width: 576px) {
+                .sc-dialog-body { padding: .8rem; }
+                .sc-fullwidth-field { margin-top: 1rem; }
+            }
+            /* ]]> */
+        </style>
+    </p:dialog>
+
+</ui:composition>

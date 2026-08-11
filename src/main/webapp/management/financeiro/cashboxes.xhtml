@@ -1,0 +1,502 @@
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <ui:define name="titulo">#{msg['cashBoxes']}</ui:define>
+
+    <ui:define name="content">
+        <style type="text/css">
+            /* <![CDATA[ */
+            :root {
+                --enr-black: #141414;
+                --enr-red: #c8102e;
+                --enr-yellow: #f5b400;
+                --enr-blue: #1a5fb4;
+                --enr-green: #1e8e3e;
+                --enr-surface: #ffffff;
+                --enr-surface-2: #f7f7f8;
+                --enr-border: #e6e6e8;
+                --enr-text: #141414;
+                --enr-muted: #666a70;
+                --enr-radius: 12px;
+                --enr-shadow: 0 4px 20px rgba(20, 20, 20, .10);
+                --black-mid: #262626;
+                --yellow: var(--enr-yellow);
+                --font-mono: 'DM Mono', monospace;
+            }
+
+            .breadcrumb-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: #fff8e1;
+                border: 1px solid rgba(245, 180, 0, .35);
+                color: #8a6400;
+                border-radius: 99px;
+                padding: 3px 12px;
+                font-size: .72rem;
+                font-weight: 600;
+            }
+
+            .t-num {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                background: #262626;
+                color: var(--enr-yellow);
+                border-radius: 5px;
+                padding: 3px 9px;
+                font-family: 'DM Mono', monospace;
+                font-size: .75rem;
+            }
+
+            .t-amount {
+                font-family: 'DM Mono', monospace;
+                font-weight: 700;
+                color: var(--enr-text);
+            }
+
+            .enr-page { padding: 1.2rem; }
+            @media(min-width:768px) { .enr-page { padding: 1.6rem 2rem 2.5rem; } }
+
+            .enr-header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 1rem;
+                margin-bottom: 1.4rem;
+            }
+            .enr-header-left { display: flex; align-items: center; gap: 1rem; }
+            .enr-header-icon {
+                width: 46px; height: 46px; border-radius: 12px;
+                background: linear-gradient(135deg, var(--enr-black) 0%, var(--enr-red) 100%);
+                display: flex; align-items: center; justify-content: center;
+                color: var(--enr-yellow); font-size: 1.2rem; flex-shrink: 0;
+            }
+            .enr-header-title h1 { font-size: 1.35rem; font-weight: 800; margin: 0 0 .2rem; color: var(--enr-text); }
+            .enr-header-title p { font-size: .85rem; color: var(--enr-muted); margin: 0; }
+
+            .enr-stats {
+                display: grid; grid-template-columns: repeat(1, 1fr); gap: .9rem; margin-bottom: 1.4rem;
+            }
+            @media(min-width:576px) { .enr-stats { grid-template-columns: repeat(2, 1fr); } }
+            @media(min-width:992px) { .enr-stats { grid-template-columns: repeat(4, 1fr); } }
+
+            .enr-stat {
+                background: var(--enr-surface); border: 1px solid var(--enr-border);
+                border-radius: var(--enr-radius); box-shadow: var(--enr-shadow);
+                padding: 1.1rem 1.2rem; display: flex; align-items: center; justify-content: space-between;
+                transition: transform .2s;
+            }
+            .enr-stat:hover { transform: translateY(-2px); }
+            .enr-stat-label { font-size: .72rem; color: var(--enr-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+            .enr-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--enr-text); margin-top: .15rem; font-family: var(--font-mono); }
+            .enr-stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+            .enr-stat-icon.dark { background: var(--enr-black); color: var(--enr-yellow); }
+            .enr-stat-icon.green { background: #e8f6ec; color: var(--enr-green); }
+            .enr-stat-icon.yellow { background: #fff8e1; color: #8a6400; }
+            .enr-stat-icon.blue { background: #eaf1fb; color: var(--enr-blue); }
+
+            .enr-card {
+                background: var(--enr-surface); border: 1px solid var(--enr-border);
+                border-radius: var(--enr-radius); box-shadow: var(--enr-shadow); overflow: hidden;
+            }
+
+            .enr-toolbar {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 1rem 1.2rem; border-bottom: 1px solid var(--enr-border);
+                gap: 1rem; flex-wrap: wrap;
+            }
+            .enr-toolbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+            .enr-toolbar-right { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+
+            .enr-filters {
+                display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+                padding: .8rem 1.2rem; background: var(--enr-surface-2);
+                border-bottom: 1px solid var(--enr-border);
+            }
+            .enr-filters .ui-inputfield, .enr-filters .ui-selectonemenu { min-width: 160px; }
+
+            .enr-table.p-datatable .p-datatable-thead tr th {
+                background: var(--enr-black) !important; color: var(--enr-yellow) !important;
+                font-size: .7rem !important; text-transform: uppercase !important;
+                padding: .7rem 1rem !important; border-color: var(--enr-black) !important;
+            }
+            .enr-table.p-datatable .p-datatable-tbody tr td {
+                font-size: .82rem !important; padding: .72rem 1rem !important;
+            }
+            .enr-table.p-datatable .p-datatable-tbody tr:hover { background: var(--enr-surface-2) !important; }
+
+            .enr-badge {
+                display: inline-flex; align-items: center; gap: 5px;
+                padding: 3px 10px; border-radius: 99px; font-size: .72rem; font-weight: 700;
+            }
+            .enr-badge.OPEN { background: #e8f6ec; color: var(--enr-green); border: 1px solid rgba(30, 142, 62, .25); }
+            .enr-badge.CLOSED { background: #fdecee; color: var(--enr-red); border: 1px solid rgba(200, 16, 46, .25); }
+
+            .enr-actions { display: flex; align-items: center; gap: 4px; justify-content: center; flex-wrap: wrap; }
+            .enr-act {
+                width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--enr-border);
+                display: inline-flex; align-items: center; justify-content: center;
+                font-size: .8rem; cursor: pointer; transition: all .15s;
+            }
+            .enr-act:hover { transform: scale(1.08); }
+            .enr-act.view { color: var(--enr-blue); background: #eaf1fb; }
+            .enr-act.edit { color: #8a6400; background: #fff8e1; }
+            .enr-act.close { color: var(--enr-blue); background: #eaf1fb; }
+            .enr-act.delete { color: var(--enr-red); background: #fdecee; }
+
+            .enr-empty { text-align: center; padding: 3rem 1rem; color: var(--enr-muted); }
+            .enr-empty i { font-size: 2.5rem; opacity: .2; margin-bottom: .5rem; display: block; }
+
+            .enr-dialog-footer { display: flex; justify-content: flex-end; gap: .6rem; margin-top: .5rem; flex-wrap: wrap; }
+
+            .status-badge {
+                display: inline-flex; align-items: center; padding: 3px 10px;
+                border-radius: 99px; font-size: .72rem; font-weight: 700; text-transform: capitalize;
+            }
+            .status-badge.status-active, .status-badge.status-open { background: #d1fae5; color: #059669; border: 1px solid rgba(5, 150, 105, .25); }
+            .status-badge.status-inactive, .status-badge.status-closed { background: #fdecee; color: var(--enr-red); border: 1px solid rgba(200, 16, 46, .25); }
+
+            /* Loading Overlay */
+            .sc-loading-overlay {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+                z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s ease;
+            }
+            .sc-loading-overlay.active { opacity: 1; visibility: visible; }
+            .sc-loading-box {
+                background: var(--enr-surface); border-radius: var(--enr-radius); padding: 2.5rem 3rem;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); display: flex; flex-direction: column;
+                align-items: center; gap: 1.2rem; border: 1px solid var(--enr-border); min-width: 260px;
+                transform: scale(0.9); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .sc-loading-overlay.active .sc-loading-box { transform: scale(1); }
+            .sc-loader-rings { position: relative; width: 72px; height: 72px; }
+            .sc-loader-rings::before, .sc-loader-rings::after {
+                content: ''; position: absolute; border-radius: 50%; border: 3px solid transparent;
+            }
+            .sc-loader-rings::before {
+                top: 0; left: 0; width: 100%; height: 100%;
+                border-top-color: var(--enr-red); border-right-color: var(--enr-yellow);
+                animation: scSpin 1.2s linear infinite;
+            }
+            .sc-loader-rings::after {
+                top: 10px; left: 10px; width: calc(100% - 20px); height: calc(100% - 20px);
+                border-bottom-color: var(--enr-black); border-left-color: #e63946;
+                animation: scSpinReverse 0.9s linear infinite;
+            }
+            .sc-loader-core {
+                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                width: 16px; height: 16px;
+                background: linear-gradient(135deg, var(--enr-red), var(--enr-yellow));
+                border-radius: 50%; animation: scPulse 1s ease-in-out infinite;
+                box-shadow: 0 0 15px rgba(200, 16, 46, 0.5);
+            }
+            @keyframes scSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            @keyframes scSpinReverse { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+            @keyframes scPulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.7; } }
+            .sc-loading-text { font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 600; color: var(--enr-text); text-align: center; }
+            .sc-loading-sub { font-size: 0.78rem; color: var(--enr-muted); text-align: center; margin-top: -0.6rem; }
+            .sc-loading-dots::after { content: ''; animation: scDots 1.5s steps(4, end) infinite; }
+            @keyframes scDots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } 100% { content: ''; } }
+            .sc-loading-progress { width: 100%; height: 3px; background: var(--enr-border); border-radius: 99px; overflow: hidden; margin-top: 0.3rem; }
+            .sc-loading-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow)); border-radius: 99px; animation: scProgress 2s ease-in-out infinite; }
+            @keyframes scProgress { 0% { width: 0%; margin-left: 0%; } 50% { width: 60%; margin-left: 20%; } 100% { width: 0%; margin-left: 100%; } }
+
+            /* Mobile */
+            @media (max-width: 576px) {
+                .enr-header { flex-direction: column; align-items: stretch; }
+                .enr-header-left { width: 100%; }
+                .enr-toolbar { flex-direction: column; align-items: stretch; }
+                .enr-toolbar-left, .enr-toolbar-right { width: 100%; }
+                .enr-toolbar-right .ui-button, .enr-toolbar-right .ui-menubutton { width: 100%; }
+                .enr-filters { flex-direction: column; align-items: stretch; gap: .5rem; }
+                .enr-filters .ui-inputfield, .enr-filters .ui-selectonemenu, .enr-filters .p-datepicker, .enr-filters .ui-button { width: 100% !important; min-width: unset !important; }
+                .enr-stat-value { font-size: 1.25rem; }
+                .enr-actions { gap: 6px; }
+                .enr-act { width: 34px; height: 34px; font-size: .9rem; }
+                .enr-dialog-footer { justify-content: stretch; }
+                .enr-dialog-footer .ui-button { flex: 1 1 auto; }
+                .sc-loading-box { padding: 2rem 1.5rem; min-width: 220px; margin: 0 1rem; }
+            }
+            /* ]]> */
+        </style>
+
+        <div id="scLoadingOverlay" class="sc-loading-overlay">
+            <div class="sc-loading-box">
+                <div class="sc-loader-rings"><div class="sc-loader-core"></div></div>
+                <div class="sc-loading-text">#{msg.processing}<span class="sc-loading-dots"></span></div>
+                <div class="sc-loading-sub">#{msg.pleaseWait}</div>
+                <div class="sc-loading-progress"><div class="sc-loading-progress-bar"></div></div>
+            </div>
+        </div>
+
+        <div class="enr-page">
+            <h:form id="formCashBoxes">
+                <p:growl id="messages" showDetail="true" life="5000"><p:autoUpdate /></p:growl>
+
+                <div class="enr-header">
+                    <div class="enr-header-left">
+                        <div class="enr-header-icon"><i class="pi pi-box"></i></div>
+                        <div class="enr-header-title">
+                            <h1>#{msg['cashBoxes']}</h1>
+                            <p>#{msg.cashBoxManagement}</p>
+                        </div>
+                    </div>
+                    <span class="breadcrumb-pill">
+                        <i class="pi pi-home" style="font-size:.65rem"></i> #{msg.management} &#8250; #{msg['cashBoxes']}
+                    </span>
+                </div>
+
+                <div class="enr-stats">
+                    <div class="enr-stat">
+                        <div>
+                            <div class="enr-stat-label">#{msg.totalCashBoxes}</div>
+                            <div class="enr-stat-value">
+                                <h:outputText value="#{cashBoxController.totalCashBoxCount}"><f:convertNumber pattern="#&#44;##0" /></h:outputText>
+                            </div>
+                        </div>
+                        <div class="enr-stat-icon dark"><i class="pi pi-list"></i></div>
+                    </div>
+                    <div class="enr-stat">
+                        <div>
+                            <div class="enr-stat-label">#{msg.openCashBoxes}</div>
+                            <div class="enr-stat-value">
+                                <h:outputText value="#{cashBoxController.openCashBoxCount}"><f:convertNumber pattern="#&#44;##0" /></h:outputText>
+                            </div>
+                        </div>
+                        <div class="enr-stat-icon green"><i class="pi pi-lock-open"></i></div>
+                    </div>
+                    <div class="enr-stat">
+                        <div>
+                            <div class="enr-stat-label">#{msg.newCashBoxesThisMonth}</div>
+                            <div class="enr-stat-value">
+                                <h:outputText value="#{cashBoxController.newCashBoxCountThisMonth}"><f:convertNumber pattern="#&#44;##0" /></h:outputText>
+                            </div>
+                        </div>
+                        <div class="enr-stat-icon yellow"><i class="pi pi-calendar-plus"></i></div>
+                    </div>
+                    <div class="enr-stat">
+                        <div>
+                            <div class="enr-stat-label">#{msg.totalOpeningBalance}</div>
+                            <div class="enr-stat-value">
+                                <h:outputText value="#{cashBoxController.totalOpeningBalance}"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText>
+                            </div>
+                        </div>
+                        <div class="enr-stat-icon blue"><i class="pi pi-wallet"></i></div>
+                    </div>
+                </div>
+
+                <div class="enr-card">
+                    <div class="enr-toolbar">
+                        <div class="enr-toolbar-left">
+                            <span style="font-weight:700; font-size:.9rem; color:var(--enr-text);">
+                                <i class="pi pi-list" style="color:var(--enr-red); margin-right:.4rem;"></i> #{msg.registration}
+                            </span>
+                        </div>
+                        <div class="enr-toolbar-right">
+                            <p:menuButton value="#{msg.exportPrint}" icon="pi pi-file-export" styleClass="ui-button-outlined">
+                                <p:menuitem value="PDF #{msg.cashBoxList}" icon="pi pi-file-pdf" action="#{cashBoxController.exportCashBoxListPdf}" ajax="false" />
+                                <p:menuitem value="Excel (XLSX)" icon="pi pi-file-excel">
+                                    <p:dataExporter type="xlsx" target="dtCashBoxes" fileName="caixas_#{cashBoxController.totalCashBoxCount}" />
+                                </p:menuitem>
+                                <p:menuitem value="CSV" icon="pi pi-file-o">
+                                    <p:dataExporter type="csv" target="dtCashBoxes" fileName="caixas_#{cashBoxController.totalCashBoxCount}" />
+                                </p:menuitem>
+                                <p:divider />
+                                <p:menuitem value="#{msg.printPage}" icon="pi pi-print" onclick="window.print(); return false;" />
+                            </p:menuButton>
+
+                            <p:commandButton value="#{msg.newCashBox}" icon="pi pi-plus"
+                                actionListener="#{cashBoxController.prepareNewCashBox}" onstart="showScLoading()"
+                                oncomplete="hideScLoading(); PF('createCashBoxDialog').show()"
+                                update=":cashBoxCreateForm" process="@this" styleClass="ui-button-success" />
+                        </div>
+                    </div>
+
+                    <div class="enr-filters">
+                        <p:inputText value="#{cashBoxController.filterCashBoxNumber}" placeholder="#{msg.cashBoxNumber}..." style="min-width:140px;">
+                            <p:ajax event="keyup" delay="400" listener="#{cashBoxController.applyFilters}" update="dtCashBoxes messages" process="@this" />
+                        </p:inputText>
+
+                        <p:inputText value="#{cashBoxController.filterOperator}" placeholder="#{msg.responsible}..." style="min-width:140px;">
+                            <p:ajax event="keyup" delay="400" listener="#{cashBoxController.applyFilters}" update="dtCashBoxes messages" process="@this" />
+                        </p:inputText>
+
+                        <p:selectOneMenu value="#{cashBoxController.filterStatus}" placeholder="#{msg.status}" style="min-width:140px;">
+                            <f:selectItem itemLabel="#{msg.allStatuses}" itemValue="" />
+                            <f:selectItems value="#{cashBoxController.statuses}" var="st" itemLabel="#{msg['cashBoxStatus.'.concat(st)]}" itemValue="#{st}" />
+                            <p:ajax event="change" listener="#{cashBoxController.applyFilters}" update="dtCashBoxes messages" process="@this" />
+                        </p:selectOneMenu>
+
+                        <p:datePicker value="#{cashBoxController.filterStartDate}" placeholder="#{msg.startDate}" pattern="dd/MM/yyyy" showIcon="true" locale="pt">
+                            <p:ajax event="dateSelect" listener="#{cashBoxController.applyFilters}" update="dtCashBoxes messages" process="@this" />
+                        </p:datePicker>
+
+                        <p:datePicker value="#{cashBoxController.filterEndDate}" placeholder="#{msg.endDate}" pattern="dd/MM/yyyy" showIcon="true" locale="pt">
+                            <p:ajax event="dateSelect" listener="#{cashBoxController.applyFilters}" update="dtCashBoxes messages" process="@this" />
+                        </p:datePicker>
+
+                        <p:commandButton icon="pi pi-filter" value="#{msg.apply}" action="#{cashBoxController.applyFilters}" update="dtCashBoxes messages" styleClass="ui-button-primary" />
+                        <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}" action="#{cashBoxController.clearFilters}" update="@form" styleClass="ui-button-outlined ui-button-secondary" />
+                    </div>
+
+                    <p:dataTable id="dtCashBoxes" widgetVar="dtCashBoxes" styleClass="enr-table" var="cashBox"
+                        value="#{cashBoxController.lazyModel}" lazy="true" paginator="true" rows="10" reflow="true"
+                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
+                        rowsPerPageTemplate="5,10,20,50" emptyMessage="#{msg.noCashBoxFound}">
+
+                        <p:column headerText="#{msg.cashBoxNumber}" sortBy="#{cashBox.cashBoxNumber}" style="width:130px">
+                            <span class="t-num"><i class="pi pi-hashtag" style="font-size:.65rem"></i> <h:outputText value="#{cashBox.cashBoxNumber}" /></span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.responsible}" sortBy="#{cashBox.operator}" filterBy="#{cashBox.operator}" filterMatchMode="contains">
+                            <h:outputText value="#{cashBox.operator}" />
+                        </p:column>
+
+                        <p:column headerText="#{msg.openingBalance}" sortBy="#{cashBox.openingBalance}" style="width:140px; text-align:right">
+                            <h:outputText value="#{cashBox.openingBalance}" styleClass="t-amount"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText>
+                        </p:column>
+
+                        <p:column headerText="#{msg.totalIncome}" sortBy="#{cashBox.totalIncome}" style="width:140px; text-align:right">
+                            <h:outputText value="#{cashBox.totalIncome}" style="color:var(--enr-green); font-weight:700; font-family:var(--font-mono);"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText>
+                        </p:column>
+
+                        <p:column headerText="#{msg.totalExpense}" sortBy="#{cashBox.totalExpense}" style="width:140px; text-align:right">
+                            <h:outputText value="#{cashBox.totalExpense}" style="color:var(--enr-red); font-weight:700; font-family:var(--font-mono);"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText>
+                        </p:column>
+
+                        <p:column headerText="#{msg.currentBalance}" sortBy="#{cashBox.currentBalance}" style="width:140px; text-align:right">
+                            <h:outputText value="#{cashBox.currentBalance}" styleClass="t-amount"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText>
+                        </p:column>
+
+                        <p:column headerText="#{msg.status}" sortBy="#{cashBox.status}" style="width:120px; text-align:center">
+                            <span class="enr-badge enr-badge-#{cashBox.status}"><h:outputText value="#{msg['cashBoxStatus.'.concat(cashBox.status.name())]}" /></span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.openingDate}" sortBy="#{cashBox.openingDate}" style="width:120px; text-align:center">
+                            <h:outputText value="#{cashBox.openingDate}" rendered="#{not empty cashBox.openingDate}"><f:convertDateTime pattern="dd/MM/yyyy" type="localDate" /></h:outputText>
+                            <h:outputText value="-" rendered="#{empty cashBox.openingDate}" />
+                        </p:column>
+
+                        <p:column headerText="#{msg.actions}" style="width:150px; text-align:center" exportable="false">
+                            <div class="enr-actions">
+                                <p:commandButton styleClass="enr-act view" icon="pi pi-eye" title="#{msg.view}"
+                                    action="#{cashBoxController.viewCashBoxDetails(cashBox.phCashBox)}" onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('viewCashBoxDialog').show()" update=":viewCashBoxForm" process="@this" />
+                                <p:commandButton styleClass="enr-act edit" icon="pi pi-pencil" title="#{msg.edit}"
+                                    actionListener="#{cashBoxController.openEditDialog(cashBox.phCashBox)}" onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('editCashBoxDialog').show()" process="@this" update=":cashBoxEditForm" />
+                                <p:commandButton styleClass="enr-act close" icon="pi pi-lock" title="#{msg.closeCashBox}"
+                                    actionListener="#{cashBoxController.prepareCloseCashBox(cashBox.phCashBox)}" onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('closeCashBoxDialog').show()" process="@this" update=":cashBoxCloseForm"
+                                    rendered="#{cashBox.status == 'OPEN'}" />
+                                <p:commandButton styleClass="enr-act delete" icon="pi pi-trash" title="#{msg.delete}"
+                                    actionListener="#{cashBoxController.delete(cashBox.phCashBox)}" process="@this" update="dtCashBoxes messages">
+                                    <p:confirm header="#{msg.confirmDeletion}" message="#{msg.deleteCashBox}" icon="pi pi-exclamation-triangle" />
+                                </p:commandButton>
+                            </div>
+                        </p:column>
+
+                        <f:facet name="emptyMessage">
+                            <div class="enr-empty"><i class="pi pi-box"></i><div>#{msg.noCashBoxFound}</div></div>
+                        </f:facet>
+                    </p:dataTable>
+                </div>
+            </h:form>
+
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" styleClass="sc-confirm-dialog" width="380" appendTo="@(body)">
+                <p:commandButton value="#{msg.no}" type="button" styleClass="ui-confirmdialog-no" icon="pi pi-times" />
+                <p:commandButton value="#{msg.yes}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+            </p:confirmDialog>
+
+            <h:form id="viewCashBoxForm">
+                <p:dialog widgetVar="viewCashBoxDialog" modal="true" resizable="false" header="#{msg.cashBoxDetails}"
+                    style="width: 90vw; max-width: 520px;" closable="true" responsive="true" fitViewport="true">
+                    <div style="padding: .5rem 0;">
+                        <div style="text-align:center; margin-bottom:1.2rem;">
+                            <div style="width:64px; height:64px; border-radius:50%; background:var(--enr-black); color:var(--enr-yellow); font-size:1.5rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; margin:0 auto .6rem;">
+                                <i class="pi pi-box"></i>
+                            </div>
+                            <div style="font-size:1.15rem; font-weight:700;">#{msg.cashBox} ##{cashBoxController.selectedCashBox.cashBoxNumber}</div>
+                            <div style="font-size:.85rem; color:var(--enr-muted);">#{cashBoxController.selectedCashBox.operator}</div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; font-size:.9rem;">
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.openingBalance}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{cashBoxController.selectedCashBox.openingBalance}"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.currentBalance}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{cashBoxController.selectedCashBox.currentBalance}"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.totalIncome}</div>
+                                <div style="font-weight:700; color:var(--enr-green);"><h:outputText value="#{cashBoxController.selectedCashBox.totalIncome}"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.totalExpense}</div>
+                                <div style="font-weight:700; color:var(--enr-red);"><h:outputText value="#{cashBoxController.selectedCashBox.totalExpense}"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.status}</div>
+                                <div style="font-weight:700;"><span class="enr-badge enr-badge-#{cashBoxController.selectedCashBox.status}"><h:outputText value="#{msg['cashBoxStatus.'.concat(cashBoxController.selectedCashBox.status.name())]}" /></span></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.openingDate}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{cashBoxController.selectedCashBox.openingDate}"><f:convertDateTime type="localDate" pattern="dd 'de' MMMM 'de' yyyy" locale="pt" /></h:outputText></div>
+                            </div>
+                            <h:panelGroup layout="block" style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;" rendered="#{not empty cashBoxController.selectedCashBox.observation}">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.observation}</div>
+                                <div>#{cashBoxController.selectedCashBox.observation}</div>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+                    <div class="enr-dialog-footer">
+                        <p:commandButton value="#{msg.close}" type="button" onclick="PF('viewCashBoxDialog').hide()" styleClass="ui-button-outlined" />
+                    </div>
+                </p:dialog>
+            </h:form>
+
+            <ui:include src="cashbox/cashbox-create.xhtml" />
+            <ui:include src="cashbox/cashbox-edit.xhtml" />
+            <ui:include src="cashbox/cashbox-close.xhtml" />
+        </div>
+
+        <script type="text/javascript">
+            // <![CDATA[
+            function showScLoading() {
+                var overlay = document.getElementById('scLoadingOverlay');
+                if (overlay) overlay.classList.add('active');
+            }
+            function hideScLoading() {
+                var overlay = document.getElementById('scLoadingOverlay');
+                if (overlay) overlay.classList.remove('active');
+            }
+            if (window.PrimeFaces) {
+                PrimeFaces.ajax.Queue.originalAdd = PrimeFaces.ajax.Queue.add;
+                PrimeFaces.ajax.Queue.add = function (req) {
+                    req.originalOncomplete = req.onsuccess;
+                    req.onsuccess = function (xhr, status, args) {
+                        hideScLoading();
+                        if (req.originalOncomplete) req.originalOncomplete(xhr, status, args);
+                    };
+                    req.originalOnerror = req.onerror;
+                    req.onerror = function (xhr, status, error) {
+                        hideScLoading();
+                        if (req.originalOnerror) req.originalOnerror(xhr, status, error);
+                    };
+                    PrimeFaces.ajax.Queue.originalAdd(req);
+                };
+            }
+            // ]]>
+        </script>
+    </ui:define>
+</ui:composition>

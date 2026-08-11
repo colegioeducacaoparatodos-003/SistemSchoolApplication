@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <p:dialog id="closeCashBoxDialog" widgetVar="closeCashBoxDialog" header="#{msg.closeCashBox}" modal="true"
+        showEffect="fade" hideEffect="fade" closeOnEscape="true" style="width: 90vw; max-width: 480px;" dynamic="true"
+        resizable="false" appendTo="@(body)" styleClass="sc-dialog-close" responsive="true" fitViewport="true">
+
+        <h:form id="cashBoxCloseForm" styleClass="ui-fluid">
+            <p:messages id="msgsClose" showDetail="true" closable="true" globalOnly="true" />
+
+            <div class="sc-dialog-body">
+                <!-- Info Card do Caixa -->
+                <div class="cb-info-card">
+                    <div class="cb-info-row">
+                        <span class="cb-info-label">#{msg.cashBoxNumber}</span>
+                        <span class="cb-info-value t-num">
+                            <i class="pi pi-hashtag" style="font-size:.65rem"></i>
+                            <h:outputText value="#{cashBoxController.selectedCashBox.cashBoxNumber}" />
+                        </span>
+                    </div>
+                    <div class="cb-info-row">
+                        <span class="cb-info-label">#{msg.responsible}</span>
+                        <span class="cb-info-value"><h:outputText value="#{cashBoxController.selectedCashBox.operator}" /></span>
+                    </div>
+                    <div class="cb-info-row">
+                        <span class="cb-info-label">#{msg.currentBalance}</span>
+                        <span class="cb-info-value t-amount" style="color:var(--enr-green);">
+                            <h:outputText value="#{cashBoxController.selectedCashBox.currentBalance}">
+                                <f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" />
+                            </h:outputText>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="sc-section-title" style="margin-top:1.2rem;">
+                    <i class="pi pi-lock"></i> #{msg.closeCashBoxData}
+                </div>
+
+                <p:panelGrid columns="1" layout="grid" styleClass="ui-panelgrid-blank">
+
+                    <p:outputLabel for="closingBalanceClose" value="#{msg.closingBalance}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:inputNumber id="closingBalanceClose" value="#{cashBoxController.closingBalanceInput}"
+                            symbol="Kz " symbolPosition="p" decimalPlaces="2" required="true"
+                            requiredMessage="#{msg.closingBalanceRequired}" styleClass="sc-input" />
+                        <p:message for="closingBalanceClose" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="statusClose" value="#{msg.status}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:selectOneMenu id="statusClose" value="#{cashBoxController.selectedCashBox.status}" 
+                            required="true" requiredMessage="#{msg.selectStatus}" style="width:100%;">
+                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{cashBoxController.statuses}" var="st" 
+                                itemLabel="#{msg['cashBoxStatus.'.concat(st.name())]}" itemValue="#{st}" />
+                        </p:selectOneMenu>
+                        <p:message for="statusClose" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                </p:panelGrid>
+
+                <div class="sc-fullwidth-field">
+                    <p:outputLabel for="observationClose" value="#{msg.observation}" styleClass="sc-label" />
+                    <p:inputTextarea id="observationClose" value="#{cashBoxController.closingObservationInput}" rows="3"
+                        maxlength="500" counter="obsCounterClose" counterTemplate="{0} / 500"
+                        placeholder="#{msg.additionalNotesPlaceholder}" style="width:100%;" />
+                    <h:outputText id="obsCounterClose" styleClass="sc-counter" />
+                </div>
+            </div>
+
+            <div class="sc-dialog-footer">
+                <p:commandButton value="#{msg.cancel}" icon="pi pi-times" type="button"
+                    onclick="PF('closeCashBoxDialog').hide()" styleClass="ui-button-outlined ui-button-secondary" />
+                <p:commandButton value="#{msg.closeCashBox}" icon="pi pi-lock" styleClass="ui-button-success"
+                    action="#{cashBoxController.closeCashBox}" process="@form"
+                    update="msgsClose :formCashBoxes:dtCashBoxes :formCashBoxes:messages"
+                    onstart="showScLoading()"
+                    oncomplete="hideScLoading(); if (!args.validationFailed) { PF('closeCashBoxDialog').hide(); }" />
+            </div>
+        </h:form>
+
+        <style type="text/css">
+            /* <![CDATA[ */
+            .sc-dialog-close .ui-dialog-content {
+                padding: 0 !important;
+            }
+            .sc-dialog-body {
+                padding: 1.2rem 1.5rem 1rem;
+                max-height: calc(90vh - 120px);
+                overflow-y: auto;
+            }
+
+            /* Info Card */
+            .cb-info-card {
+                background: linear-gradient(135deg, #141414 0%, #262626 100%);
+                border-radius: 12px;
+                padding: 1rem 1.2rem;
+                color: #fff;
+                display: flex;
+                flex-direction: column;
+                gap: .6rem;
+            }
+            .cb-info-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: .85rem;
+            }
+            .cb-info-label {
+                color: #9ca3af;
+                font-weight: 500;
+            }
+            .cb-info-value {
+                font-weight: 700;
+                color: #fff;
+            }
+
+            .sc-section-title {
+                font-size: 1rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: .5rem;
+                color: var(--enr-text, #141414);
+            }
+            .sc-section-title i {
+                color: var(--enr-red, #c8102e);
+            }
+            .sc-label {
+                font-size: .88rem;
+                font-weight: 600;
+                color: #374151;
+                margin-bottom: .35rem;
+                display: block;
+            }
+            .sc-label.req::after {
+                content: " *";
+                color: #dc2626;
+            }
+            .sc-field-msg {
+                display: block;
+                margin-top: 4px;
+                font-size: 12px;
+                color: #dc2626;
+            }
+            .sc-input {
+                width: 100%;
+            }
+            .sc-fullwidth-field {
+                margin-top: 1.2rem;
+            }
+            .sc-counter {
+                display: block;
+                text-align: right;
+                font-size: 11px;
+                color: #888;
+                margin-top: 2px;
+            }
+            .sc-dialog-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: .6rem;
+                padding: 1rem 1.5rem;
+                border-top: 1px solid #e5e7eb;
+                flex-wrap: wrap;
+                background: #fafafa;
+                border-radius: 0 0 12px 12px;
+            }
+            .sc-dialog-footer .ui-button {
+                min-width: 120px;
+            }
+
+            /* Scrollbar customizada */
+            .sc-dialog-body::-webkit-scrollbar {
+                width: 5px;
+            }
+            .sc-dialog-body::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .sc-dialog-body::-webkit-scrollbar-thumb {
+                background: #d1d5db;
+                border-radius: 99px;
+            }
+
+            /* Mobile */
+            @media (max-width: 768px) {
+                .sc-dialog-close {
+                    width: 95vw !important;
+                    max-width: 95vw !important;
+                }
+                .sc-dialog-close .ui-dialog-content {
+                    padding: 0 !important;
+                }
+                .sc-dialog-body {
+                    padding: 1rem;
+                    max-height: calc(85vh - 100px);
+                }
+                .sc-dialog-footer {
+                    padding: .8rem 1rem;
+                    flex-direction: column;
+                    gap: .5rem;
+                }
+                .sc-dialog-footer .ui-button {
+                    width: 100%;
+                    min-width: unset;
+                }
+                .sc-section-title {
+                    font-size: .95rem;
+                }
+                .sc-label {
+                    font-size: .85rem;
+                }
+                .cb-info-card {
+                    padding: .8rem 1rem;
+                }
+                .cb-info-row {
+                    font-size: .8rem;
+                }
+            }
+            @media (max-width: 576px) {
+                .sc-dialog-body {
+                    padding: .8rem;
+                }
+                .sc-fullwidth-field {
+                    margin-top: 1rem;
+                }
+            }
+            /* ]]> */
+        </style>
+    </p:dialog>
+
+</ui:composition>

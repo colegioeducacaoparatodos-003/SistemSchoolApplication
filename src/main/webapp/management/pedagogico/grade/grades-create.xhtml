@@ -1,0 +1,77 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui" xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <p:dialog id="createGradeDialog" widgetVar="createGradeDialog" header="#{msg.newGrade}" modal="true"
+              showEffect="fade" hideEffect="fade" closeOnEscape="true" styleClass="sc-dialog-create" width="700"
+              dynamic="true" resizable="false" appendTo="@(body)">
+
+        <h:form id="gradeCreateForm" styleClass="ui-fluid">
+            <div class="sc-create-body">
+                <p:messages id="msgsCreate" showDetail="true" closable="true"/>
+
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-star"></i> #{msg.gradeDetails}</div>
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
+                                 columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+
+                        <p:outputLabel for="evaluation" value="#{msg.evaluation}" styleClass="sc-label req"/>
+                        <p:selectOneMenu id="evaluation" value="#{gradeController.selectedEvaluationId}" required="true">
+                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{gradeController.evaluations}" var="ev" itemLabel="#{ev.title}" itemValue="#{ev.pkEvaluation}"/>
+                        </p:selectOneMenu>
+
+                        <p:outputLabel for="student" value="#{msg.student}" styleClass="sc-label req"/>
+                        <p:selectOneMenu id="student" value="#{gradeController.selectedStudentId}" required="true"
+                                          filter="true" filterMatchMode="contains">
+                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{gradeController.students}" var="st" itemLabel="#{st.fullName}" itemValue="#{st.pkStudent}"/>
+                        </p:selectOneMenu>
+
+                        <p:outputLabel for="enrolment" value="#{msg.enrolment}" styleClass="sc-label req"/>
+                        <p:selectOneMenu id="enrolment" value="#{gradeController.selectedEnrolmentId}" required="true"
+                                          filter="true" filterMatchMode="contains">
+                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{gradeController.enrolments}" var="en" itemLabel="#{en.enrolmentNumer} - #{en.studentFullName}" itemValue="#{en.phEnrolment}"/>
+                        </p:selectOneMenu>
+
+                        <p:outputLabel for="value" value="#{msg.gradeValue}" styleClass="sc-label req"/>
+                        <p:inputNumber id="value" value="#{gradeController.grade.value}" required="true"
+                                       decimalPlaces="2" minValue="0" maxValue="20"/>
+
+                        <p:outputLabel for="status" value="#{msg.status}" styleClass="sc-label req"/>
+                        <p:selectOneMenu id="status" value="#{gradeController.grade.status}" required="true">
+                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{gradeController.statuses}" var="st" itemLabel="#{msg[st.toString()]}" itemValue="#{st}"/>
+                        </p:selectOneMenu>
+
+                    </p:panelGrid>
+                </div>
+
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-info-circle"></i> #{msg.additionalInformation}</div>
+                     <p:panelGrid columns="1" layout="grid" styleClass="ui-panelgrid-blank">
+                        <p:outputLabel for="observation" value="#{msg.observation}" styleClass="sc-label"/>
+                        <p:inputTextarea id="observation" value="#{gradeController.grade.observation}" rows="3"
+                                         placeholder="#{msg.additionalNotesPlaceholder}"/>
+                    </p:panelGrid>
+                </div>
+                
+            </div>
+
+            <div class="sc-create-footer">
+                <p:commandButton value="#{msg.cancel}" icon="pi pi-times"
+                                 styleClass="sc-btn-cancel"
+                                 type="button"
+                                 onclick="PF('createGradeDialog').hide()"/>
+
+                <p:commandButton value="#{msg.save}" icon="pi pi-save"
+                                 styleClass="sc-btn-save"
+                                 action="#{gradeController.saveGrade}"
+                                 update=":formGrades:dtGrades :formGrades:messages"
+                                 oncomplete="if (!args.validationFailed) { PF('createGradeDialog').hide(); }"/>
+            </div>
+        </h:form>
+    </p:dialog>
+
+</ui:composition>

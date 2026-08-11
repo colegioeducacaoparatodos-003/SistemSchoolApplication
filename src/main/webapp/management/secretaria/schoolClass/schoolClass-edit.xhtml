@@ -1,0 +1,159 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui" xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <p:dialog id="editSchoolClassDialog" widgetVar="editSchoolClassDialog" header="#{msg.editSchoolClass}" modal="true"
+        showEffect="fade" hideEffect="fade" closeOnEscape="true" style="width: 90vw; max-width: 800px;" dynamic="true"
+        resizable="false" appendTo="@(body)" styleClass="sc-dialog-create" responsive="true" fitViewport="true">
+
+        <h:form id="schoolClassEditForm" styleClass="ui-fluid">
+            <p:messages id="msgsEdit" showDetail="true" closable="true" globalOnly="true" />
+
+            <div class="sc-dialog-body">
+                <div class="sc-section-title">
+                    <i class="pi pi-sitemap"></i> #{msg.schoolClassDetails}
+                </div>
+
+                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
+                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+
+                    <p:outputLabel for="classCodeEdit" value="#{msg.classCode}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:inputText id="classCodeEdit" value="#{schoolClassController.editDto.classCode}" required="true" styleClass="sc-input" />
+                        <p:message for="classCodeEdit" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="classNameEdit" value="#{msg.className}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:inputText id="classNameEdit" value="#{schoolClassController.editDto.className}" required="true" styleClass="sc-input" />
+                        <p:message for="classNameEdit" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="classeEdit" value="#{msg.classe}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:selectOneMenu id="classeEdit" value="#{schoolClassController.editDto.classe}" required="true" style="width:100%;">
+                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{schoolClassController.classes}" var="cl" itemLabel="#{cl}" itemValue="#{cl}" />
+                        </p:selectOneMenu>
+                        <p:message for="classeEdit" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="turnoEdit" value="#{msg.shift}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:selectOneMenu id="turnoEdit" value="#{schoolClassController.editDto.turno}" required="true" style="width:100%;">
+                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{schoolClassController.turnos}" var="sh" itemLabel="#{sh}" itemValue="#{sh}" />
+                        </p:selectOneMenu>
+                        <p:message for="turnoEdit" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="anoLectivoEdit" value="#{msg.academicYear}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:inputText id="anoLectivoEdit" value="#{schoolClassController.editDto.anoLectivo}"
+                            placeholder="2025/2026" required="true" styleClass="sc-input" />
+                        <p:message for="anoLectivoEdit" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="capacidadeEdit" value="#{msg.capacity}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:inputNumber id="capacidadeEdit" value="#{schoolClassController.editDto.capacidade}"
+                            decimalPlaces="0" required="true" styleClass="sc-input" />
+                        <p:message for="capacidadeEdit" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="roomEdit" value="#{msg.room}" styleClass="sc-label" />
+                    <p:inputText id="roomEdit" value="#{schoolClassController.editDto.room}" placeholder="Sala 7" styleClass="sc-input" />
+
+                    <p:outputLabel for="statusEdit" value="#{msg.status}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:selectOneMenu id="statusEdit" value="#{schoolClassController.editDto.status}" required="true" style="width:100%;">
+                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{schoolClassController.statuses}" var="st" itemLabel="#{st}" itemValue="#{st}" />
+                        </p:selectOneMenu>
+                        <p:message for="statusEdit" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                </p:panelGrid>
+
+                <div class="sc-section-title" style="margin-top:1.2rem;">
+                    <i class="pi pi-info-circle"></i> #{msg.additionalInformation}
+                </div>
+
+                <div class="sc-fullwidth-field">
+                    <p:outputLabel for="notesEdit" value="#{msg.notes}" styleClass="sc-label" />
+                    <p:inputTextarea id="notesEdit" value="#{schoolClassController.editDto.obs}" rows="3"
+                        maxlength="500" counter="notesCounterEdit" counterTemplate="{0} / 500"
+                        placeholder="#{msg.additionalNotesPlaceholder}" autoResize="true" styleClass="sc-input" />
+                    <h:outputText id="notesCounterEdit" styleClass="sc-counter" />
+                </div>
+            </div>
+
+            <div class="sc-dialog-footer">
+                <p:commandButton value="#{msg.cancel}" icon="pi pi-times" type="button"
+                    onclick="PF('editSchoolClassDialog').hide()" styleClass="ui-button-outlined ui-button-secondary" />
+                <p:commandButton value="#{msg.save}" icon="pi pi-save" styleClass="ui-button-success"
+                    action="#{schoolClassController.saveUpdate}" process="@form"
+                    onstart="showScLoading()"
+                    update=":schoolClassEditForm:msgsEdit :formSchoolClasses:dtSchoolClasses :formSchoolClasses:messages"
+                    oncomplete="hideScLoading(); if (!args.validationFailed) { PF('editSchoolClassDialog').hide(); }" />
+            </div>
+        </h:form>
+
+        <style type="text/css">
+            /* <![CDATA[ */
+            .sc-dialog-create .ui-dialog-content { padding: 0 !important; }
+            .sc-dialog-body {
+                padding: 1.2rem 1.5rem 1rem;
+                max-height: calc(90vh - 120px);
+                overflow-y: auto;
+            }
+            .sc-section-title {
+                font-size: 1rem; font-weight: 700; margin-bottom: 1rem;
+                display: flex; align-items: center; gap: .5rem;
+                color: var(--enr-text, #141414);
+            }
+            .sc-section-title i { color: var(--enr-red, #c8102e); }
+            .sc-label {
+                font-size: .88rem; font-weight: 600; color: #374151;
+                margin-bottom: .35rem; display: block;
+            }
+            .sc-label.req::after { content: " *"; color: #dc2626; }
+            .sc-field-msg {
+                display: block; margin-top: 4px; font-size: 12px; color: #dc2626;
+            }
+            .sc-input { width: 100%; }
+            .sc-fullwidth-field { margin-top: 1.2rem; }
+            .sc-counter {
+                display: block; text-align: right; font-size: 11px;
+                color: #888; margin-top: 2px;
+            }
+            .sc-dialog-footer {
+                display: flex; justify-content: flex-end; gap: .6rem;
+                padding: 1rem 1.5rem; border-top: 1px solid #e5e7eb;
+                flex-wrap: wrap; background: #fafafa;
+                border-radius: 0 0 12px 12px;
+            }
+            .sc-dialog-footer .ui-button { min-width: 120px; }
+
+            .sc-dialog-body::-webkit-scrollbar { width: 5px; }
+            .sc-dialog-body::-webkit-scrollbar-track { background: transparent; }
+            .sc-dialog-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+
+            @media (max-width: 768px) {
+                .sc-dialog-create { width: 95vw !important; max-width: 95vw !important; }
+                .sc-dialog-create .ui-dialog-content { padding: 0 !important; }
+                .sc-dialog-body { padding: 1rem; max-height: calc(85vh - 100px); }
+                .sc-dialog-footer { padding: .8rem 1rem; flex-direction: column; gap: .5rem; }
+                .sc-dialog-footer .ui-button { width: 100%; min-width: unset; }
+                .sc-section-title { font-size: .95rem; }
+                .sc-label { font-size: .85rem; }
+            }
+            @media (max-width: 576px) {
+                .sc-dialog-body { padding: .8rem; }
+                .sc-fullwidth-field { margin-top: 1rem; }
+            }
+            /* ]]> */
+        </style>
+    </p:dialog>
+
+</ui:composition>

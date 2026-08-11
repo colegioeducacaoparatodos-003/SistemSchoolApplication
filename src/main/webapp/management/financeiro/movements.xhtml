@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <ui:define name="titulo">#{msg['financialMovements']}</ui:define>
+
+    <ui:define name="content">
+        <style type="text/css">
+            /* <![CDATA[ */
+            :root {
+                --mov-black: #141414;
+                --mov-red: #c8102e;
+                --mov-yellow: #f5b400;
+                --mov-green: #1e8e3e;
+                --mov-blue: #1a5fb4;
+                --mov-surface: #ffffff;
+                --mov-surface-2: #f7f7f8;
+                --mov-border: #e6e6e8;
+                --mov-text: #141414;
+                --mov-muted: #666a70;
+                --mov-radius: 12px;
+                --mov-shadow: 0 4px 20px rgba(20, 20, 20, .10);
+                --font-mono: 'DM Mono', monospace;
+            }
+
+            .breadcrumb-pill {
+                display: inline-flex; align-items: center; gap: 5px;
+                background: #fff8e1; border: 1px solid rgba(245, 180, 0, .35);
+                color: #8a6400; border-radius: 99px; padding: 3px 12px;
+                font-size: .72rem; font-weight: 600;
+            }
+
+            .t-num {
+                display: inline-flex; align-items: center; gap: 4px;
+                background: #262626; color: var(--mov-yellow); border-radius: 5px;
+                padding: 2px 7px; font-family: var(--font-mono); font-size: .7rem;
+            }
+
+            .t-amount {
+                font-family: var(--font-mono); font-weight: 700;
+            }
+            .t-amount.income { color: var(--mov-green); }
+            .t-amount.expense { color: var(--mov-red); }
+
+            .mov-page { padding: 1.2rem; }
+            @media(min-width:768px) { .mov-page { padding: 1.6rem 2rem 2.5rem; } }
+
+            .mov-header {
+                display: flex; align-items: flex-start; justify-content: space-between;
+                flex-wrap: wrap; gap: 1rem; margin-bottom: 1.4rem;
+            }
+            .mov-header-left { display: flex; align-items: center; gap: 1rem; }
+            .mov-header-icon {
+                width: 46px; height: 46px; border-radius: 12px;
+                background: linear-gradient(135deg, var(--mov-black) 0%, var(--mov-red) 100%);
+                display: flex; align-items: center; justify-content: center;
+                color: var(--mov-yellow); font-size: 1.2rem; flex-shrink: 0;
+            }
+            .mov-header-title h1 { font-size: 1.35rem; font-weight: 800; margin: 0 0 .2rem; color: var(--mov-text); }
+            .mov-header-title p { font-size: .85rem; color: var(--mov-muted); margin: 0; }
+
+            .mov-stats {
+                display: grid; grid-template-columns: repeat(1, 1fr); gap: .9rem; margin-bottom: 1.4rem;
+            }
+            @media(min-width:576px) { .mov-stats { grid-template-columns: repeat(2, 1fr); } }
+            @media(min-width:992px) { .mov-stats { grid-template-columns: repeat(4, 1fr); } }
+
+            .mov-stat {
+                background: var(--mov-surface); border: 1px solid var(--mov-border);
+                border-radius: var(--mov-radius); box-shadow: var(--mov-shadow);
+                padding: 1.1rem 1.2rem; display: flex; align-items: center; justify-content: space-between;
+                transition: transform .2s;
+            }
+            .mov-stat:hover { transform: translateY(-2px); }
+            .mov-stat-label { font-size: .72rem; color: var(--mov-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+            .mov-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--mov-text); margin-top: .15rem; }
+            .mov-stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+            .mov-stat-icon.dark { background: var(--mov-black); color: var(--mov-yellow); }
+            .mov-stat-icon.green { background: #e6f4ea; color: var(--mov-green); }
+            .mov-stat-icon.red { background: #fdecee; color: var(--mov-red); }
+            .mov-stat-icon.blue { background: #eaf1fb; color: var(--mov-blue); }
+
+            .mov-card {
+                background: var(--mov-surface); border: 1px solid var(--mov-border);
+                border-radius: var(--mov-radius); box-shadow: var(--mov-shadow); overflow: hidden;
+            }
+
+            .mov-toolbar {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 1rem 1.2rem; border-bottom: 1px solid var(--mov-border);
+                gap: 1rem; flex-wrap: wrap;
+            }
+            .mov-toolbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+            .mov-toolbar-right { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+
+            .mov-filters {
+                display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+                padding: .8rem 1.2rem; background: var(--mov-surface-2);
+                border-bottom: 1px solid var(--mov-border);
+            }
+            .mov-filters .ui-inputfield, .mov-filters .ui-selectonemenu { min-width: 160px; }
+
+            /* ===== TABELA COMPACTA ===== */
+            .mov-table.p-datatable .p-datatable-thead tr th {
+                background: var(--mov-black) !important; color: var(--mov-yellow) !important;
+                font-size: .65rem !important; text-transform: uppercase !important;
+                padding: .5rem .5rem !important; border-color: var(--mov-black) !important;
+                white-space: nowrap;
+            }
+            .mov-table.p-datatable .p-datatable-tbody tr td {
+                font-size: .78rem !important; padding: .45rem .5rem !important;
+                vertical-align: middle;
+            }
+            .mov-table.p-datatable .p-datatable-tbody tr:hover { background: var(--mov-surface-2) !important; }
+
+            .mov-badge {
+                display: inline-flex; align-items: center; gap: 4px;
+                padding: 2px 8px; border-radius: 99px; font-size: .65rem; font-weight: 700;
+            }
+            .mov-badge.income { background: #e6f4ea; color: var(--mov-green); border: 1px solid rgba(30, 142, 62, .3); }
+            .mov-badge.expense { background: #fdecee; color: var(--mov-red); border: 1px solid rgba(200, 16, 46, .25); }
+            .mov-badge.active { background: #fff8e1; color: #8a6400; border: 1px solid rgba(245, 180, 0, .4); }
+            .mov-badge.cancelled { background: var(--mov-black); color: #fff; }
+            .mov-badge.pending { background: #eaf1fb; color: var(--mov-blue); border: 1px solid rgba(26, 95, 180, .25); }
+
+            .mov-actions { display: flex; align-items: center; gap: 3px; justify-content: center; flex-wrap: wrap; }
+            .mov-act {
+                width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--mov-border);
+                display: inline-flex; align-items: center; justify-content: center;
+                font-size: .75rem; cursor: pointer; transition: all .15s; padding: 0 !important;
+            }
+            .mov-act:hover { transform: scale(1.08); }
+            .mov-act.view { color: var(--mov-blue); background: #eaf1fb; }
+            .mov-act.edit { color: #8a6400; background: #fff8e1; }
+            .mov-act.delete { color: var(--mov-red); background: #fdecee; }
+
+            .mov-empty { text-align: center; padding: 3rem 1rem; color: var(--mov-muted); }
+            .mov-empty i { font-size: 2.5rem; opacity: .2; margin-bottom: .5rem; display: block; }
+
+            .mov-dialog-footer { display: flex; justify-content: flex-end; gap: .6rem; margin-top: .5rem; flex-wrap: wrap; }
+
+            /* Loading Overlay */
+            .sc-loading-overlay {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+                z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s ease;
+            }
+            .sc-loading-overlay.active { opacity: 1; visibility: visible; }
+            .sc-loading-box {
+                background: var(--mov-surface); border-radius: var(--mov-radius); padding: 2.5rem 3rem;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); display: flex; flex-direction: column;
+                align-items: center; gap: 1.2rem; border: 1px solid var(--mov-border); min-width: 260px;
+                transform: scale(0.9); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .sc-loading-overlay.active .sc-loading-box { transform: scale(1); }
+            .sc-loader-rings { position: relative; width: 72px; height: 72px; }
+            .sc-loader-rings::before, .sc-loader-rings::after {
+                content: ''; position: absolute; border-radius: 50%; border: 3px solid transparent;
+            }
+            .sc-loader-rings::before {
+                top: 0; left: 0; width: 100%; height: 100%;
+                border-top-color: var(--mov-red); border-right-color: var(--mov-yellow);
+                animation: scSpin 1.2s linear infinite;
+            }
+            .sc-loader-rings::after {
+                top: 10px; left: 10px; width: calc(100% - 20px); height: calc(100% - 20px);
+                border-bottom-color: var(--mov-black); border-left-color: #e63946;
+                animation: scSpinReverse 0.9s linear infinite;
+            }
+            .sc-loader-core {
+                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                width: 16px; height: 16px;
+                background: linear-gradient(135deg, var(--mov-red), var(--mov-yellow));
+                border-radius: 50%; animation: scPulse 1s ease-in-out infinite;
+                box-shadow: 0 0 15px rgba(200, 16, 46, 0.5);
+            }
+            @keyframes scSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            @keyframes scSpinReverse { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+            @keyframes scPulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.7; } }
+            .sc-loading-text { font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 600; color: var(--mov-text); text-align: center; }
+            .sc-loading-sub { font-size: 0.78rem; color: var(--mov-muted); text-align: center; margin-top: -0.6rem; }
+            .sc-loading-dots::after { content: ''; animation: scDots 1.5s steps(4, end) infinite; }
+            @keyframes scDots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } 100% { content: ''; } }
+            .sc-loading-progress { width: 100%; height: 3px; background: var(--mov-border); border-radius: 99px; overflow: hidden; margin-top: 0.3rem; }
+            .sc-loading-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--mov-red), var(--mov-yellow)); border-radius: 99px; animation: scProgress 2s ease-in-out infinite; }
+            @keyframes scProgress { 0% { width: 0%; margin-left: 0%; } 50% { width: 60%; margin-left: 20%; } 100% { width: 0%; margin-left: 100%; } }
+
+            /* Mobile */
+            @media (max-width: 576px) {
+                .mov-header { flex-direction: column; align-items: stretch; }
+                .mov-header-left { width: 100%; }
+                .mov-toolbar { flex-direction: column; align-items: stretch; }
+                .mov-toolbar-left, .mov-toolbar-right { width: 100%; }
+                .mov-toolbar-right .ui-button, .mov-toolbar-right .ui-menubutton { width: 100%; }
+                .mov-filters { flex-direction: column; align-items: stretch; gap: .5rem; }
+                .mov-filters .ui-inputfield, .mov-filters .ui-selectonemenu, .mov-filters .p-datepicker, .mov-filters .ui-button { width: 100% !important; min-width: unset !important; }
+                .mov-stat-value { font-size: 1.25rem; }
+                .mov-actions { gap: 6px; }
+                .mov-act { width: 30px; height: 30px; font-size: .85rem; }
+                .mov-dialog-footer { justify-content: stretch; }
+                .mov-dialog-footer .ui-button { flex: 1 1 auto; }
+                .sc-loading-box { padding: 2rem 1.5rem; min-width: 220px; margin: 0 1rem; }
+            }
+            /* ]]> */
+        </style>
+
+        <div id="scLoadingOverlay" class="sc-loading-overlay">
+            <div class="sc-loading-box">
+                <div class="sc-loader-rings"><div class="sc-loader-core"></div></div>
+                <div class="sc-loading-text">#{msg.processing}<span class="sc-loading-dots"></span></div>
+                <div class="sc-loading-sub">#{msg.pleaseWait}</div>
+                <div class="sc-loading-progress"><div class="sc-loading-progress-bar"></div></div>
+            </div>
+        </div>
+
+        <div class="mov-page">
+            <h:form id="formMovements">
+                <p:growl id="messages" showDetail="true" life="5000"><p:autoUpdate /></p:growl>
+
+                <div class="mov-header">
+                    <div class="mov-header-left">
+                        <div class="mov-header-icon"><i class="pi pi-wallet"></i></div>
+                        <div class="mov-header-title">
+                            <h1>#{msg['financialMovements']}</h1>
+                            <p>#{msg.financialMovementManagement}</p>
+                        </div>
+                    </div>
+                    <span class="breadcrumb-pill">
+                        <i class="pi pi-home" style="font-size:.65rem"></i> #{msg.management} &#8250; #{msg['financialMovements']}
+                    </span>
+                </div>
+
+                <div class="mov-stats">
+                    <div class="mov-stat">
+                        <div>
+                            <div class="mov-stat-label">#{msg.totalMovements}</div>
+                            <div class="mov-stat-value">
+                                <h:outputText value="#{financialMovementController.totalMovementCount}"><f:convertNumber pattern="#&#44;##0" /></h:outputText>
+                            </div>
+                        </div>
+                        <div class="mov-stat-icon dark"><i class="pi pi-list"></i></div>
+                    </div>
+                    <div class="mov-stat">
+                        <div>
+                            <div class="mov-stat-label">#{msg.totalIncome}</div>
+                            <div class="mov-stat-value">
+                                <h:outputText value="#{financialMovementController.totalIncome}"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText>
+                            </div>
+                        </div>
+                        <div class="mov-stat-icon green"><i class="pi pi-arrow-down"></i></div>
+                    </div>
+                    <div class="mov-stat">
+                        <div>
+                            <div class="mov-stat-label">#{msg.totalExpense}</div>
+                            <div class="mov-stat-value">
+                                <h:outputText value="#{financialMovementController.totalExpense}"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText>
+                            </div>
+                        </div>
+                        <div class="mov-stat-icon red"><i class="pi pi-arrow-up"></i></div>
+                    </div>
+                    <div class="mov-stat">
+                        <div>
+                            <div class="mov-stat-label">#{msg.balance}</div>
+                            <div class="mov-stat-value">
+                                <h:outputText value="#{financialMovementController.balance}"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText>
+                            </div>
+                        </div>
+                        <div class="mov-stat-icon blue"><i class="pi pi-chart-line"></i></div>
+                    </div>
+                </div>
+
+                <div class="mov-card">
+                    <div class="mov-toolbar">
+                        <div class="mov-toolbar-left">
+                            <span style="font-weight:700; font-size:.9rem; color:var(--mov-text);">
+                                <i class="pi pi-list" style="color:var(--mov-red); margin-right:.4rem;"></i> #{msg.registration}
+                            </span>
+                        </div>
+                        <div class="mov-toolbar-right">
+                            <p:commandButton value="#{msg.newMovement}" icon="pi pi-plus"
+                                actionListener="#{financialMovementController.prepareNewMovement}" onstart="showScLoading()"
+                                oncomplete="hideScLoading(); PF('createMovementDialog').show()"
+                                update=":movementCreateForm" process="@this" styleClass="ui-button-success" />
+                        </div>
+                    </div>
+
+                    <div class="mov-filters">
+                        <p:selectOneMenu value="#{financialMovementController.filterType}" placeholder="#{msg.type}" style="min-width:160px;">
+                            <f:selectItem itemLabel="#{msg.allTypes}" itemValue="" />
+                            <f:selectItems value="#{financialMovementController.types}" var="t" itemValue="#{t}" itemLabel="#{msg['movementType.'.concat(t)]}" />
+                            <p:ajax event="change" listener="#{financialMovementController.applyFilters}" update="dtMovements messages" process="@this" />
+                        </p:selectOneMenu>
+
+                        <p:selectOneMenu value="#{financialMovementController.filterStatus}" placeholder="#{msg.status}" style="min-width:160px;">
+                            <f:selectItem itemLabel="#{msg.allStatuses}" itemValue="" />
+                            <f:selectItems value="#{financialMovementController.statuses}" var="s" itemValue="#{s}" itemLabel="#{msg['movementStatus.'.concat(s)]}" />
+                            <p:ajax event="change" listener="#{financialMovementController.applyFilters}" update="dtMovements messages" process="@this" />
+                        </p:selectOneMenu>
+
+                        <p:inputText value="#{financialMovementController.filterCategory}" placeholder="#{msg.category}..." style="min-width:160px;">
+                            <p:ajax event="keyup" delay="400" listener="#{financialMovementController.applyFilters}" update="dtMovements messages" process="@this" />
+                        </p:inputText>
+
+                        <p:datePicker value="#{financialMovementController.filterStartDate}" placeholder="#{msg.startDate}" pattern="dd/MM/yyyy" showIcon="true" locale="pt"
+                            yearNavigator="true" monthNavigator="true" yearRange="2020:2035">
+                            <p:ajax event="dateSelect" listener="#{financialMovementController.applyFilters}" update="dtMovements messages" process="@this" />
+                        </p:datePicker>
+
+                        <p:datePicker value="#{financialMovementController.filterEndDate}" placeholder="#{msg.endDate}" pattern="dd/MM/yyyy" showIcon="true" locale="pt"
+                            yearNavigator="true" monthNavigator="true" yearRange="2020:2035">
+                            <p:ajax event="dateSelect" listener="#{financialMovementController.applyFilters}" update="dtMovements messages" process="@this" />
+                        </p:datePicker>
+
+                        <p:inputText value="#{financialMovementController.filterSearchText}" placeholder="#{msg.searchMovement}..." style="min-width:200px;">
+                            <p:ajax event="keyup" delay="400" listener="#{financialMovementController.applyFilters}" update="dtMovements messages" process="@this" />
+                        </p:inputText>
+
+                        <p:commandButton icon="pi pi-filter" value="#{msg.apply}" action="#{financialMovementController.applyFilters}" update="dtMovements messages" styleClass="ui-button-primary" />
+                        <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}" action="#{financialMovementController.clearFilters}" update="@form" styleClass="ui-button-outlined ui-button-secondary" />
+                    </div>
+
+                    <p:dataTable id="dtMovements" widgetVar="dtMovements" styleClass="mov-table" var="movement"
+                        value="#{financialMovementController.lazyModel}" lazy="true" paginator="true" rows="10" reflow="true"
+                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
+                        rowsPerPageTemplate="5,10,20,50" emptyMessage="#{msg.noMovementFound}">
+
+                        <p:column headerText="#{msg.movementNumber}" sortBy="#{movement.movementNumber}" style="width:95px">
+                            <span class="t-num"><i class="pi pi-hashtag" style="font-size:.6rem"></i> <h:outputText value="#{movement.movementNumber}" /></span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.cashBox}" sortBy="#{movement.cashBoxNumber}" style="width:85px; text-align:center">
+                            <span class="mov-badge active"><i class="pi pi-inbox" style="font-size:.6rem"></i> <h:outputText value="#{movement.cashBoxNumber}" /></span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.payment}" sortBy="#{movement.pagamentoNumeroDocumento}" style="width:95px; text-align:center">
+                            <h:outputText value="#{movement.pagamentoNumeroDocumento}" rendered="#{not empty movement.pagamentoNumeroDocumento}" />
+                            <h:outputText value="—" rendered="#{empty movement.pagamentoNumeroDocumento}" />
+                        </p:column>
+
+                        <p:column headerText="#{msg.description}" sortBy="#{movement.description}" style="width:auto">
+                            <h:outputText value="#{movement.description}" />
+                        </p:column>
+
+                        <p:column headerText="#{msg.amount}" sortBy="#{movement.amount}" style="width:105px; text-align:right">
+                            <h:outputText value="#{movement.amount}" styleClass="t-amount #{movement.type == 'INCOME' ? 'income' : 'expense'}">
+                                <f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="#{msg.type}" sortBy="#{movement.type}" style="width:80px; text-align:center">
+                            <span class="mov-badge #{movement.type == 'INCOME' ? 'income' : 'expense'}">
+                               <h:outputText value="#{msg['movementType.'.concat(movement.type)]}" />
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.category}" sortBy="#{movement.category}" style="width:95px; text-align:center">
+                            <h:outputText value="#{movement.category}" />
+                        </p:column>
+
+                        <p:column headerText="#{msg.status}" sortBy="#{movement.status}" style="width:85px; text-align:center">
+                            <span class="mov-badge #{movement.status == 'ACTIVE' ? 'active' : (movement.status == 'PENDING' ? 'pending' : 'cancelled')}">
+                                <h:outputText value="#{msg['movementStatus.'.concat(movement.status)]}" />
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.movementDate}" sortBy="#{movement.movementDate}" style="width:90px; text-align:center">
+                            <h:outputText value="#{movement.movementDate}" rendered="#{not empty movement.movementDate}">
+                                <f:convertDateTime pattern="dd/MM/yyyy" type="localDate" />
+                            </h:outputText>
+                            <h:outputText value="-" rendered="#{empty movement.movementDate}" />
+                        </p:column>
+
+                        <p:column headerText="#{msg.actions}" style="width:110px; text-align:center" exportable="false">
+                            <div class="mov-actions">
+                                <p:commandButton styleClass="mov-act view" icon="pi pi-eye" title="#{msg.view}"
+                                    action="#{financialMovementController.viewMovementDetails(movement.phMovement)}" onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('viewMovementDialog').show()" update=":viewForm" process="@this" />
+                                <p:commandButton styleClass="mov-act edit" icon="pi pi-pencil" title="#{msg.edit}"
+                                    action="#{financialMovementController.openEditDialog(movement.phMovement)}" onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('editMovementDialog').show()" update=":movementEditForm" process="@this" />
+                                <p:commandButton styleClass="mov-act delete" icon="pi pi-trash" title="#{msg.delete}"
+                                    action="#{financialMovementController.openDeleteDialog(movement.phMovement)}" onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('deleteMovementDialog').show()" update=":deleteForm" process="@this" />
+                            </div>
+                        </p:column>
+
+                        <f:facet name="emptyMessage">
+                            <div class="mov-empty"><i class="pi pi-wallet"></i><div>#{msg.noMovementFound}</div></div>
+                        </f:facet>
+                    </p:dataTable>
+                </div>
+            </h:form>
+
+            <!-- Delete Dialog -->
+            <h:form id="deleteForm">
+                <p:dialog id="deleteMovementDialog" widgetVar="deleteMovementDialog" modal="true" resizable="false"
+                    header="#{msg.confirmDeleteTitle}" style="width: 90vw; max-width: 420px;" closable="true"
+                    responsive="true" fitViewport="true">
+                    <div style="padding: .8rem 0 1.2rem; display:flex; gap:1rem; align-items:flex-start;">
+                        <i class="pi pi-exclamation-triangle" style="color:var(--mov-red); font-size:1.8rem; flex-shrink:0;"></i>
+                        <div>
+                            <div style="font-weight:700; margin-bottom:.3rem;">#{msg.areYouSure}</div>
+                            <div style="font-size:.88rem; color:var(--mov-muted);">#{msg.deleteMovement}</div>
+                        </div>
+                    </div>
+                    <div class="mov-dialog-footer">
+                        <p:commandButton value="#{msg.cancel}" type="button" onclick="PF('deleteMovementDialog').hide()" styleClass="ui-button-outlined ui-button-secondary" />
+                        <p:commandButton value="#{msg.confirmDelete}" icon="pi pi-trash" styleClass="ui-button-danger"
+                            action="#{financialMovementController.delete(financialMovementController.selectedId)}" process="@this"
+                            oncomplete="PF('deleteMovementDialog').hide()" update=":formMovements:dtMovements :formMovements:messages" />
+                    </div>
+                </p:dialog>
+            </h:form>
+
+            <!-- View Dialog -->
+            <h:form id="viewForm">
+                <p:dialog widgetVar="viewMovementDialog" modal="true" resizable="false" header="#{msg.movementDetails}"
+                    style="width: 90vw; max-width: 520px;" closable="true" responsive="true" fitViewport="true">
+                    <div style="padding: .5rem 0;">
+                        <div style="text-align:center; margin-bottom:1.2rem;">
+                            <div style="width:64px; height:64px; border-radius:50%; background:var(--mov-black); color:var(--mov-yellow); font-size:1.5rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; margin:0 auto .6rem;">
+                                <i class="pi pi-wallet"></i>
+                            </div>
+                            <div style="font-size:1.15rem; font-weight:700;"><h:outputText value="#{financialMovementController.selectedMovement.movementNumber}" /></div>
+                            <div style="font-size:.85rem; color:var(--mov-muted);"><h:outputText value="#{financialMovementController.selectedMovement.description}" /></div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; font-size:.9rem;">
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--mov-muted); text-transform:uppercase; font-weight:700;">#{msg.cashBox}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{financialMovementController.selectedMovement.cashBoxNumber}" /></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--mov-muted); text-transform:uppercase; font-weight:700;">#{msg.type}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{msg['movementType.'.concat(financialMovementController.selectedMovement.type)]}" /></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--mov-muted); text-transform:uppercase; font-weight:700;">#{msg.amount}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{financialMovementController.selectedMovement.amount}"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--mov-muted); text-transform:uppercase; font-weight:700;">#{msg.status}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{msg['movementStatus.'.concat(financialMovementController.selectedMovement.status)]}" /></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--mov-muted); text-transform:uppercase; font-weight:700;">#{msg.category}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{financialMovementController.selectedMovement.category}" /></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--mov-muted); text-transform:uppercase; font-weight:700;">#{msg.responsible}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{financialMovementController.selectedMovement.responsible}" /></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;">
+                                <div style="font-size:.72rem; color:var(--mov-muted); text-transform:uppercase; font-weight:700;">#{msg.movementDate}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{financialMovementController.selectedMovement.movementDate}"><f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime" /></h:outputText></div>
+                            </div>
+                            <h:panelGroup layout="block" style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;" rendered="#{not empty financialMovementController.selectedMovement.observation}">
+                                <div style="font-size:.72rem; color:var(--mov-muted); text-transform:uppercase; font-weight:700;">#{msg.observation}</div>
+                                <div><h:outputText value="#{financialMovementController.selectedMovement.observation}" /></div>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+                    <div class="mov-dialog-footer">
+                        <p:commandButton value="#{msg.close}" type="button" onclick="PF('viewMovementDialog').hide()" styleClass="ui-button-outlined" />
+                    </div>
+                </p:dialog>
+            </h:form>
+
+            <ui:include src="movement/movement-create.xhtml" />
+            <ui:include src="movement/movement-edit.xhtml" />
+        </div>
+
+        <script type="text/javascript">
+            // <![CDATA[
+            function showScLoading() {
+                var overlay = document.getElementById('scLoadingOverlay');
+                if (overlay) overlay.classList.add('active');
+            }
+            function hideScLoading() {
+                var overlay = document.getElementById('scLoadingOverlay');
+                if (overlay) overlay.classList.remove('active');
+            }
+            if (window.PrimeFaces) {
+                PrimeFaces.ajax.Queue.originalAdd = PrimeFaces.ajax.Queue.add;
+                PrimeFaces.ajax.Queue.add = function (req) {
+                    req.originalOncomplete = req.onsuccess;
+                    req.onsuccess = function (xhr, status, args) {
+                        hideScLoading();
+                        if (req.originalOncomplete) req.originalOncomplete(xhr, status, args);
+                    };
+                    req.originalOnerror = req.onerror;
+                    req.onerror = function (xhr, status, error) {
+                        hideScLoading();
+                        if (req.originalOnerror) req.originalOnerror(xhr, status, error);
+                    };
+                    PrimeFaces.ajax.Queue.originalAdd(req);
+                };
+            }
+            // ]]>
+        </script>
+    </ui:define>
+</ui:composition>

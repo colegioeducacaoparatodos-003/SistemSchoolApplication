@@ -1,0 +1,569 @@
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <f:metadata>
+        <f:event type="preRenderView" listener="#{userController.ensureLoggedIn}" />
+    </f:metadata>
+
+    <ui:define name="titulo">Dashboard Geral</ui:define>
+
+    <ui:define name="content">
+        <style>
+            .dashboard-page { color: #0f172a; }
+
+            .dashboard-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                margin-bottom: 1.75rem;
+            }
+            .dashboard-header h1 {
+                font-size: 1.75rem;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+                margin-bottom: 0.375rem;
+                color: #111827;
+            }
+            .dashboard-header p {
+                font-size: 0.9rem;
+                color: #6b7280;
+                margin: 0;
+            }
+            .dashboard-updated {
+                font-size: 0.8rem;
+                color: #6b7280;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+            }
+
+            /* KPIs */
+            .kpi-grid {
+                display: grid;
+                grid-template-columns: repeat(1, 1fr);
+                gap: 1.25rem;
+                margin-bottom: 1.5rem;
+            }
+            @media (min-width: 576px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+            @media (min-width: 992px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
+
+            .kpi-card {
+                position: relative;
+                border-radius: 14px;
+                border: 1px solid #e2e8f0;
+                background: #ffffff;
+                box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+                transition: all 0.25s ease;
+                overflow: hidden;
+                height: 100%;
+            }
+            .kpi-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+            }
+            .kpi-card::before {
+                content: "";
+                position: absolute;
+                top: 0; left: 0;
+                width: 4px; height: 100%;
+                background: var(--kpi-accent, #2563eb);
+            }
+            .kpi-card .card-body {
+                padding: 1.25rem 1.4rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+            .kpi-icon {
+                width: 46px; height: 46px; min-width: 46px;
+                border-radius: 12px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.35rem;
+                background: color-mix(in srgb, var(--kpi-accent, #2563eb) 12%, white);
+                color: var(--kpi-accent, #2563eb);
+            }
+            .kpi-title {
+                font-size: 0.78rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                color: #64748b;
+                margin-bottom: 0.35rem;
+            }
+            .kpi-value {
+                font-size: 1.6rem;
+                font-weight: 800;
+                line-height: 1.15;
+                color: #0f172a;
+                display: block;
+            }
+            .kpi-card.kpi-cyan   { --kpi-accent: #06b6d4; }
+            .kpi-card.kpi-green  { --kpi-accent: #059669; }
+            .kpi-card.kpi-purple { --kpi-accent: #9333ea; }
+            .kpi-card.kpi-blue   { --kpi-accent: #2563eb; }
+            .kpi-card.kpi-gold   { --kpi-accent: #d97706; }
+            .kpi-card.kpi-red    { --kpi-accent: #dc2626; }
+            .kpi-card.kpi-dark   { --kpi-accent: #0f172a; }
+            .kpi-card.kpi-indigo { --kpi-accent: #4f46e5; }
+
+            /* Content Cards */
+            .content-card {
+                border-radius: 14px;
+                border: 1px solid #e2e8f0;
+                box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+                height: 100%;
+                background: #ffffff;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+            .content-card .card-header {
+                background: #ffffff;
+                border-bottom: 1px solid #f1f5f9;
+                padding: 1rem 1.25rem;
+            }
+            .content-card .card-header h5 {
+                font-size: 1rem;
+                font-weight: 700;
+                margin: 0;
+                color: #0f172a;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .content-card .card-header .hint {
+                font-size: 0.78rem;
+                color: #64748b;
+                font-weight: 400;
+                margin-top: 0.15rem;
+                display: block;
+            }
+            .content-card .card-body {
+                padding: 1.25rem;
+                flex: 1;
+            }
+
+            /* Profile List (lateral) */
+            .profile-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                max-height: 300px;
+                overflow-y: auto;
+                scrollbar-width: thin;
+                scrollbar-color: #cbd5e1 transparent;
+            }
+            .profile-list li {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.85rem 1.25rem;
+                border-bottom: 1px solid #f8fafc;
+                transition: background-color 0.2s;
+            }
+            .profile-list li:hover { background-color: #f8fafc; }
+            .profile-list li:last-child { border-bottom: none; }
+            .legend-avatar {
+                width: 32px; height: 32px;
+                border-radius: 50%;
+                background: rgba(147, 51, 234, 0.12);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.85rem;
+                color: #9333ea;
+                margin-right: 0.75rem;
+                flex-shrink: 0;
+            }
+            .legend-count {
+                font-weight: 700;
+                color: #0891b2;
+                background: rgba(8, 145, 178, 0.1);
+                padding: 0.2rem 0.65rem;
+                border-radius: 999px;
+                font-size: 0.8rem;
+            }
+
+            /* Filter Bar */
+            .filter-bar {
+                background: #ffffff;
+                border-radius: 14px;
+                border: 1px solid #e2e8f0;
+                box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+                padding: 1.25rem;
+                margin-bottom: 1.5rem;
+            }
+            .filter-bar .form-label {
+                font-size: 0.875rem;
+                font-weight: 600;
+                color: #374151;
+                margin-bottom: 0.3rem;
+                display: block;
+            }
+
+            /* Finance Cards (bottom) */
+            .finance-card {
+                position: relative;
+                border-radius: 14px;
+                border: none;
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+                box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+                color: #ffffff;
+                overflow: hidden;
+                height: 100%;
+            }
+            .finance-card::after {
+                content: "";
+                position: absolute;
+                right: -60px; top: -60px;
+                width: 220px; height: 220px;
+                border-radius: 50%;
+                background: radial-gradient(circle, rgba(217,119,6,0.18) 0%, transparent 70%);
+            }
+            .finance-card .card-body {
+                padding: 1.75rem;
+                position: relative;
+                z-index: 1;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 1rem;
+            }
+            .finance-card .label {
+                font-size: 0.78rem;
+                font-weight: 700;
+                letter-spacing: 0.08em;
+                color: rgba(255,255,255,0.65);
+                text-transform: uppercase;
+            }
+            .finance-card .value {
+                font-size: 1.9rem;
+                font-weight: 800;
+                color: #fbbf24;
+            }
+            .finance-card.income .value { color: #4ade80; }
+            .finance-card.expense .value { color: #f87171; }
+            .finance-card .icon {
+                width: 56px; height: 56px;
+                border-radius: 16px;
+                background: rgba(255,255,255,0.1);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                color: #fbbf24;
+                flex-shrink: 0;
+            }
+            .finance-card.income .icon { color: #4ade80; background: rgba(74,222,128,0.15); }
+            .finance-card.expense .icon { color: #f87171; background: rgba(248,113,113,0.15); }
+
+            .chart-box { position: relative; width: 100%; height: 300px; }
+            .chart-box-sm { height: 260px; }
+
+            .profile-list::-webkit-scrollbar { width: 6px; }
+            .profile-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+            .profile-list::-webkit-scrollbar-track { background: transparent; }
+        </style>
+
+        <h:form id="dashboardForm">
+            <div class="dashboard-page">
+
+                <!-- HEADER -->
+                <div class="dashboard-header">
+                    <div>
+                        <h1>Dashboard Geral</h1>
+                        <p>Visão consolidada da secretaria, financeiro e utilizadores do sistema.</p>
+                    </div>
+                    <span class="dashboard-updated">
+                        <i class="pi pi-clock"></i> Dados em tempo real
+                    </span>
+                </div>
+
+                <!-- KPIs -->
+                <div class="kpi-grid">
+                    <div class="kpi-card kpi-cyan">
+                        <div class="card-body">
+                            <div>
+                                <div class="kpi-title">Alunos Ativos</div>
+                                <span class="kpi-value">#{dashboardController.stats.totalStudents}</span>
+                            </div>
+                            <div class="kpi-icon"><i class="pi pi-graduation-cap"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card kpi-green">
+                        <div class="card-body">
+                            <div>
+                                <div class="kpi-title">Professores</div>
+                                <span class="kpi-value">#{dashboardController.stats.totalTeachers}</span>
+                            </div>
+                            <div class="kpi-icon"><i class="pi pi-users"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card kpi-purple">
+                        <div class="card-body">
+                            <div>
+                                <div class="kpi-title">Turmas Ativas</div>
+                                <span class="kpi-value">#{dashboardController.stats.totalClasses}</span>
+                            </div>
+                            <div class="kpi-icon"><i class="pi pi-sitemap"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card kpi-blue">
+                        <div class="card-body">
+                            <div>
+                                <div class="kpi-title">Matrículas</div>
+                                <span class="kpi-value">#{dashboardController.stats.totalEnrolments}</span>
+                            </div>
+                            <div class="kpi-icon"><i class="pi pi-id-card"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card kpi-gold">
+                        <div class="card-body">
+                            <div>
+                                <div class="kpi-title">Receita do Mês</div>
+                                <span class="kpi-value">
+                                    <h:outputText value="#{dashboardController.stats.revenueThisMonth}">
+                                        <f:convertNumber type="currency" currencySymbol="Kz " locale="pt-PT" />
+                                    </h:outputText>
+                                </span>
+                            </div>
+                            <div class="kpi-icon"><i class="pi pi-wallet"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card kpi-red">
+                        <div class="card-body">
+                            <div>
+                                <div class="kpi-title">Pendente a Receber</div>
+                                <span class="kpi-value">
+                                    <h:outputText value="#{dashboardController.stats.pendingAmount}">
+                                        <f:convertNumber type="currency" currencySymbol="Kz " locale="pt-PT" />
+                                    </h:outputText>
+                                </span>
+                            </div>
+                            <div class="kpi-icon"><i class="pi pi-exclamation-triangle"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card kpi-dark">
+                        <div class="card-body">
+                            <div>
+                                <div class="kpi-title">Saldo Caixa</div>
+                                <span class="kpi-value">
+                                    <h:outputText value="#{dashboardController.stats.cashBoxBalance}">
+                                        <f:convertNumber type="currency" currencySymbol="Kz " locale="pt-PT" />
+                                    </h:outputText>
+                                </span>
+                            </div>
+                            <div class="kpi-icon"><i class="pi pi-dollar"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card kpi-indigo">
+                        <div class="card-body">
+                            <div>
+                                <div class="kpi-title">Disciplinas Ativas</div>
+                                <span class="kpi-value">#{dashboardController.stats.totalDisciplines}</span>
+                            </div>
+                            <div class="kpi-icon"><i class="pi pi-book"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FILTROS FINANCEIROS -->
+                <div class="filter-bar">
+                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                        <i class="pi pi-filter" style="color: #2563eb; font-size: 1.1rem;"></i>
+                        <span style="font-weight: 700; color: #0f172a;">Filtros Financeiros</span>
+                        <span style="font-size: 0.8rem; color: #64748b; margin-left: auto;">
+                            Período atual: #{dashboardController.filterPeriodLabel}
+                        </span>
+                    </div>
+
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3 col-sm-6">
+                            <label class="form-label">Data Início</label>
+                            <p:datePicker value="#{dashboardController.filter.startDate}"
+                                          pattern="dd/MM/yyyy" showIcon="true" locale="pt"
+                                          styleClass="w-100" />
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <label class="form-label">Data Fim</label>
+                            <p:datePicker value="#{dashboardController.filter.endDate}"
+                                          pattern="dd/MM/yyyy" showIcon="true" locale="pt"
+                                          styleClass="w-100" />
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <label class="form-label">Categoria</label>
+                            <p:selectOneMenu value="#{dashboardController.filter.category}" styleClass="w-100">
+                                <f:selectItem itemLabel="Todas as categorias" itemValue="" />
+                                <f:selectItems value="#{dashboardController.availableCategories}"
+                                               var="cat" itemLabel="#{cat}" itemValue="#{cat}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <label class="form-label">Tipo Movimento</label>
+                            <p:selectOneMenu value="#{dashboardController.filter.movementType}" styleClass="w-100">
+                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                <f:selectItems value="#{dashboardController.movementTypes}"
+                                               var="t" itemLabel="#{t}" itemValue="#{t}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 d-flex gap-2 justify-content-end mt-2">
+                            <p:commandButton value="Limpar Filtros" action="#{dashboardController.limparFiltro}"
+                                             update="@form" icon="pi pi-refresh"
+                                             styleClass="ui-button-outlined ui-button-secondary" />
+                            <p:commandButton value="Aplicar Filtro" action="#{dashboardController.aplicarFiltro}"
+                                             update="@form" icon="pi pi-check"
+                                             styleClass="ui-button-primary" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LINHA 1: BARRAS + RESUMO PERFIL -->
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-8">
+                        <div class="content-card h-100">
+                            <div class="card-header">
+                                <h5><i class="pi pi-chart-bar"></i> Distribuição por Função</h5>
+                                <span class="hint">Utilizadores agrupados por perfil de acesso no sistema</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-box">
+                                    <p:chart type="bar" value="#{dashboardController.usersByProfileChartJson}"
+                                             style="width:100%; height:300px;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="content-card h-100">
+                            <div class="card-header">
+                                <h5><i class="pi pi-list"></i> Resumo por Perfil</h5>
+                                <span class="hint">Total de utilizadores por função</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="profile-list">
+                                    <ui:repeat value="#{dashboardController.usersByProfile}" var="perfil">
+                                        <li>
+                                            <span style="display:flex; align-items:center; font-size:0.9rem; font-weight:600; color:#111827;">
+                                                <span class="legend-avatar"><i class="pi pi-user"></i></span>
+                                                #{perfil.perfil}
+                                            </span>
+                                            <span class="legend-count">#{perfil.total}</span>
+                                        </li>
+                                    </ui:repeat>
+                                    <ui:fragment rendered="#{empty dashboardController.usersByProfile}">
+                                        <li style="justify-content:center; color:#9ca3af; padding:2rem 1rem;">
+                                            <i class="pi pi-inbox" style="display:block; font-size:1.5rem; margin-bottom:0.5rem; opacity:0.5;"></i>
+                                            Sem dados disponíveis
+                                        </li>
+                                    </ui:fragment>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LINHA 2: PIZZA + LINHA -->
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-5">
+                        <div class="content-card h-100">
+                            <div class="card-header">
+                                <h5><i class="pi pi-chart-pie"></i> Movimentos por Categoria</h5>
+                                <span class="hint">Distribuição financeira filtrada por categoria</span>
+                            </div>
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                                <div class="chart-box chart-box-sm">
+                                    <p:chart type="pie" value="#{dashboardController.categoryChartJson}"
+                                             style="width:100%; height:260px;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-7">
+                        <div class="content-card h-100">
+                            <div class="card-header">
+                                <h5><i class="pi pi-chart-line"></i> Evolução Mensal</h5>
+                                <span class="hint">Receitas vs Despesas dos últimos 6 meses</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-box">
+                                    <p:chart type="line" value="#{dashboardController.monthlyEvolutionChartJson}"
+                                             style="width:100%; height:300px;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LINHA 3: RESUMO FINANCEIRO FILTRADO -->
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="finance-card income">
+                            <div class="card-body">
+                                <div>
+                                    <div class="label">Total Receitas (Período)</div>
+                                    <div class="value">
+                                        <h:outputText value="#{dashboardController.financialStats.totalIncome}">
+                                            <f:convertNumber type="currency" currencySymbol="Kz " locale="pt-PT" />
+                                        </h:outputText>
+                                    </div>
+                                </div>
+                                <div class="icon"><i class="pi pi-arrow-down-left"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="finance-card expense">
+                            <div class="card-body">
+                                <div>
+                                    <div class="label">Total Despesas (Período)</div>
+                                    <div class="value">
+                                        <h:outputText value="#{dashboardController.financialStats.totalExpense}">
+                                            <f:convertNumber type="currency" currencySymbol="Kz " locale="pt-PT" />
+                                        </h:outputText>
+                                    </div>
+                                </div>
+                                <div class="icon"><i class="pi pi-arrow-up-right"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="finance-card">
+                            <div class="card-body">
+                                <div>
+                                    <div class="label">Saldo do Período</div>
+                                    <div class="value">
+                                        <h:outputText value="#{dashboardController.financialStats.saldoLiquido}">
+                                            <f:convertNumber type="currency" currencySymbol="Kz " locale="pt-PT" />
+                                        </h:outputText>
+                                    </div>
+                                </div>
+                                <div class="icon"><i class="pi pi-wallet"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

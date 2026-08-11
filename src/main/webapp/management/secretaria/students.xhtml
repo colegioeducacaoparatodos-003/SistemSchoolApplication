@@ -1,0 +1,1318 @@
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <ui:define name="titulo">#{msg['students']}</ui:define>
+
+    <h:outputStylesheet library="webjars" name="bootstrap/5.3.2/css/bootstrap.min.css" />
+    <h:outputStylesheet name="general.css" library="css" />
+    <h:outputScript name="general.js" library="js" />
+
+    <ui:define name="content">
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&amp;family=DM+Mono:wght@400;500&amp;display=swap');
+
+            :root {
+                --black: #141414;
+                --black-mid: #262626;
+                --black-lt: #3a3a3a;
+                --red: #c8102e;
+                --red-lt: #e63946;
+                --red-pale: #fdecee;
+                --yellow: #f5b400;
+                --yellow-lt: #ffd23f;
+                --yellow-pale: #fff8e1;
+                --blue: #1a5fb4;
+                --blue-pale: #eaf1fb;
+                --green: #2d8a3e;
+                --green-pale: #e8f5e9;
+                --surface: #ffffff;
+                --surface-2: #f7f7f8;
+                --border: #e6e6e8;
+                --border-dk: #cfcfd3;
+                --text: #141414;
+                --text-muted: #666a70;
+                --text-faint: #9a9ea4;
+                --radius-sm: 6px;
+                --radius: 10px;
+                --radius-lg: 14px;
+                --shadow-sm: 0 1px 4px rgba(20, 20, 20, .08);
+                --shadow: 0 4px 20px rgba(20, 20, 20, .12);
+                --font: 'DM Sans', system-ui, sans-serif;
+                --font-mono: 'DM Mono', monospace;
+            }
+
+            body {
+                background: var(--surface-2);
+                font-family: var(--font);
+            }
+
+            .page-scroll-wrapper {
+                height: calc(100vh - 72px);
+                overflow-y: auto;
+                overflow-x: hidden;
+                padding: 1.6rem 1.8rem 2.5rem;
+                box-sizing: border-box;
+                scroll-behavior: smooth;
+            }
+
+            .page-scroll-wrapper::-webkit-scrollbar {
+                width: 5px;
+            }
+
+            .page-scroll-wrapper::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .page-scroll-wrapper::-webkit-scrollbar-thumb {
+                background: var(--border-dk);
+                border-radius: 99px;
+            }
+
+            .page-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+                background: var(--black-lt);
+            }
+
+            /* ===== HEADER ===== */
+            .page-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .page-header-left {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .page-header-icon {
+                width: 48px;
+                height: 48px;
+                border-radius: var(--radius);
+                background: linear-gradient(135deg, var(--black) 0%, var(--red) 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--yellow);
+                font-size: 1.25rem;
+                flex-shrink: 0;
+                box-shadow: 0 4px 12px rgba(20, 20, 20, .3);
+            }
+
+            .page-header-title h1 {
+                font-size: 1.35rem;
+                font-weight: 700;
+                color: var(--black);
+                margin: 0 0 .2rem;
+            }
+
+            .page-header-title span {
+                font-size: .78rem;
+                color: var(--text-muted);
+            }
+
+            .breadcrumb-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: var(--yellow-pale);
+                border: 1px solid rgba(245, 180, 0, .35);
+                color: #8a6400;
+                border-radius: 99px;
+                padding: 3px 12px;
+                font-size: .72rem;
+                font-weight: 600;
+            }
+
+            /* ===== STATS CARDS ===== */
+            .stats-row {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: .9rem;
+                margin-bottom: 1.4rem;
+            }
+
+            .stat-card {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 1rem 1.2rem;
+                display: flex;
+                align-items: center;
+                gap: .9rem;
+                box-shadow: var(--shadow-sm);
+                transition: all .2s;
+            }
+
+            .stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow);
+            }
+
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: var(--radius-sm);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: .95rem;
+                flex-shrink: 0;
+            }
+
+            .stat-icon.total {
+                background: var(--yellow-pale);
+                color: #8a6400;
+            }
+
+            .stat-icon.active {
+                background: var(--black);
+                color: var(--yellow);
+            }
+
+            .stat-icon.pending {
+                background: var(--blue-pale);
+                color: var(--blue);
+            }
+
+            .stat-icon.inactive {
+                background: var(--red-pale);
+                color: var(--red);
+            }
+
+            .stat-label {
+                font-size: .72rem;
+                color: var(--text-muted);
+                font-weight: 500;
+            }
+
+            .stat-value {
+                font-size: 1.35rem;
+                font-weight: 700;
+                color: var(--black);
+                line-height: 1;
+            }
+
+            /* ===== MAIN CARD ===== */
+            .main-card {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow);
+                overflow: hidden;
+            }
+
+            .card-toolbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: .9rem 1.2rem;
+                border-bottom: 1px solid var(--border);
+                gap: .8rem;
+                flex-wrap: wrap;
+            }
+
+            .toolbar-left {
+                display: flex;
+                align-items: center;
+                gap: 1.5rem;
+                flex-wrap: wrap;
+            }
+
+            .toolbar-title {
+                font-size: .85rem;
+                font-weight: 700;
+                color: var(--black);
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .search-wrap {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+
+            .search-wrap .pi-search {
+                position: absolute;
+                left: 9px;
+                color: var(--text-faint);
+                font-size: .75rem;
+            }
+
+            .search-input {
+                padding: 6px 10px 6px 28px;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                font-size: .8rem;
+                width: 220px;
+                background: var(--surface-2);
+                outline: none;
+                transition: all .2s;
+            }
+
+            .search-input:focus {
+                border-color: var(--red);
+                box-shadow: 0 0 0 3px rgba(200, 16, 46, .1);
+            }
+
+            /* ===== BOTÃO VERDE - NOVO ALUNO ===== */
+            .btn-new {
+                background: linear-gradient(135deg, #2d8a3e 0%, #1e6b2f 100%);
+                color: #fff;
+                border: none;
+                border-radius: var(--radius-sm);
+                padding: 7px 16px;
+                font-size: .8rem;
+                font-weight: 600;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                transition: all .2s;
+                box-shadow: 0 2px 8px rgba(45, 138, 62, .3);
+            }
+
+            .btn-new:hover {
+                filter: brightness(1.08);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(45, 138, 62, .4);
+            }
+
+            .btn-ghost {
+                background: var(--surface-2);
+                color: var(--text);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                padding: 7px 14px;
+                font-size: .8rem;
+                font-weight: 600;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                transition: all .2s;
+            }
+
+            .btn-ghost:hover {
+                background: var(--border);
+            }
+
+            /* ===== FILTROS AVANCADOS ===== */
+            .filter-panel {
+                background: var(--surface-2);
+                border-bottom: 1px solid var(--border);
+                padding: 1rem 1.2rem;
+            }
+
+            .filter-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: .8rem;
+                align-items: end;
+            }
+
+            .filter-group {
+                display: flex;
+                flex-direction: column;
+                gap: .3rem;
+            }
+
+            .filter-label {
+                font-size: .72rem;
+                font-weight: 600;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: .3px;
+            }
+
+            .filter-input {
+                padding: 6px 10px;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                font-size: .8rem;
+                background: var(--surface);
+                outline: none;
+                width: 100%;
+                transition: all .2s;
+            }
+
+            .filter-input:focus {
+                border-color: var(--red);
+                box-shadow: 0 0 0 3px rgba(200, 16, 46, .1);
+            }
+
+            .filter-actions {
+                display: flex;
+                gap: .5rem;
+                margin-top: .8rem;
+            }
+
+            .btn-filter {
+                background: var(--black);
+                color: var(--yellow);
+                border: none;
+                border-radius: var(--radius-sm);
+                padding: 6px 14px;
+                font-size: .78rem;
+                font-weight: 600;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            .btn-filter-clear {
+                background: transparent;
+                color: var(--text-muted);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                padding: 6px 14px;
+                font-size: .78rem;
+                font-weight: 600;
+                cursor: pointer;
+            }
+
+            /* ===== TABELA ===== */
+            .sc-table.p-datatable .p-datatable-thead>tr>th {
+                background: var(--black) !important;
+                color: var(--yellow-lt) !important;
+                font-size: .7rem !important;
+                text-transform: uppercase !important;
+                padding: .7rem 1rem !important;
+                border-color: var(--black) !important;
+                white-space: nowrap;
+            }
+
+            .sc-table.p-datatable .p-datatable-tbody>tr>td {
+                font-size: .82rem !important;
+                padding: .72rem 1rem !important;
+                vertical-align: middle;
+            }
+
+            .sc-table.p-datatable .p-datatable-tbody>tr:hover {
+                background: var(--surface-2) !important;
+            }
+
+            .t-num {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                background: var(--black-mid);
+                color: var(--yellow);
+                border-radius: 5px;
+                padding: 3px 9px;
+                font-family: var(--font-mono);
+                font-size: .75rem;
+            }
+
+            .t-cell {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .t-av {
+                width: 34px;
+                height: 34px;
+                border-radius: 50%;
+                background: var(--black);
+                color: var(--yellow);
+                font-size: .75rem;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+                flex-shrink: 0;
+            }
+
+            .t-av img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 3px 10px;
+                border-radius: 99px;
+                font-size: .72rem;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
+            .status-ACTIVE {
+                background: var(--green-pale);
+                color: var(--green);
+                border: 1px solid rgba(45, 138, 62, .3);
+            }
+
+            .status-INACTIVE {
+                background: var(--red-pale);
+                color: var(--red);
+                border: 1px solid rgba(200, 16, 46, .25);
+            }
+
+            .actions-cell {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .act-btn {
+                width: 28px;
+                height: 28px;
+                border-radius: var(--radius-sm);
+                border: 1px solid var(--border);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: .75rem;
+                cursor: pointer;
+                transition: all .15s;
+            }
+
+            .act-btn:hover {
+                transform: scale(1.1);
+            }
+
+            .act-btn.edit {
+                color: #8a6400;
+                background: var(--yellow-pale);
+            }
+
+            .act-btn.delete {
+                color: var(--red);
+                background: var(--red-pale);
+            }
+
+            .act-btn.view {
+                color: var(--blue);
+                background: var(--blue-pale);
+            }
+
+            .act-btn.print {
+                color: #059669;
+                background: #d1fae5;
+            }
+
+            /* ===== LOADING OVERLAY ===== */
+            .sc-loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(20, 20, 20, 0.85);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.35s ease, visibility 0.35s ease;
+            }
+
+            .sc-loading-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .sc-loading-box {
+                background: var(--surface);
+                border-radius: var(--radius-lg);
+                padding: 2.5rem 3rem;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 1.2rem;
+                border: 1px solid var(--border);
+                min-width: 260px;
+                transform: scale(0.9);
+                transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+            .sc-loading-overlay.active .sc-loading-box {
+                transform: scale(1);
+            }
+
+            .sc-loader-rings {
+                position: relative;
+                width: 72px;
+                height: 72px;
+            }
+
+            .sc-loader-rings::before,
+            .sc-loader-rings::after {
+                content: '';
+                position: absolute;
+                border-radius: 50%;
+                border: 3px solid transparent;
+            }
+
+            .sc-loader-rings::before {
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border-top-color: var(--red);
+                border-right-color: var(--yellow);
+                animation: scSpin 1.2s linear infinite;
+            }
+
+            .sc-loader-rings::after {
+                top: 10px;
+                left: 10px;
+                width: calc(100% - 20px);
+                height: calc(100% - 20px);
+                border-bottom-color: var(--black);
+                border-left-color: var(--red-lt);
+                animation: scSpinReverse 0.9s linear infinite;
+            }
+
+            .sc-loader-core {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 16px;
+                height: 16px;
+                background: linear-gradient(135deg, var(--red), var(--yellow));
+                border-radius: 50%;
+                animation: scPulse 1s ease-in-out infinite;
+                box-shadow: 0 0 15px rgba(200, 16, 46, 0.5);
+            }
+
+            @keyframes scSpin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            @keyframes scSpinReverse {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(-360deg); }
+            }
+
+            @keyframes scPulse {
+                0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.7; }
+            }
+
+            .sc-loading-text {
+                font-family: var(--font);
+                font-size: 1rem;
+                font-weight: 600;
+                color: var(--black);
+                text-align: center;
+            }
+
+            .sc-loading-sub {
+                font-size: 0.78rem;
+                color: var(--text-muted);
+                text-align: center;
+                margin-top: -0.6rem;
+            }
+
+            .sc-loading-dots::after {
+                content: '';
+                animation: scDots 1.5s steps(4, end) infinite;
+            }
+
+            @keyframes scDots {
+                0% { content: ''; }
+                25% { content: '.'; }
+                50% { content: '..'; }
+                75% { content: '...'; }
+                100% { content: ''; }
+            }
+
+            .sc-loading-progress {
+                width: 100%;
+                height: 3px;
+                background: var(--border);
+                border-radius: 99px;
+                overflow: hidden;
+                margin-top: 0.3rem;
+            }
+
+            .sc-loading-progress-bar {
+                height: 100%;
+                width: 0%;
+                background: linear-gradient(90deg, var(--red), var(--yellow));
+                border-radius: 99px;
+                animation: scProgress 2s ease-in-out infinite;
+            }
+
+            @keyframes scProgress {
+                0% { width: 0%; margin-left: 0%; }
+                50% { width: 60%; margin-left: 20%; }
+                100% { width: 0%; margin-left: 100%; }
+            }
+
+            /* ===== RESPONSIVIDADE ===== */
+            @media (max-width: 1200px) {
+                .stats-row {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+
+            @media (max-width: 992px) {
+                .page-scroll-wrapper {
+                    padding: 1rem;
+                }
+
+                .page-header-title h1 {
+                    font-size: 1.1rem;
+                }
+
+                .card-toolbar {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .toolbar-left {
+                    justify-content: space-between;
+                    width: 100%;
+                }
+
+                .search-input {
+                    width: 100%;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .stats-row {
+                    grid-template-columns: 1fr;
+                }
+
+                .page-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .page-header-icon {
+                    width: 40px;
+                    height: 40px;
+                    font-size: 1rem;
+                }
+
+                .filter-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .sc-table.p-datatable .p-datatable-thead>tr>th,
+                .sc-table.p-datatable .p-datatable-tbody>tr>td {
+                    padding: .5rem .6rem !important;
+                    font-size: .75rem !important;
+                }
+
+                .t-av {
+                    width: 28px;
+                    height: 28px;
+                    font-size: .65rem;
+                }
+
+                .act-btn {
+                    width: 26px;
+                    height: 26px;
+                }
+
+                .sc-loading-box {
+                    padding: 2rem 1.5rem;
+                    min-width: 220px;
+                    margin: 0 1rem;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .page-scroll-wrapper {
+                    padding: .7rem;
+                }
+
+                .stat-card {
+                    padding: .8rem 1rem;
+                }
+
+                .stat-value {
+                    font-size: 1.1rem;
+                }
+
+                .toolbar-left {
+                    flex-direction: column;
+                    align-items: stretch;
+                    gap: .6rem;
+                }
+
+                .btn-new,
+                .btn-ghost {
+                    width: 100%;
+                    justify-content: center;
+                }
+
+                .actions-cell {
+                    gap: 2px;
+                }
+            }
+
+            /* ===== VIEW DIALOG ===== */
+            .view-dialog .ui-dialog-content {
+                padding: 0 !important;
+                background: var(--surface-2);
+            }
+
+            .view-dialog .ui-dialog-titlebar {
+                background: linear-gradient(135deg, var(--black) 0%, var(--red) 100%) !important;
+                color: var(--yellow) !important;
+                border: none !important;
+                font-weight: 700 !important;
+                font-size: .9rem !important;
+                padding: .8rem 1.2rem !important;
+            }
+
+            .view-dialog .ui-dialog-titlebar-close {
+                color: var(--yellow) !important;
+                opacity: .8;
+            }
+
+            .view-dialog .ui-dialog-titlebar-close:hover {
+                opacity: 1;
+            }
+
+            .view-avatar {
+                width: 64px;
+                height: 64px;
+                border-radius: 50%;
+                background: var(--black);
+                color: var(--yellow);
+                font-size: 1.5rem;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto .6rem;
+                overflow: hidden;
+            }
+
+            .view-avatar img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .view-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: .8rem;
+                font-size: .9rem;
+                padding: .5rem 0;
+            }
+
+            .view-card {
+                background: #f9fafb;
+                padding: .7rem 1rem;
+                border-radius: 8px;
+            }
+
+            .view-card.full {
+                grid-column: 1 / -1;
+            }
+
+            .view-label {
+                font-size: .72rem;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                font-weight: 700;
+                margin-bottom: .2rem;
+            }
+
+            .view-value {
+                font-weight: 700;
+                color: var(--text);
+            }
+
+            .view-dialog-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: .6rem;
+                margin-top: .5rem;
+                flex-wrap: wrap;
+            }
+
+            @media (max-width: 576px) {
+                .view-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .view-dialog-footer {
+                    justify-content: stretch;
+                }
+
+                .view-dialog-footer .ui-button {
+                    flex: 1 1 auto;
+                }
+            }
+        </style>
+
+        <!-- ===== LOADING OVERLAY ===== -->
+        <div id="scLoadingOverlay" class="sc-loading-overlay">
+            <div class="sc-loading-box">
+                <div class="sc-loader-rings">
+                    <div class="sc-loader-core"></div>
+                </div>
+                <div class="sc-loading-text">#{msg.processing}<span class="sc-loading-dots"></span></div>
+                <div class="sc-loading-sub">#{msg.pleaseWait}</div>
+                <div class="sc-loading-progress">
+                    <div class="sc-loading-progress-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-scroll-wrapper">
+            <h:form id="formStudents">
+                <p:growl id="messages" showDetail="true" life="4000" />
+
+                <!-- === Page Header === -->
+                <div class="page-header">
+                    <div class="page-header-left">
+                        <div class="page-header-icon"><i class="pi pi-user-plus" /></div>
+                        <div class="page-header-title">
+                            <h1>#{msg['students']}</h1>
+                            <span>#{msg.studentManagement}</span>
+                        </div>
+                    </div>
+                    <span class="breadcrumb-pill">
+                        <i class="pi pi-home" style="font-size:.65rem" /> #{msg.management} &gt; #{msg.students}
+                    </span>
+                </div>
+
+                <!-- === Stat Cards === -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon total"><i class="pi pi-users" /></div>
+                        <div>
+                            <div class="stat-label">#{msg.totalStudents}</div>
+                            <div class="stat-value">#{studentController.totalStudentCount}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon active"><i class="pi pi-check-circle" /></div>
+                        <div>
+                            <div class="stat-label">#{msg.activeStudents}</div>
+                            <div class="stat-value">#{studentController.activeStudentCount}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon pending"><i class="pi pi-clock" /></div>
+                        <div>
+                            <div class="stat-label">#{msg.newStudents30Days}</div>
+                            <div class="stat-value">#{studentController.newStudentCount}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon inactive"><i class="pi pi-ban" /></div>
+                        <div>
+                            <div class="stat-label">#{msg.inactiveStudents}</div>
+                            <div class="stat-value">#{studentController.inactiveStudentCount}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Main Card === -->
+                <div class="main-card">
+                    <!-- Toolbar -->
+                    <div class="card-toolbar">
+                        <div class="toolbar-left filter-zone">
+                            <span class="toolbar-title">
+                                <i class="pi pi-list" style="color:var(--red)" /> #{msg.registration}
+                            </span>
+
+                        </div>
+                        <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+                            <p:commandButton value="#{msg.export}" icon="pi pi-file-export" styleClass="btn-ghost"
+                                action="#{studentController.exportStudentListPdf}" ajax="false" />
+                            <p:commandButton value="#{msg.newStudent}" icon="pi pi-plus" styleClass="btn-new"
+                                actionListener="#{studentController.prepareNewStudent}" process="@this"
+                                onstart="showScLoading()"
+                                oncomplete="hideScLoading(); PF('createStudentDialog').show()" />
+                        </div>
+                    </div>
+
+                    <!-- Filtros Avancados -->
+                    <div class="filter-panel">
+                        <div class="filter-grid">
+                            <div class="filter-group">
+                                <span class="filter-label">#{msg.studentNumber}</span>
+                                <p:inputText id="filterNumber" styleClass="filter-input"
+                                    value="#{studentController.filterStudentNumber}" placeholder="Ex: ALU-2026-00101">
+                                    <p:ajax event="keyup" delay="300" listener="#{studentController.applyFilters}"
+                                        update="dtStudents" onstart="showScLoading()" oncomplete="hideScLoading()" />
+                                </p:inputText>
+                            </div>
+                            <div class="filter-group">
+                                <span class="filter-label">#{msg.fullName}</span>
+                                <p:inputText id="filterName" styleClass="filter-input"
+                                    value="#{studentController.filterFullName}" placeholder="Nome do aluno...">
+                                    <p:ajax event="keyup" delay="300" listener="#{studentController.applyFilters}"
+                                        update="dtStudents" onstart="showScLoading()" oncomplete="hideScLoading()" />
+                                </p:inputText>
+                            </div>
+                            <div class="filter-group">
+                                <span class="filter-label">#{msg.gender}</span>
+                                <p:selectOneMenu id="filterGender" styleClass="filter-input"
+                                    value="#{studentController.filterGender}" style="width:100%">
+                                    <f:selectItem itemLabel="#{msg.all}" itemValue="#{null}" />
+                                    <f:selectItems value="#{studentController.genders}" />
+                                    <p:ajax event="change" listener="#{studentController.applyFilters}"
+                                        update="dtStudents" onstart="showScLoading()" oncomplete="hideScLoading()" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="filter-group">
+                                <span class="filter-label">#{msg.status}</span>
+                                <p:selectOneMenu id="filterStatus" styleClass="filter-input"
+                                    value="#{studentController.filterStatus}" style="width:100%">
+                                    <f:selectItem itemLabel="#{msg.all}" itemValue="#{null}" />
+                                    <f:selectItems value="#{studentController.studentStatuses}" />
+                                    <p:ajax event="change" listener="#{studentController.applyFilters}"
+                                        update="dtStudents" onstart="showScLoading()" oncomplete="hideScLoading()" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="filter-group">
+                                <span class="filter-label">#{msg.province}</span>
+                                <p:inputText id="filterProvince" styleClass="filter-input"
+                                    value="#{studentController.filterProvince}" placeholder="Provincia...">
+                                    <p:ajax event="keyup" delay="300" listener="#{studentController.applyFilters}"
+                                        update="dtStudents" onstart="showScLoading()" oncomplete="hideScLoading()" />
+                                </p:inputText>
+                            </div>
+                            <div class="filter-group">
+                                <span class="filter-label">#{msg.idCardNumber}</span>
+                                <p:inputText id="filterBI" styleClass="filter-input"
+                                    value="#{studentController.filterBiNumber}" placeholder="N BI...">
+                                    <p:ajax event="keyup" delay="300" listener="#{studentController.applyFilters}"
+                                        update="dtStudents" onstart="showScLoading()" oncomplete="hideScLoading()" />
+                                </p:inputText>
+                            </div>
+                        </div>
+                        <div class="filter-actions">
+                            <p:commandButton value="#{msg.filter}" icon="pi pi-filter" styleClass="btn-filter"
+                                actionListener="#{studentController.applyFilters}" update="dtStudents"
+                                process="@this" onstart="showScLoading()" oncomplete="hideScLoading()" />
+                            <p:commandButton value="#{msg.clear}" icon="pi pi-filter-slash"
+                                styleClass="btn-filter-clear" actionListener="#{studentController.clearFilters}"
+                                update="dtStudents filterNumber filterName filterGender filterStatus filterProvince filterBI"
+                                process="@this" onstart="showScLoading()" oncomplete="hideScLoading()" />
+                        </div>
+                    </div>
+
+                    <!-- DataTable -->
+                    <p:dataTable id="dtStudents" widgetVar="dtStudents" styleClass="sc-table"
+                        value="#{studentController.filteredStudents}" var="student" paginator="true" rows="10"
+                        paginatorPosition="bottom" reflow="true"
+                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        currentPageReportTemplate="{startRecord}-{endRecord} #{msg.of} {totalRecords}"
+                        rowsPerPageTemplate="5,10,15,25,50" emptyMessage="#{msg.noStudentFound}" sortMode="multiple"
+                        filteredValue="#{studentController.filteredStudents}"
+                        globalFilterFunction="#{studentController.globalFilterFunction}">
+
+                        <p:column headerText="#{msg.studentNumber}" sortBy="#{student.sudentNumber}"
+                            filterBy="#{student.sudentNumber}" filterMatchMode="contains"
+                            style="width:130px; min-width:110px">
+                            <span class="t-num">
+                                <i class="pi pi-hashtag" style="font-size:.65rem" />
+                                <h:outputText value="#{student.sudentNumber}" />
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.fullName}" sortBy="#{student.fullName}"
+                            filterBy="#{student.fullName}" filterMatchMode="contains">
+                            <div class="t-cell">
+                                <div class="t-av">
+                                    <p:graphicImage value="#{student.uploadPhoto}"
+                                        rendered="#{not empty student.uploadPhoto}" alt="Foto de #{student.fullName}"
+                                        style="width:100%; height:100%; object-fit:cover;" />
+                                    <h:outputText value="#{student.fullName.substring(0,1)}"
+                                        rendered="#{empty student.uploadPhoto}" />
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">
+                                        <h:outputText value="#{student.fullName}" />
+                                    </div>
+                                    <div class="text-muted" style="font-size:.7rem">
+                                        <h:outputText value="#{student.gender}" />
+                                    </div>
+                                </div>
+                            </div>
+                        </p:column>
+
+                        <p:column headerText="#{msg.email}" sortBy="#{student.email}" filterBy="#{student.email}"
+                            filterMatchMode="contains">
+                            <div class="small">
+                                <i class="pi pi-envelope me-1 text-muted" />
+                                <h:outputText value="#{student.email}" />
+                            </div>
+                        </p:column>
+
+                        <p:column headerText="#{msg.telephone}" sortBy="#{student.phone_1}"
+                            filterBy="#{student.phone_1}" filterMatchMode="contains"
+                            style="width:140px; min-width:120px">
+                            <div class="small">
+                                <i class="pi pi-phone me-1 text-muted" />
+                                <h:outputText value="#{student.phone_1}" />
+                            </div>
+                        </p:column>
+
+                        <p:column headerText="#{msg.province}" sortBy="#{student.addressProvice}"
+                            filterBy="#{student.addressProvice}" filterMatchMode="contains"
+                            style="width:130px; min-width:110px">
+                            <div class="small">
+                                <i class="pi pi-map-marker me-1 text-muted" />
+                                <h:outputText value="#{student.addressProvice}" />
+                            </div>
+                        </p:column>
+
+                        <p:column headerText="#{msg.status}" sortBy="#{student.status}" filterBy="#{student.status}"
+                            filterMatchMode="exact" style="width:125px; min-width:110px">
+                            <f:facet name="filter">
+                                <p:selectOneMenu onchange="PF('dtStudents').filter()"
+                                    style="width:100%; font-size:.75rem">
+                                    <f:selectItem itemLabel="#{msg.all}" itemValue="#{null}" noSelectionOption="true" />
+                                    <f:selectItems value="#{studentController.studentStatuses}" />
+                                </p:selectOneMenu>
+                            </f:facet>
+                            <span class="status-badge status-#{student.status}">
+                                <i class="pi pi-circle-fill" style="font-size:.4rem" />
+                                <h:outputText value="#{student.status}" />
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.actions}" style="width:140px; min-width:120px; text-align:center"
+                            exportable="false">
+                            <div class="actions-cell">
+                                <p:commandButton styleClass="act-btn view" icon="pi pi-eye" title="#{msg.view}"
+                                    actionListener="#{studentController.openViewDialog(student.pkStudent)}"
+                                    process="@this" update=":viewStudentForm"
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('viewStudentDialog').show()" />
+
+                                <p:commandButton styleClass="act-btn print" icon="pi pi-print" title="#{msg.printPdf}"
+                                    actionListener="#{studentController.printStudentPdf(student.pkStudent)}"
+                                    ajax="false" process="@this" onclick="showScLoading()" />
+
+                                <p:commandButton styleClass="act-btn edit" icon="pi pi-pencil" title="#{msg.edit}"
+                                    actionListener="#{studentController.openEditDialog(student.pkStudent)}"
+                                    process="@this"
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('editStudentDialog').show()" />
+
+                                <p:commandButton styleClass="act-btn delete" icon="pi pi-trash" title="#{msg.delete}"
+                                    actionListener="#{studentController.delete(student.pkStudent)}" process="@this"
+                                    update=":formStudents:dtStudents :formStudents:messages"
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading()"
+                                    onclick="return confirm('#{msg.deleteStudent}')" />
+                            </div>
+                        </p:column>
+
+                        <f:facet name="emptyMessage">
+                            <div class="text-center p-5 text-muted">
+                                <i class="pi pi-users d-block mb-2" style="font-size:2rem; opacity:.2" />
+                                #{msg.noStudentFound}
+                            </div>
+                        </f:facet>
+                    </p:dataTable>
+                </div>
+
+            </h:form>
+
+            <!-- VIEW DIALOG -->
+            <h:form id="viewStudentForm">
+                <p:dialog widgetVar="viewStudentDialog" modal="true" resizable="false" header="#{msg.studentDetails}"
+                    style="width: 90vw; max-width: 500px;" closable="true" responsive="true" fitViewport="true">
+                    <div style="padding: .5rem 0;">
+                        <div style="text-align:center; margin-bottom:1.2rem;">
+                            <div class="t-av" style="width:64px; height:64px; font-size:1.5rem; margin:0 auto .6rem;">
+                                <p:graphicImage value="#{studentController.selectedStudent.uploadPhoto}"
+                                    rendered="#{not empty studentController.selectedStudent.uploadPhoto}" alt="Foto" />
+                                <h:outputText value="#{studentController.selectedStudent.fullName.substring(0,1)}"
+                                    rendered="#{empty studentController.selectedStudent.uploadPhoto}" />
+                            </div>
+                            <div style="font-size:1.15rem; font-weight:700;">
+                                #{studentController.selectedStudent.fullName}</div>
+                            <div style="font-size:.85rem; color:var(--text-muted);">#{msg.studentNumber}
+                                #{studentController.selectedStudent.sudentNumber}</div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; font-size:.9rem;">
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.firstName}</div>
+                                <div style="font-weight:700;">#{studentController.selectedStudent.fristName}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.lastName}</div>
+                                <div style="font-weight:700;">#{studentController.selectedStudent.lastName}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.gender}</div>
+                                <div style="font-weight:700;">#{studentController.selectedStudent.gender}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.birthDate}</div>
+                                <div style="font-weight:700;">
+                                    <h:outputText value="#{studentController.selectedStudent.nascDate}">
+                                        <f:convertDateTime type="localDate" pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.idCardNumber}</div>
+                                <div style="font-weight:700;">#{studentController.selectedStudent.biNumber}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.idCardExpiryDate}</div>
+                                <div style="font-weight:700;">
+                                    <h:outputText value="#{studentController.selectedStudent.biExpiryData}">
+                                        <f:convertDateTime type="localDate" pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.email}</div>
+                                <div style="font-weight:700;">#{studentController.selectedStudent.email}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.telephone}</div>
+                                <div style="font-weight:700;">#{studentController.selectedStudent.phone_1}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.residentialAddress}</div>
+                                <div style="font-weight:700;">#{studentController.selectedStudent.addressStreet} -
+                                    #{studentController.selectedStudent.addressProvice}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.fatherName}</div>
+                                <div style="font-weight:700;">#{studentController.selectedStudent.nameFather}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.motherName}</div>
+                                <div style="font-weight:700;">#{studentController.selectedStudent.nameMather}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.status}</div>
+                                <div style="font-weight:700;">
+                                    <span class="status-badge status-#{studentController.selectedStudent.status}">
+                                        <i class="pi pi-circle-fill" style="font-size:.4rem" />
+                                        #{studentController.selectedStudent.status}
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.createdAt}</div>
+                                <div style="font-weight:700;">
+                                    <h:outputText value="#{studentController.selectedStudent.createdAt}">
+                                        <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm" />
+                                    </h:outputText>
+                                </div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;"
+                                rendered="#{not empty studentController.selectedStudent.obs}">
+                                <div
+                                    style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                                    #{msg.notes}</div>
+                                <div>#{studentController.selectedStudent.obs}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="view-dialog-footer">
+                        <p:commandButton value="#{msg.close}" type="button" onclick="PF('viewStudentDialog').hide()"
+                            styleClass="ui-button-outlined" />
+                        <p:commandButton value="#{msg.printPdf}" icon="pi pi-print"
+                            action="#{studentController.printStudentPdf(studentController.selectedId)}" ajax="false"
+                            styleClass="ui-button-primary" onclick="showScLoading()" />
+                    </div>
+                </p:dialog>
+            </h:form>
+            <ui:include src="student/student-create.xhtml" />
+            <ui:include src="student/student-edit.xhtml" />
+        </div>
+
+        <!-- ===== LOADING SCRIPTS ===== -->
+        <script>
+            function showScLoading() {
+                const overlay = document.getElementById('scLoadingOverlay');
+                if (overlay) {
+                    overlay.classList.add('active');
+                }
+            }
+
+            function hideScLoading() {
+                const overlay = document.getElementById('scLoadingOverlay');
+                if (overlay) {
+                    overlay.classList.remove('active');
+                }
+            }
+
+            // Esconde o loading se houver erro no AJAX
+            if (window.PrimeFaces) {
+                PrimeFaces.ajax.Queue.originalAdd = PrimeFaces.ajax.Queue.add;
+                PrimeFaces.ajax.Queue.add = function(req) {
+                    req.originalOncomplete = req.onsuccess;
+                    req.onsuccess = function(xhr, status, args) {
+                        hideScLoading();
+                        if (req.originalOncomplete) {
+                            req.originalOncomplete(xhr, status, args);
+                        }
+                    };
+                    req.originalOnerror = req.onerror;
+                    req.onerror = function(xhr, status, error) {
+                        hideScLoading();
+                        if (req.originalOnerror) {
+                            req.originalOnerror(xhr, status, error);
+                        }
+                    };
+                    PrimeFaces.ajax.Queue.originalAdd(req);
+                };
+            }
+        </script>
+    </ui:define>
+
+</ui:composition>

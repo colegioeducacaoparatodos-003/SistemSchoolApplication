@@ -1,0 +1,527 @@
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <ui:define name="titulo">#{msg['teachers']}</ui:define>
+
+    <h:outputStylesheet library="webjars" name="bootstrap/5.3.2/css/bootstrap.min.css" />
+    <h:outputStylesheet name="general.css" library="css" />
+    <h:outputScript name="general.js" library="js" />
+    <h:outputScript name="teacher.js" library="js" />
+
+    <ui:define name="content">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&amp;family=DM+Mono:wght@400;500&amp;display=swap');
+
+        :root {
+            --black:      #111315;
+            --black-mid:  #1e2124;
+            --black-lt:   #2c3033;
+            --red:        #c8102e;
+            --red-lt:     #e2233f;
+            --red-pale:   #fdecee;
+            --yellow:     #f5c518;
+            --yellow-lt:  #ffd93d;
+            --yellow-pale:#fff9e6;
+            --white:      #ffffff;
+            --surface:    #ffffff;
+            --surface-2:  #f6f6f7;
+            --border:     #e6e6e8;
+            --border-dk:  #cfcfd2;
+            --text:       #17181a;
+            --text-muted: #6b6d71;
+            --text-faint: #a1a3a7;
+            --radius-sm:  6px;
+            --radius:     10px;
+            --radius-lg:  14px;
+            --shadow-sm:  0 1px 4px rgba(17,19,21,.07);
+            --shadow:     0 4px 20px rgba(17,19,21,.10);
+            --font:       'DM Sans', system-ui, sans-serif;
+            --font-mono:  'DM Mono', monospace;
+        }
+
+        body { background: var(--surface-2); font-family: var(--font); }
+
+        .page-scroll-wrapper {
+            height: calc(100vh - 72px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 1.6rem 1.8rem 2.5rem;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+        .page-scroll-wrapper::-webkit-scrollbar { width: 5px; }
+        .page-scroll-wrapper::-webkit-scrollbar-track { background: transparent; }
+        .page-scroll-wrapper::-webkit-scrollbar-thumb { background: var(--border-dk); border-radius: 99px; }
+        .page-scroll-wrapper::-webkit-scrollbar-thumb:hover { background: var(--red); }
+
+        /* ── Page header ── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .page-header-left { display: flex; align-items: center; gap: 1rem; }
+        .page-header-icon {
+            width: 48px; height: 48px;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, var(--black) 0%, var(--black-lt) 100%);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--yellow); font-size: 1.25rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(17,19,21,.3);
+        }
+        .page-header-title h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--black);
+            margin: 0 0 .2rem;
+            letter-spacing: -.3px;
+        }
+        .page-header-title span { font-size: .78rem; color: var(--text-muted); }
+
+        .breadcrumb-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--yellow-pale);
+            border: 1px solid rgba(245,197,24,.4);
+            color: #8a6d00;
+            border-radius: 99px;
+            padding: 3px 12px;
+            font-size: .72rem;
+            font-weight: 600;
+        }
+
+        /* ── Stat cards ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: .9rem;
+            margin-bottom: 1.4rem;
+        }
+        @media (max-width: 1200px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 768px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1rem 1.2rem; display: flex; align-items: center; gap: .9rem;
+            box-shadow: var(--shadow-sm); transition: box-shadow .2s, transform .2s;
+        }
+        .stat-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+        .stat-icon {
+            width: 40px; height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .95rem; flex-shrink: 0;
+        }
+        .stat-icon.red    { background: var(--red-pale); color: var(--red); }
+        .stat-icon.yellow { background: var(--yellow-pale); color: #8a6d00; }
+        .stat-icon.black  { background: #ececed; color: var(--black); }
+        .stat-icon.slate  { background: #f1f1f2; color: #47494b; }
+        .stat-label { font-size: .72rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1px; }
+        .stat-value { font-size: 1.35rem; font-weight: 700; color: var(--black); line-height: 1; }
+
+        /* ── Main card ── */
+        .main-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .9rem 1.2rem;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: .8rem;
+        }
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            flex-wrap: wrap;
+        }
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .toolbar-title {
+            font-size: .88rem;
+            font-weight: 700;
+            color: var(--black);
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            margin-right: .4rem;
+        }
+
+        .search-wrap { position: relative; display: flex; align-items: center; }
+        .search-wrap .pi-search {
+            position: absolute;
+            left: 9px;
+            color: var(--text-faint);
+            font-size: .75rem;
+            pointer-events: none;
+        }
+        .search-input {
+            padding: 6px 10px 6px 28px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: .8rem;
+            font-family: var(--font);
+            color: var(--text);
+            width: 200px;
+            background: var(--surface-2);
+            transition: border-color .2s, box-shadow .2s;
+            outline: none;
+        }
+        .search-input:focus {
+            border-color: var(--red);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(200,16,46,.1);
+        }
+
+        .btn-new {
+            background: linear-gradient(135deg, var(--red) 0%, var(--red-lt) 100%);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 7px 16px;
+            font-size: .8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 3px 10px rgba(200,16,46,.3);
+            transition: opacity .2s, transform .15s, box-shadow .2s;
+            white-space: nowrap;
+        }
+        .btn-new:hover { opacity: .92; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(200,16,46,.4); }
+
+        .btn-outline {
+            background: var(--surface);
+            color: var(--black);
+            border: 1px solid var(--border-dk);
+            border-radius: var(--radius-sm);
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            font-size: .8rem;
+            transition: all .15s;
+        }
+        .btn-outline:hover { border-color: var(--red); color: var(--red); background: var(--red-pale); }
+
+        /* ── DataTable ── */
+        .sc-table.p-datatable .p-datatable-thead > tr > th {
+            background: var(--black) !important;
+            color: rgba(255,255,255,.9) !important;
+            font-family: var(--font) !important;
+            font-size: .7rem !important;
+            font-weight: 600 !important;
+            letter-spacing: .8px !important;
+            text-transform: uppercase !important;
+            border: none !important;
+            padding: .7rem 1rem !important;
+            white-space: nowrap;
+            border-right: 1px solid rgba(255,255,255,.06) !important;
+        }
+        .sc-table.p-datatable .p-datatable-thead > tr > th:last-child { border-right: none !important; }
+        .sc-table.p-datatable .p-datatable-thead > tr > th .p-sortable-column-icon {
+            color: var(--yellow) !important;
+            font-size: .65rem !important;
+        }
+        .sc-table.p-datatable .p-datatable-thead > tr > th.p-highlight { background: var(--black-lt) !important; }
+
+        .sc-table.p-datatable .p-datatable-tbody > tr > td {
+            font-family: var(--font) !important;
+            font-size: .82rem !important;
+            color: var(--text) !important;
+            border-bottom: 1px solid var(--surface-2) !important;
+            padding: .72rem 1rem !important;
+            vertical-align: middle !important;
+        }
+        .sc-table.p-datatable .p-datatable-tbody > tr:nth-child(even) > td { background: #fafafa !important; }
+        .sc-table.p-datatable .p-datatable-tbody > tr:hover > td { background: var(--red-pale) !important; }
+
+        .sc-table.p-datatable .p-paginator {
+            background: var(--surface-2) !important;
+            border-top: 1px solid var(--border) !important;
+            padding: .6rem 1rem !important;
+            font-size: .78rem !important;
+        }
+        .sc-table.p-datatable .p-paginator .p-paginator-page.p-highlight {
+            background: var(--red) !important;
+            color: #fff !important;
+            border-radius: var(--radius-sm) !important;
+        }
+        .sc-table.p-datatable .p-paginator .p-paginator-pages .p-paginator-page {
+            border-radius: var(--radius-sm) !important;
+        }
+
+        /* ── Cell components ── */
+        .t-num {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: var(--black-mid);
+            color: var(--yellow);
+            border-radius: 5px;
+            padding: 3px 9px;
+            font-family: var(--font-mono);
+            font-size: .75rem;
+            font-weight: 600;
+        }
+
+        .t-cell { display: flex; align-items: center; gap: 10px; }
+        .t-av {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--black-mid);
+            color: var(--yellow); font-size: .75rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            border: 2px solid var(--yellow);
+        }
+        .t-name { font-weight: 600; font-size: .83rem; color: var(--black); }
+        .t-spec { font-size: .72rem; color: var(--text-muted); }
+
+        .qual-pill {
+            display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px;
+            font-size: .72rem; font-weight: 700; white-space: nowrap;
+            background: var(--yellow-pale); color: #8a6d00; border: 1px solid rgba(245,197,24,.4);
+        }
+
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px;
+            font-size: .72rem; font-weight: 700; white-space: nowrap;
+        }
+        .status-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .status-ACTIVE     { background: #ecf9ee; color: #1a7a2e; } .status-ACTIVE::before   { background: #22a83e; box-shadow: 0 0 4px #22a83e; }
+        .status-INACTIVE   { background: var(--red-pale); color: #8a0e21; } .status-INACTIVE::before { background: var(--red); }
+        .status-ON_LEAVE   { background: var(--yellow-pale); color: #8a6d00; } .status-ON_LEAVE::before { background: var(--yellow); }
+
+        .actions-cell { display: flex; align-items: center; gap: 4px; justify-content: center; }
+        .act-btn {
+            width: 28px; height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+            background: var(--surface); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+            font-size: .75rem; transition: all .15s;
+        }
+        .act-btn:hover { transform: translateY(-1px); }
+        .act-btn.edit   { color: #8a6d00; border-color: #f5e39a; background: var(--yellow-pale); }
+        .act-btn.edit:hover { background: #fff2b8; box-shadow: 0 2px 8px rgba(245,197,24,.35); }
+        .act-btn.delete { color: var(--red); border-color: #f3b8c0; background: var(--red-pale); }
+        .act-btn.delete:hover { background: #fbd7dc; box-shadow: 0 2px 8px rgba(200,16,46,.25); }
+
+        .empty-wrap {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; gap: .75rem;
+        }
+        .empty-icon-circle {
+            width: 64px; height: 64px; border-radius: 50%; background: var(--surface-2); border: 2px dashed var(--border-dk);
+            display: flex; align-items: center; justify-content: center; color: var(--text-faint); font-size: 1.5rem;
+        }
+        .empty-title { font-size: .9rem; font-weight: 700; color: var(--text-muted); margin: 0; }
+        .empty-sub { font-size: .78rem; color: var(--text-faint); margin: 0; }
+
+        @media (max-width: 768px) {
+            .stats-row { grid-template-columns: repeat(2,1fr); }
+            .card-toolbar { flex-direction: column; align-items: flex-start; }
+            .search-input { width: 100%; }
+        }
+    </style>
+
+    <div class="page-scroll-wrapper">
+        <h:form id="formTeachers">
+            <p:growl id="messages" showDetail="true" life="4000" sticky="false"/>
+
+            <!-- ── Page Header ── -->
+            <div class="page-header">
+                <div class="page-header-left">
+                    <div class="page-header-icon"><i class="pi pi-users" /></div>
+                    <div class="page-header-title">
+                        <h1>Professores</h1>
+                        <span>Gerir, consultar e atualizar os registos dos professores</span>
+                    </div>
+                </div>
+                <span class="breadcrumb-pill">
+                    <i class="pi pi-home" style="font-size:.65rem"/> Gestão › Professores
+                </span>
+            </div>
+
+            <!-- ── Stat Cards ── -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon black"><i class="pi pi-users"/></div>
+                    <div>
+                        <div class="stat-label">Total de Professores</div>
+                        <div class="stat-value">
+                            <h:outputText value="#{teacherController.teachers.size()}"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red"><i class="pi pi-check-circle"/></div>
+                    <div>
+                        <div class="stat-label">Ativos</div>
+                        <div class="stat-value" style="color:#1a7a2e">
+                            <h:outputText value="#{teacherController.teachers.stream().filter(t -> t.status.name() == 'ACTIVE').count()}" />
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon yellow"><i class="pi pi-clock"/></div>
+                    <div>
+                        <div class="stat-label">De Licença</div>
+                        <div class="stat-value" style="color:#8a6d00">
+                            <h:outputText value="#{teacherController.teachers.stream().filter(t -> t.status.name() == 'ON_LEAVE').count()}" />
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon slate"><i class="pi pi-ban"/></div>
+                    <div>
+                        <div class="stat-label">Inativos</div>
+                        <div class="stat-value" style="color:var(--red)">
+                            <h:outputText value="#{teacherController.teachers.stream().filter(t -> t.status.name() == 'INACTIVE').count()}" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Main Card ── -->
+            <div class="main-card">
+                <div class="card-toolbar">
+                    <div class="toolbar-left filter-zone">
+                        <span class="toolbar-title">
+                            <i class="pi pi-list" style="color:var(--red)"/> Lista de Professores
+                        </span>
+
+                        <span class="search-wrap">
+                            <p:inputText id="globalFilter"
+                                styleClass="search-input"
+                                placeholder="Buscar por nome ou número…"
+                                onkeyup="PF('dtTeachers').filter()" />
+                        </span>
+                    </div>
+
+                    <div class="toolbar-right">
+                        <p:commandButton icon="pi pi-filter-slash" title="Limpar Filtros"
+                            styleClass="btn-outline" type="button" />
+                        <p:commandButton value="#{msg.newTeacher}" icon="pi pi-plus"
+                            styleClass="btn-new"
+                            oncomplete="PF('createTeacherDialog').show()"
+                            update=":teacherCreateForm" process="@this" />
+                    </div>
+                </div>
+
+                <p:dataTable id="dtTeachers" widgetVar="dtTeachers" var="teacher"
+                    value="#{teacherController.teachers}"
+                    styleClass="sc-table"
+                    paginator="true" rows="10" paginatorPosition="bottom" reflow="true"
+                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    currentPageReportTemplate="A mostrar {startRecord}–{endRecord} de {totalRecords} professores"
+                    rowsPerPageTemplate="5,10,15,25"
+                    emptyMessage=" ">
+
+                    <p:column headerText="Foto" exportable="false" style="width:70px;text-align:center">
+                        <div class="t-av">
+                            <p:graphicImage rendered="#{not empty teacher.photoPhath}"
+                                value="#{teacher.photoPhath}"
+                                style="width:100%; height:100%; object-fit:cover; border-radius:50%;"
+                                alt="Foto de #{teacher.fristName}" />
+                            <h:outputText value="#{not empty teacher.fristName ? teacher.fristName.substring(0,1) : '?'}#{not empty teacher.lastName ? teacher.lastName.substring(0,1) : ''}"
+                                rendered="#{empty teacher.photoPhath}"/>
+                        </div>
+                    </p:column>
+
+                    <p:column headerText="#{msg.teacherNumber}" sortBy="#{teacher.teacherNumber}" style="width:130px">
+                        <span class="t-num">
+                            <i class="pi pi-hashtag" style="font-size:.65rem; color:var(--yellow)"/>
+                            <h:outputText value="#{teacher.teacherNumber}" />
+                        </span>
+                    </p:column>
+
+                    <p:column headerText="Nome Completo" sortBy="#{teacher.fristName}" style="min-width:180px">
+                        <div class="t-cell">
+                            <div class="t-name">
+                                <h:outputText value="#{teacher.fristName} #{teacher.lastName}" />
+                            </div>
+                        </div>
+                    </p:column>
+                    
+                    <p:column headerText="Qualificação" sortBy="#{teacher.qualificationLivel}" style="width:150px">
+                        <span class="qual-pill">
+                            <h:outputText value="#{teacherController.qualificationLabel(teacher.qualificationLivel)}" />
+                        </span>
+                    </p:column>
+
+                    <p:column headerText="Email" sortBy="#{teacher.email}">
+                        <h:outputText value="#{teacher.email}" />
+                    </p:column>
+
+                    <p:column headerText="Telefone" sortBy="#{teacher.phone}" style="width:140px">
+                        <h:outputText value="#{teacher.phone}" />
+                    </p:column>
+
+                    <p:column headerText="#{msg.status}" sortBy="#{teacher.status}" style="width:125px">
+                        <span class="status-badge status-#{teacher.status}">
+                            <h:outputText value="#{teacherController.statusLabel(teacher.status)}" />
+                        </span>
+                    </p:column>
+
+                    <p:column headerText="#{msg.actions}" style="width:90px;text-align:center" exportable="false">
+                        <div class="actions-cell">
+                            <p:commandButton icon="pi pi-pencil" title="Editar"
+                                styleClass="act-btn edit"
+                                actionListener="#{teacherController.setSelectedId(teacher.pkTeacher)}"
+                                action="#{teacherController.openEditDialog}"
+                                oncomplete="PF('editTeacherDialog').show()"
+                                update=":teacherEditForm" process="@this" />
+                            <p:commandButton icon="pi pi-trash" title="Excluir"
+                                styleClass="act-btn delete"
+                                actionListener="#{teacherController.setSelectedId(teacher.pkTeacher)}"
+                                oncomplete="PF('deleteTeacherDialog').show()"
+                                process="@this" update=":formTeachers:confirmDeleteForm" />
+                        </div>
+                    </p:column>
+
+                    <f:facet name="emptyMessage">
+                        <div class="empty-wrap">
+                            <div class="empty-icon-circle"><i class="pi pi-users"/></div>
+                            <p class="empty-title">#{msg.noTeacherFound}</p>
+                            <p class="empty-sub">Ajuste os filtros ou registe um novo professor.</p>
+                        </div>
+                    </f:facet>
+                </p:dataTable>
+            </div>
+
+            <!-- Diálogo de confirmação de exclusão -->
+            <p:confirmDialog id="deleteTeacherDialog" widgetVar="deleteTeacherDialog"
+                message="Tem a certeza que deseja eliminar este professor?"
+                header="Confirmar Exclusão" severity="warn">
+                <h:form id="confirmDeleteForm">
+                    <p:commandButton value="Não" icon="pi pi-times" type="button"
+                        styleClass="ui-button-outlined" onclick="PF('deleteTeacherDialog').hide()" />
+                    <p:commandButton value="Sim" icon="pi pi-check"
+                        styleClass="ui-button-danger" ajax="true"
+                        action="#{teacherController.delete}"
+                        oncomplete="PF('deleteTeacherDialog').hide()"
+                        update=":formTeachers:dtTeachers :messages" />
+                </h:form>
+            </p:confirmDialog>
+        </h:form>
+    </div>
+
+    <ui:include src="teachers/teacher-create.xhtml" />
+    <ui:include src="teachers/teacher-edit.xhtml" />
+    </ui:define>
+
+</ui:composition>

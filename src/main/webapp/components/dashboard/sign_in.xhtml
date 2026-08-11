@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<h:head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>#{msg.createAccount} | Gestão Escolar</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+</h:head>
+
+<h:body class="bg-light">
+    <div class="container d-flex align-items-center justify-content-center py-5" style="min-height: 100vh;">
+        <div class="card shadow-sm" style="max-width: 620px; width: 100%;">
+            <div class="card-body p-4">
+
+                <div class="text-center mb-4">
+                    <h1 class="h4 mb-1">#{msg.createAccount}</h1>
+                    <p class="text-muted small mb-0">Registo de novo utilizador do sistema</p>
+                </div>
+
+                <p:messages id="messages" showDetail="true" showSummary="true" closable="true" />
+
+                <h:form id="signupForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h:outputLabel for="firstName" value="#{msg.firstName}" styleClass="form-label" />
+                            <p:inputText id="firstName" value="#{userController.newFirstName}" required="true"
+                                         requiredMessage="O primeiro nome é obrigatório." style="width: 100%;"
+                                         placeholder="Ex: João" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <h:outputLabel for="lastName" value="#{msg.lastName}" styleClass="form-label" />
+                            <p:inputText id="lastName" value="#{userController.newLastName}" required="true"
+                                         requiredMessage="O último nome é obrigatório." style="width: 100%;"
+                                         placeholder="Ex: Muanda" />
+                        </div>
+
+                        <div class="col-12">
+                            <h:outputLabel for="email" value="#{msg.email}" styleClass="form-label" />
+                            <p:inputText id="email" value="#{userController.newUserEmail}" required="true"
+                                         requiredMessage="O email é obrigatório." placeholder="seu.email@escola.co.ao"
+                                         style="width: 100%;" />
+                        </div>
+
+                        <div class="col-12">
+                            <h:outputLabel for="perfil" value="#{msg.type}" styleClass="form-label" />
+                            <p:selectOneMenu id="perfil" value="#{userController.newUserPerfil}" required="true"
+                                             requiredMessage="O perfil é obrigatório."
+                                             converter="perfilConverter" style="width: 100%;">
+                                <f:selectItem itemLabel="Selecione um perfil" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{userController.perfis}" var="p"
+                                               itemLabel="#{userController.getPerfilLabel(p)}" itemValue="#{p}" />
+                            </p:selectOneMenu>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h:outputLabel for="password" value="#{msg.password}" styleClass="form-label" />
+                            <p:password id="password" value="#{userController.newUserPassword}" required="true"
+                                        requiredMessage="A senha é obrigatória." feedback="true" style="width: 100%;" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <h:outputLabel for="confirmPassword" value="#{msg.confirmPassword}" styleClass="form-label" />
+                            <p:password id="confirmPassword" value="#{userController.newUserConfirmPassword}"
+                                        required="true" requiredMessage="A confirmação de senha é obrigatória."
+                                        style="width: 100%;" />
+                        </div>
+                    </div>
+
+                    <p:commandButton value="#{msg.createAccount}" action="#{userController.createUser}"
+                                     update="@form" ajax="false" style="width: 100%;" styleClass="mt-4" />
+
+                    <p class="text-center small text-muted mt-3 mb-0">
+                        Já tem conta? <h:link outcome="/login.xhtml" value="#{msg.goBackToLogin}" />
+                    </p>
+                </h:form>
+            </div>
+        </div>
+    </div>
+</h:body>
+
+</html>

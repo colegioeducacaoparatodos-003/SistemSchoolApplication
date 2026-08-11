@@ -1,0 +1,113 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui" xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <p:dialog id="createInvoiceDialog" widgetVar="createInvoiceDialog" header="#{msg.newInvoice}" modal="true"
+              showEffect="fade" hideEffect="fade" closeOnEscape="true" styleClass="sc-dialog-create" width="800"
+              dynamic="true" resizable="false" appendTo="@(body)">
+
+        <h:form id="invoiceCreateForm" styleClass="ui-fluid">
+            <div class="sc-create-body">
+                <p:messages id="msgs" showDetail="true" closable="true"/>
+
+                <!-- 1 · IDENTIFICAÇÃO DA FATURA -->
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-hashtag"></i> #{msg.invoiceIdentification}</div>
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank" columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+                        <p:outputLabel for="invoiceNumber" value="#{msg.invoiceNumber}" styleClass="sc-label req"/>
+                        <p:inputText id="invoiceNumber" value="#{invoiceController.invoice.invoiceNumber}"
+                                     required="true" placeholder="Ex: FAT-2026-00001"/>
+
+                        <p:outputLabel for="status" value="#{msg.status}" styleClass="sc-label"/>
+                        <p:selectOneMenu id="status" value="#{invoiceController.invoice.status}">
+                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{invoiceController.statuses}"/>
+                        </p:selectOneMenu>
+                    </p:panelGrid>
+                </div>
+
+                <!-- 2 · VÍNCULOS -->
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-link"></i> #{msg.linkedRecords}</div>
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank" columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+                        <p:outputLabel for="enrolment" value="#{msg.enrolment}" styleClass="sc-label req"/>
+                        <p:selectOneMenu id="enrolment" value="#{invoiceController.selectedEnrolmentId}" required="true">
+                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{invoiceController.enrolments}" var="en"
+                                           itemLabel="#{en.enrolmentNumer}" itemValue="#{en.phEnrolment}"/>
+                        </p:selectOneMenu>
+
+                        <p:outputLabel for="fee" value="#{msg.fee}" styleClass="sc-label req"/>
+                        <p:selectOneMenu id="fee" value="#{invoiceController.selectedFeeId}" required="true">
+                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{invoiceController.fees}" var="f"
+                                           itemLabel="#{f.feeCode} — #{f.description}" itemValue="#{f.phFee}"/>
+                        </p:selectOneMenu>
+                    </p:panelGrid>
+                </div>
+
+                <!-- 3 · DETALHES DA FATURA -->
+                <div class="sc-section accent">
+                    <div class="sc-section-title"><i class="pi pi-money-bill"></i> #{msg.invoiceDetails}</div>
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank" columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+                        <p:outputLabel for="referenceMonth" value="#{msg.referenceMonth}" styleClass="sc-label req"/>
+                        <p:selectOneMenu id="referenceMonth" value="#{invoiceController.invoice.referenceMonth}" required="true">
+                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{invoiceController.referenceMonths}"/>
+                        </p:selectOneMenu>
+
+                        <p:outputLabel for="schoolYear" value="#{msg.schoolYear}" styleClass="sc-label"/>
+                        <p:inputNumber id="schoolYear" value="#{invoiceController.invoice.schoolYear}"
+                                       decimalPlaces="0" thousandSeparator="" placeholder="Ex: 2026"/>
+
+                        <p:outputLabel for="issueDate" value="#{msg.issueDate}" styleClass="sc-label"/>
+                        <p:datePicker id="issueDate" value="#{invoiceController.invoice.issueDate}"
+                                      pattern="dd/MM/yyyy" showIcon="true"/>
+
+                        <p:outputLabel for="dueDate" value="#{msg.dueDate}" styleClass="sc-label"/>
+                        <p:datePicker id="dueDate" value="#{invoiceController.invoice.dueDate}"
+                                      pattern="dd/MM/yyyy" showIcon="true"/>
+
+                        <p:outputLabel for="amount" value="#{msg.amount}" styleClass="sc-label"/>
+                        <p:inputNumber id="amount" value="#{invoiceController.invoice.amount}"
+                                       symbol="Kz " symbolPosition="p" decimalPlaces="2"
+                                       placeholder="#{msg.leaveBlankToUseFeeAmount}"/>
+
+                        <p:outputLabel for="discount" value="#{msg.discount}" styleClass="sc-label"/>
+                        <p:inputNumber id="discount" value="#{invoiceController.invoice.discount}"
+                                       symbol="Kz " symbolPosition="p" decimalPlaces="2"/>
+
+                        <p:outputLabel for="fine" value="#{msg.fine}" styleClass="sc-label"/>
+                        <p:inputNumber id="fine" value="#{invoiceController.invoice.fine}"
+                                       symbol="Kz " symbolPosition="p" decimalPlaces="2"/>
+
+                        <p:outputLabel for="total" value="#{msg.total}" styleClass="sc-label"/>
+                        <p:inputNumber id="total" value="#{invoiceController.invoice.total}"
+                                       symbol="Kz " symbolPosition="p" decimalPlaces="2"
+                                       placeholder="#{msg.leaveBlankToUseAmount}"/>
+                    </p:panelGrid>
+
+                    <p:outputLabel for="observation" value="#{msg.observation}" styleClass="sc-label"/>
+                    <p:inputTextarea id="observation" value="#{invoiceController.invoice.obs}" rows="3"
+                                     placeholder="#{msg.additionalNotesPlaceholder}"/>
+                </div>
+
+            </div>
+
+            <div class="sc-create-footer">
+                <p:commandButton value="#{msg.cancel}" icon="pi pi-times"
+                                 styleClass="sc-btn-cancel"
+                                 type="button"
+                                 onclick="PF('createInvoiceDialog').hide()"/>
+
+                <p:commandButton value="#{msg.save}" icon="pi pi-save"
+                                 styleClass="sc-btn-save"
+                                 action="#{invoiceController.saveInvoice}"
+                                 process="@form"
+                                 update=":formInvoices:dtInvoices msgs :formInvoices:messages"
+                                 oncomplete="if (!args.validationFailed) { PF('createInvoiceDialog').hide(); }"/>
+            </div>
+        </h:form>
+    </p:dialog>
+
+</ui:composition>

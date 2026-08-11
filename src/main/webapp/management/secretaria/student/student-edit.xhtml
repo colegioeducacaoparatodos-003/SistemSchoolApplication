@@ -1,0 +1,425 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <p:dialog id="editStudentDialog" widgetVar="editStudentDialog" header="#{msg.editStudent}" modal="true"
+        showEffect="fade" hideEffect="fade" closeOnEscape="true"
+        style="width: 90vw; max-width: 900px; height: 90vh;" dynamic="true" resizable="false"
+        appendTo="@(body)" styleClass="sc-dialog-edit sc-dialog-fullheight" responsive="true" fitViewport="true">
+
+        <h:form id="studentEditForm" styleClass="ui-fluid sc-edit-form" enctype="multipart/form-data">
+            <p:messages id="msgsEdit" showDetail="true" closable="true" globalOnly="true" />
+
+            <div class="sc-edit-scroll">
+
+                <!-- 1 - IDENTIFICACAO DO ALUNO -->
+                <div style="font-size:1rem; font-weight:700; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem;">
+                    <i class="pi pi-user" style="color:var(--enr-red, #c8102e);"></i> #{msg.studentIdentification}
+                </div>
+
+                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
+                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+
+                    <p:outputLabel for="editStudentNumber" value="#{msg.studentNumber}" styleClass="sc-label" />
+                    <p:inputText id="editStudentNumber" value="#{studentController.editDto.sudentNumber}"
+                        readonly="true" styleClass="sc-readonly-field" style="background:#f3f4f6;" />
+
+                    <p:outputLabel for="editFirstName" value="#{msg.firstName}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:inputText id="editFirstName" value="#{studentController.editDto.fristName}"
+                            required="true" requiredMessage="#{msg.firstName} é obrigatório"
+                            placeholder="#{msg.firstNamePlaceholder}" style="width:100%;" />
+                        <p:message for="editFirstName" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="editLastName" value="#{msg.lastName}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:inputText id="editLastName" value="#{studentController.editDto.lastName}" required="true"
+                            requiredMessage="#{msg.lastName} é obrigatório" placeholder="#{msg.lastNamePlaceholder}"
+                            style="width:100%;" />
+                        <p:message for="editLastName" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="editGender" value="#{msg.gender}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:selectOneMenu id="editGender" value="#{studentController.editDto.gender}" required="true"
+                            requiredMessage="Selecione o género" style="width:100%;">
+                            <f:selectItem itemLabel="- #{msg.select} -" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{studentController.genders}" />
+                        </p:selectOneMenu>
+                        <p:message for="editGender" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="editNascDate" value="#{msg.birthDate}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:datePicker id="editNascDate" value="#{studentController.editDto.nascDate}"
+                            pattern="dd/MM/yyyy" showIcon="true" required="true"
+                            requiredMessage="Data de nascimento é obrigatória" yearNavigator="true" monthNavigator="true"
+                            yearRange="1980:2026" style="width:100%;" />
+                        <p:message for="editNascDate" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                </p:panelGrid>
+
+                <!-- 2 - DOCUMENTOS E CONTACTO DO ALUNO -->
+                <div style="font-size:1rem; font-weight:700; margin:1.4rem 0 1rem; display:flex; align-items:center; gap:.5rem;">
+                    <i class="pi pi-id-card" style="color:var(--enr-red, #c8102e);"></i> #{msg.documentsAndContact}
+                </div>
+
+                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
+                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+
+                    <p:outputLabel for="editBiNumber" value="#{msg.idCardNumber}" styleClass="sc-label" />
+                    <h:panelGroup>
+                        <p:inputText id="editBiNumber" value="#{studentController.editDto.biNumber}" maxlength="14"
+                            placeholder="#{msg.idCardPlaceholder}" style="width:100%;">
+                            <p:ajax event="blur" listener="#{studentController.validarBI}" process="@this"
+                                update="msgsEdit" onstart="showScLoading()" oncomplete="hideScLoading()" />
+                        </p:inputText>
+                        <p:message for="editBiNumber" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="editBiExpiry" value="#{msg.idCardExpiryDate}" styleClass="sc-label" />
+                    <p:datePicker id="editBiExpiry" value="#{studentController.editDto.biExpiryData}"
+                        pattern="dd/MM/yyyy" showIcon="true" yearNavigator="true" monthNavigator="true" yearRange="2024:2040"
+                        style="width:100%;" />
+
+                    <p:outputLabel for="editEmail" value="#{msg.email}" styleClass="sc-label" />
+                    <h:panelGroup>
+                        <p:inputText id="editEmail" value="#{studentController.editDto.email}"
+                            placeholder="aluno@escola.ao" style="width:100%;">
+                            <f:validateRegex pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" />
+                        </p:inputText>
+                        <p:message for="editEmail" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="editPhone1" value="#{msg.phone1}" styleClass="sc-label" />
+                    <p:inputText id="editPhone1" value="#{studentController.editDto.phone_1}"
+                        placeholder="+244 9xx xxx xxx" style="width:100%;" />
+
+                    <p:outputLabel for="editPhone2" value="#{msg.phone2}" styleClass="sc-label" />
+                    <p:inputText id="editPhone2" value="#{studentController.editDto.phone_2}"
+                        placeholder="+244 9xx xxx xxx" style="width:100%;" />
+
+                </p:panelGrid>
+
+                <!-- 3 - MORADA DO ALUNO -->
+                <div style="font-size:1rem; font-weight:700; margin:1.4rem 0 1rem; display:flex; align-items:center; gap:.5rem;">
+                    <i class="pi pi-map-marker" style="color:var(--enr-red, #c8102e);"></i> #{msg.residentialAddress}
+                </div>
+
+                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
+                    columnClasses="p-col-12 p-md-8, p-col-12 p-md-4">
+
+                    <p:outputLabel for="editAddressStreet" value="#{msg.addressStreet}" styleClass="sc-label" />
+                    <p:inputText id="editAddressStreet" value="#{studentController.editDto.addressStreet}"
+                        placeholder="#{msg.addressStreetPlaceholder}" style="width:100%;" />
+
+                    <p:outputLabel for="editProvince" value="#{msg.province}" styleClass="sc-label" />
+                    <p:inputText id="editProvince" value="#{studentController.editDto.addressProvice}"
+                        placeholder="#{msg.provincePlaceholder}" style="width:100%;" />
+
+                </p:panelGrid>
+
+                <!-- 4 - FILIACAO -->
+                <div style="font-size:1rem; font-weight:700; margin:1.4rem 0 1rem; display:flex; align-items:center; gap:.5rem;">
+                    <i class="pi pi-users" style="color:var(--enr-red, #c8102e);"></i> #{msg.affiliation}
+                </div>
+
+                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
+                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+
+                    <p:outputLabel for="editFatherName" value="#{msg.fatherName}" styleClass="sc-label" />
+                    <p:inputText id="editFatherName" value="#{studentController.editDto.nameFather}"
+                        placeholder="#{msg.fatherNamePlaceholder}" style="width:100%;" />
+
+                    <p:outputLabel for="editMotherName" value="#{msg.motherName}" styleClass="sc-label" />
+                    <p:inputText id="editMotherName" value="#{studentController.editDto.nameMather}"
+                        placeholder="#{msg.motherNamePlaceholder}" style="width:100%;" />
+
+                </p:panelGrid>
+
+                <!-- 5 - STATUS, FOTO E NOTAS -->
+                <div style="font-size:1rem; font-weight:700; margin:1.4rem 0 1rem; display:flex; align-items:center; gap:.5rem;">
+                    <i class="pi pi-check-circle" style="color:var(--enr-red, #c8102e);"></i> #{msg.registrationFinalization}
+                </div>
+
+                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
+                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+
+                    <p:outputLabel for="editStatus" value="#{msg.status}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:selectOneMenu id="editStatus" value="#{studentController.editDto.status}" required="true"
+                            requiredMessage="Selecione o status" style="width:100%;">
+                            <f:selectItem itemLabel="- #{msg.select} -" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{studentController.studentStatuses}" />
+                        </p:selectOneMenu>
+                        <p:message for="editStatus" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="editPhoto" value="#{msg.studentPhoto}" styleClass="sc-label" />
+                    <div class="photo-preview-wrap">
+                        <div class="photo-preview">
+                            <p:graphicImage value="#{studentController.editDto.uploadPhoto}"
+                                rendered="#{not empty studentController.editDto.uploadPhoto}" alt="Foto"
+                                style="width:100%; height:100%; object-fit:cover;" />
+                            <i class="pi pi-user" rendered="#{empty studentController.editDto.uploadPhoto}" />
+                        </div>
+                        <div class="photo-upload-area">
+                            <p:fileUpload id="editPhoto" value="#{studentController.uploadedPhoto}" mode="simple"
+                                skinSimple="true" label="#{msg.choose}" styleClass="p-button-sm photo-upload-btn" />
+                            <div class="photo-info">
+                                <i class="pi pi-info-circle" /> #{msg.photoFormats}
+                            </div>
+                        </div>
+                    </div>
+
+                </p:panelGrid>
+
+                <div style="margin-top:1.2rem;">
+                    <p:outputLabel for="editNotes" value="#{msg.notes}" styleClass="sc-label" />
+                    <p:inputTextarea id="editNotes" value="#{studentController.editDto.obs}" rows="3" maxlength="500"
+                        counter="notesCounterEdit" counterTemplate="{0} / 500"
+                        placeholder="#{msg.additionalNotesPlaceholder}" autoResize="true" style="width:100%;" />
+                    <h:outputText id="notesCounterEdit"
+                        style="display:block; text-align:right; font-size:11px; color:#888; margin-top:2px;" />
+                </div>
+
+            </div>
+
+            <div class="sc-edit-footer-fixed">
+                <p:commandButton value="#{msg.cancel}" icon="pi pi-times" type="button"
+                    onclick="PF('editStudentDialog').hide()" styleClass="ui-button-outlined ui-button-secondary" />
+                <p:commandButton value="#{msg.save}" icon="pi pi-save" styleClass="ui-button-success"
+                    action="#{studentController.saveUpdate}" process="@form"
+                    update=":studentEditForm:msgsEdit :formStudents:dtStudents :formStudents:messages"
+                    onstart="showScLoading()"
+                    oncomplete="hideScLoading(); if (!args.validationFailed) { PF('editStudentDialog').hide(); }" />
+            </div>
+        </h:form>
+    </p:dialog>
+
+    <style>
+        .sc-label {
+            font-size: .88rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: .3rem;
+            display: block;
+        }
+
+        .sc-label.req::after {
+            content: " *";
+            color: #dc2626;
+        }
+
+        .sc-field-msg {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            color: #dc2626;
+        }
+
+        .sc-readonly-field {
+            opacity: .8;
+            cursor: not-allowed;
+        }
+
+        /* ===== CAMPO DE IMAGEM ESTILIZADO - GRANDE ===== */
+        .photo-preview-wrap {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            margin-top: .3rem;
+        }
+
+        .photo-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 3px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            position: relative;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 0 0 4px rgba(200, 16, 46, 0.04);
+        }
+
+        .photo-preview:hover {
+            border-color: #c8102e;
+            transform: scale(1.06);
+            box-shadow: 0 8px 30px rgba(200, 16, 46, 0.18), 0 0 0 6px rgba(200, 16, 46, 0.08);
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .photo-preview:hover img {
+            transform: scale(1.08);
+        }
+
+        .photo-preview .pi {
+            font-size: 2.5rem;
+            color: #adb5bd;
+            transition: all 0.35s ease;
+        }
+
+        .photo-preview:hover .pi {
+            color: #c8102e;
+            transform: scale(1.1);
+        }
+
+        .photo-preview::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px dashed transparent;
+            transition: all 0.35s ease;
+            pointer-events: none;
+        }
+
+        .photo-preview:hover::after {
+            border-color: rgba(200, 16, 46, 0.25);
+        }
+
+        .photo-upload-area {
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+            min-width: 160px;
+        }
+
+        .photo-upload-btn {
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            padding: 8px 18px;
+            font-size: .85rem;
+        }
+
+        .photo-upload-btn:hover {
+            background: var(--surface-2);
+            transform: translateY(-1px);
+        }
+
+        .photo-info {
+            font-size: .78rem;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            background: #f3f4f6;
+            border-radius: 6px;
+        }
+
+        .photo-info .pi {
+            color: var(--blue);
+            font-size: .85rem;
+        }
+
+        /* ===== Full height layout ===== */
+        .sc-dialog-fullheight.ui-dialog {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sc-dialog-fullheight .ui-dialog-content {
+            display: flex;
+            flex-direction: column;
+            height: 100% !important;
+            padding: .75rem 1rem 0 !important;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .sc-dialog-fullheight .sc-edit-form {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        .sc-edit-scroll {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 0 .25rem .5rem 0;
+        }
+
+        .sc-edit-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sc-edit-scroll::-webkit-scrollbar-thumb {
+            background: #d4d4d8;
+            border-radius: 99px;
+        }
+
+        .sc-edit-footer-fixed {
+            flex: 0 0 auto;
+            display: flex;
+            justify-content: flex-end;
+            gap: .6rem;
+            padding: 1rem 0;
+            border-top: 1px solid #e5e7eb;
+            flex-wrap: wrap;
+            background: #fff;
+        }
+
+        /* ===== RESPONSIVIDADE COM MARGENS ===== */
+        @media (max-width: 768px) {
+            .sc-dialog-create,
+            .sc-dialog-edit {
+                width: calc(100vw - 2rem) !important;
+                height: calc(100vh - 2rem) !important;
+                margin: 1rem !important;
+                top: 0 !important;
+                left: 0 !important;
+                transform: none !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sc-dialog-fullheight .ui-dialog-content {
+                padding: .5rem .5rem 0 !important;
+            }
+
+            .photo-preview-wrap {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .photo-preview {
+                width: 100px;
+                height: 100px;
+            }
+
+            .photo-preview .pi {
+                font-size: 2rem;
+            }
+
+            .photo-upload-area {
+                width: 100%;
+            }
+
+            .sc-edit-footer-fixed {
+                flex-direction: column;
+                padding: .8rem 0;
+            }
+
+            .sc-edit-footer-fixed .ui-button {
+                width: 100%;
+            }
+        }
+    </style>
+</ui:composition>

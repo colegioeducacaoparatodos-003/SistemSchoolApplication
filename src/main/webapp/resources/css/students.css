@@ -1,0 +1,32 @@
+/* Styles for students table and UI tweaks */
+:root{--navy:#0d1b2a;--gold:#e8a020;--border:#e4e9f2;--surface:#ffffff;--surface-2:#f5f7fb;--text:#0d1b2a;--text-muted:#607087;--radius:10px}
+body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+
+/* Table base */
+.products-table.p-datatable{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 6px 18px rgba(13,27,42,.06);overflow:hidden}
+.products-table .p-datatable-thead > tr > th{background:var(--navy);color:rgba(255,255,255,.92);font-size:.75rem;text-transform:uppercase;padding:.75rem 1rem}
+.products-table .p-datatable-tbody > tr > td{font-size:.9rem;padding:.7rem 1rem;vertical-align:middle}
+.products-table .p-datatable-tbody > tr:nth-child(odd){background:linear-gradient(180deg, rgba(245,247,251,0.6), transparent)}
+
+/* Avatar */
+.rounded-circle{border-radius:50%!important;object-fit:cover}
+
+/* Status tag */
+.p-tag.fs-6{font-size:.8rem;padding:.35rem .6rem;border-radius:999px}
+.p-tag.fs-6.p-tag-success{background:#d1fae5;color:#065f46}
+.p-tag.fs-6.p-tag-danger{background:#fee2e2;color:#991b1b}
+.p-tag.fs-6.p-tag-warning{background:#fff7ed;color:#92400e}
+
+/* Buttons */
+.rounded-button{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);padding:0}
+.ui-button-info{background:linear-gradient(135deg,var(--navy),#274060);color:#fff}
+.ui-button-danger{background:#fff;color:#b91c1c}
+.ui-button-outlined{background:transparent;border:1px solid var(--border)}
+
+/* Utilities */
+.d-flex.gap-2{gap:.5rem}
+
+/* Responsive tweaks */
+@media (max-width: 768px){
+  .products-table .p-datatable-thead > tr > th{font-size:.65rem}
+}

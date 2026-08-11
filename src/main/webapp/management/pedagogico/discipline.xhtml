@@ -1,0 +1,406 @@
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="titulo">#{msg.disciplineList}</ui:define>
+
+    <ui:define name="content">
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&amp;family=DM+Mono:wght@400;500&amp;display=swap');
+
+            :root {
+                --black: #141414;
+                --black-mid: #262626;
+                --black-lt: #3a3a3a;
+                --red: #c8102e;
+                --red-lt: #e63946;
+                --red-pale: #fdecee;
+                --yellow: #f5b400;
+                --yellow-lt: #ffd23f;
+                --yellow-pale: #fff8e1;
+                --blue: #1a5fb4;
+                --blue-pale: #eaf1fb;
+                --green: #1e824c;
+                --green-pale: #e9f7ef;
+                --surface: #ffffff;
+                --surface-2: #f7f7f8;
+                --border: #e6e6e8;
+                --border-dk: #cfcfd3;
+                --text: #141414;
+                --text-muted: #666a70;
+                --text-faint: #9a9ea4;
+                --radius-sm: 6px;
+                --radius: 10px;
+                --radius-lg: 14px;
+                --shadow-sm: 0 1px 4px rgba(20, 20, 20, .08);
+                --shadow: 0 4px 20px rgba(20, 20, 20, .12);
+                --font: 'DM Sans', system-ui, sans-serif;
+                --font-mono: 'DM Mono', monospace;
+            }
+
+            body { background: var(--surface-2); font-family: var(--font); }
+
+            .page-scroll-wrapper {
+                min-height: calc(100vh - 72px);
+                height: auto;
+                overflow-y: auto;
+                overflow-x: hidden;
+                padding: clamp(1rem, 3vw, 1.8rem) clamp(1rem, 3vw, 1.8rem) 2.5rem;
+                box-sizing: border-box;
+                scroll-behavior: smooth;
+            }
+
+            .page-scroll-wrapper::-webkit-scrollbar { width: 5px; height: 5px; }
+            .page-scroll-wrapper::-webkit-scrollbar-track { background: transparent; }
+            .page-scroll-wrapper::-webkit-scrollbar-thumb { background: var(--border-dk); border-radius: 99px; }
+            .page-scroll-wrapper::-webkit-scrollbar-thumb:hover { background: var(--black-lt); }
+
+            .page-header {
+                display: flex; align-items: center; justify-content: space-between;
+                flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;
+            }
+
+            .page-header-left { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+
+            .page-header-icon {
+                width: 48px; height: 48px; border-radius: var(--radius);
+                background: linear-gradient(135deg, var(--black) 0%, var(--red) 100%);
+                display: flex; align-items: center; justify-content: center;
+                color: var(--yellow); font-size: 1.25rem; flex-shrink: 0;
+                box-shadow: 0 4px 12px rgba(20, 20, 20, .3);
+            }
+
+            .page-header-title { min-width: 0; }
+            .page-header-title h1 { font-size: clamp(1.15rem, 2vw, 1.35rem); font-weight: 700; color: var(--black); margin: 0 0 .2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .page-header-title span { font-size: .78rem; color: var(--text-muted); }
+
+            .breadcrumb-pill {
+                display: inline-flex; align-items: center; gap: 5px;
+                background: var(--yellow-pale); border: 1px solid rgba(245, 180, 0, .35);
+                color: #8a6400; border-radius: 99px; padding: 4px 12px;
+                font-size: .72rem; font-weight: 600; white-space: nowrap;
+            }
+
+            /* --- Responsive Stat Cards Grid --- */
+            .stat-row {
+                display: grid; 
+                grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+                gap: 1rem; 
+                margin-bottom: 1.5rem;
+            }
+
+            .stat-card {
+                background: var(--surface); border: 1px solid var(--border);
+                border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+                padding: 1.1rem; display: flex; align-items: center;
+                justify-content: space-between; gap: .8rem;
+                min-width: 0;
+            }
+
+            .stat-card > div { min-width: 0; }
+
+            .stat-card .stat-label {
+                font-size: .74rem; color: var(--text-muted); text-transform: uppercase;
+                letter-spacing: .03em; display: block; margin-bottom: .3rem;
+                white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            }
+
+            .stat-card .stat-value {
+                font-size: clamp(1.25rem, 2vw, 1.5rem); font-weight: 700; color: var(--black); font-family: var(--font-mono);
+            }
+
+            .stat-icon {
+                width: 42px; height: 42px; border-radius: var(--radius);
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1.1rem; flex-shrink: 0;
+            }
+
+            .stat-icon.total { background: var(--black); color: var(--yellow); }
+            .stat-icon.active { background: var(--green-pale); color: var(--green); }
+            .stat-icon.inactive { background: var(--surface-2); color: var(--text-muted); }
+            .stat-icon.workload { background: var(--red-pale); color: var(--red); }
+
+            .main-card {
+                background: var(--surface); border: 1px solid var(--border);
+                border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden;
+            }
+
+            .card-toolbar {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 1rem 1.2rem; border-bottom: 1px solid var(--border);
+                gap: 1rem; flex-wrap: wrap;
+            }
+
+            .toolbar-left { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; flex: 1; min-width: 200px; }
+
+            .toolbar-title {
+                font-size: .85rem; font-weight: 700; color: var(--black);
+                display: flex; align-items: center; gap: 6px; white-space: nowrap;
+            }
+
+            .toolbar-right { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+
+            .search-wrap { position: relative; display: flex; align-items: center; flex: 1; min-width: 160px; max-width: 280px; }
+
+            .search-wrap .pi-search { position: absolute; left: 10px; color: var(--text-faint); font-size: .75rem; }
+
+            .search-input {
+                padding: 6px 10px 6px 28px; border: 1px solid var(--border);
+                border-radius: var(--radius-sm); font-size: .8rem; width: 100%;
+                background: var(--surface-2); outline: none; transition: all .2s;
+            }
+
+            .search-input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(200, 16, 46, .1); background: var(--surface); }
+
+            .btn-new, .btn-ghost {
+                padding: 7px 14px; font-size: .8rem; font-weight: 600;
+                cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+                border-radius: var(--radius-sm); white-space: nowrap;
+            }
+
+            .btn-new {
+                background: linear-gradient(135deg, var(--black) 0%, var(--red) 100%);
+                color: #fff; border: none;
+            }
+            .btn-new:hover { filter: brightness(1.08); }
+
+            .btn-ghost {
+                background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+            }
+            .btn-ghost:hover { background: var(--border); }
+
+            .disc-table.p-datatable .p-datatable-thead > tr > th {
+                background: var(--black) !important; color: var(--yellow-lt) !important;
+                font-size: .7rem !important; text-transform: uppercase !important;
+                padding: .75rem 1rem !important; border-color: var(--black) !important;
+            }
+
+            .disc-table.p-datatable .p-datatable-tbody > tr > td { font-size: .82rem !important; padding: .75rem 1rem !important; }
+            .disc-table.p-datatable .p-datatable-tbody > tr:hover { background: var(--surface-2) !important; }
+
+            .t-num {
+                display: inline-flex; align-items: center; gap: 4px;
+                background: var(--black-mid); color: var(--yellow); border-radius: 5px;
+                padding: 3px 9px; font-family: var(--font-mono); font-size: .75rem;
+            }
+
+            .t-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+            .t-avatar {
+                width: 34px; height: 34px; border-radius: 50%; background: var(--black);
+                color: var(--yellow); font-size: .78rem; font-weight: 700;
+                display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            }
+
+            .workload-badge, .status-badge {
+                display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px;
+                border-radius: 99px; font-size: .72rem; font-weight: 700; white-space: nowrap;
+            }
+
+            .workload-badge { background: var(--blue-pale); color: var(--blue); border: 1px solid rgba(26, 95, 180, .3); }
+            .status-badge.active { background: var(--green-pale); color: var(--green); border: 1px solid rgba(30,130,76,.3); }
+            .status-badge.inactive { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+
+            .actions-cell { display: flex; align-items: center; gap: 4px; justify-content: center; }
+
+            .act-btn {
+                width: 28px; height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+                display: inline-flex; align-items: center; justify-content: center;
+                font-size: .75rem; cursor: pointer; flex-shrink: 0;
+            }
+
+            .act-btn.edit { color: #8a6400; background: var(--yellow-pale); }
+            .act-btn.delete { color: var(--red); background: var(--red-pale); }
+
+            /* Mobile Breakpoints Adjustments */
+            @media (max-width: 768px) {
+                .card-toolbar { flex-direction: column; align-items: stretch; }
+                .toolbar-left { width: 100%; flex-direction: column; align-items: stretch; gap: .8rem; }
+                .search-wrap { max-width: 100%; width: 100%; }
+                .toolbar-right { justify-content: flex-end; width: 100%; }
+                .page-header { flex-direction: column; align-items: flex-start; }
+            }
+        </style>
+
+        <div class="page-scroll-wrapper">
+            <h:form id="formDisciplines">
+                <p:growl id="messages" showDetail="true" life="4000" />
+
+                <!-- ── Page Header ── -->
+                <div class="page-header">
+                    <div class="page-header-left">
+                        <div class="page-header-icon"><i class="pi pi-book" /></div>
+                        <div class="page-header-title">
+                            <h1>#{msg.disciplineList}</h1>
+                            <span>Gestão de disciplinas</span>
+                        </div>
+                    </div>
+                    <span class="breadcrumb-pill">
+                        <i class="pi pi-home" style="font-size:.65rem" /> Gestão &#8250; Disciplinas
+                    </span>
+                </div>
+
+                <!-- ── Stat cards ── -->
+                <div class="stat-row">
+                    <div class="stat-card">
+                        <div>
+                            <span class="stat-label">Total de Disciplinas</span>
+                            <div class="stat-value">
+                                <h:outputText value="#{disciplineController.totalDisciplineCount}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </div>
+                        </div>
+                        <div class="stat-icon total"><i class="pi pi-book" /></div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <span class="stat-label">Disciplinas Ativas</span>
+                            <div class="stat-value">
+                                <h:outputText value="#{disciplineController.activeDisciplineCount}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </div>
+                        </div>
+                        <div class="stat-icon active"><i class="pi pi-check-circle" /></div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <span class="stat-label">Disciplinas Inativas</span>
+                            <div class="stat-value">
+                                <h:outputText value="#{disciplineController.inactiveDisciplineCount}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </div>
+                        </div>
+                        <div class="stat-icon inactive"><i class="pi pi-ban" /></div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <span class="stat-label">Carga Horária Total</span>
+                            <div class="stat-value">
+                                <h:outputText value="#{disciplineController.totalWorkloadCount}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </div>
+                        </div>
+                        <div class="stat-icon workload"><i class="pi pi-clock" /></div>
+                    </div>
+                </div>
+
+                <!-- ── Main Card ── -->
+                <div class="main-card">
+                    <div class="card-toolbar">
+                        <div class="toolbar-left filter-zone">
+                            <span class="toolbar-title"><i class="pi pi-list" style="color:var(--red)" /> Registo</span>
+                            <div class="search-wrap">
+                                <i class="pi pi-search" />
+                                <input type="text" class="search-input" placeholder="Buscar..."
+                                    onkeyup="PF('dtDisciplines').filter(this.value, 'global', 'contains')" />
+                            </div>
+                        </div>
+                        <div class="toolbar-right">
+                            <p:commandButton icon="pi pi-filter-slash" title="Limpar Filtros" styleClass="btn-ghost"
+                                actionListener="#{disciplineController.lazyModel.clearFilters}"
+                                update="dtDisciplines" />
+                            <p:commandButton value="Exportar" icon="pi pi-file-export" styleClass="btn-ghost" />
+                            <p:commandButton value="#{msg.newDiscipline}" icon="pi pi-plus" styleClass="btn-new"
+                                oncomplete="PF('createDisciplineDialog').show()"
+                                update=":disciplineCreateForm" process="@this" />
+                        </div>
+                    </div>
+
+                    <p:dataTable id="dtDisciplines" widgetVar="dtDisciplines" styleClass="disc-table" var="discipline"
+                        value="#{disciplineController.lazyModel}" lazy="true" paginator="true" rows="10"
+                        paginatorPosition="bottom" reflow="true"
+                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords} registos"
+                        rowsPerPageTemplate="5,10,15,30" emptyMessage="#{msg.noDisciplineFound}">
+
+                        <p:column headerText="#{msg.disciplineCode}" sortBy="#{discipline.disciplineCode}" style="width:130px">
+                            <span class="t-num">
+                                <i class="pi pi-hashtag" style="font-size:.65rem" />
+                                <h:outputText value="#{discipline.disciplineCode}" />
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.disciplineName}" sortBy="#{discipline.disciplineName}">
+                            <div class="t-cell">
+                                <div class="t-avatar">
+                                    <h:outputText value="#{discipline.disciplineName.substring(0,1)}" />
+                                </div>
+                                <div style="min-width:0; overflow:hidden; text-overflow:ellipsis;">
+                                    <div class="fw-bold text-dark" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                        <h:outputText value="#{discipline.disciplineName}" />
+                                    </div>
+                                </div>
+                            </div>
+                        </p:column>
+
+                        <p:column headerText="#{msg.workload}" sortBy="#{discipline.workload}" style="width:150px; text-align:center">
+                            <span class="workload-badge">
+                                <i class="pi pi-clock" style="font-size:.65rem" />
+                                <h:outputText value="#{discipline.workload}" /> h
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.status}" sortBy="#{discipline.status}" style="width:130px; text-align:center">
+                            <span class="status-badge #{discipline.status eq 'ACTIVE' ? 'active' : 'inactive'}">
+                                <i class="pi pi-circle-fill" style="font-size:.55rem" />
+                                <h:outputText value="#{discipline.status}" />
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.actions}" style="width:110px; text-align:center" exportable="false">
+                            <div class="actions-cell">
+                                <p:commandButton styleClass="act-btn edit" icon="pi pi-pencil" title="Editar"
+                                    actionListener="#{disciplineController.openEditDialog}"
+                                    oncomplete="PF('editDisciplineDialog').show()"
+                                    update=":disciplineEditForm">
+                                    <f:setPropertyActionListener value="#{discipline.pkDiscipline}" target="#{disciplineController.selectedId}" />
+                                </p:commandButton>
+
+                                <p:commandButton styleClass="act-btn delete" icon="pi pi-trash" title="Excluir"
+                                    process="@this"
+                                    oncomplete="PF('deleteDisciplineDialog').show()">
+                                    <f:setPropertyActionListener value="#{discipline.pkDiscipline}" target="#{disciplineController.selectedId}" />
+                                </p:commandButton>
+                            </div>
+                        </p:column>
+
+                        <f:facet name="emptyMessage">
+                            <div class="text-center p-5 text-muted">
+                                <i class="pi pi-book d-block mb-2" style="font-size:2rem; opacity:.2" />
+                                #{msg.noDisciplineFound}
+                            </div>
+                        </f:facet>
+                    </p:dataTable>
+                </div>
+
+                <!-- ── Confirm delete dialog ── -->
+                <p:dialog widgetVar="deleteDisciplineDialog" modal="true" resizable="false" header="Confirmar Exclusão"
+                    width="90%" style="max-width: 380px;" closable="true" styleClass="confirm-delete-dialog">
+                    <div style="padding: .5rem 0 1rem; display:flex; gap:.8rem; align-items:flex-start;">
+                        <i class="pi pi-exclamation-triangle"
+                            style="color: var(--red); font-size: 1.6rem; flex-shrink:0;" />
+                        <span style="font-size:.88rem; color: var(--text);">
+                            Tens a certeza que queres excluir a disciplina selecionada? Esta ação não pode ser desfeita.
+                        </span>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:.6rem; flex-wrap:wrap;">
+                        <p:commandButton value="#{msg.no}" type="button" onclick="PF('deleteDisciplineDialog').hide()"
+                            style="background: var(--surface-2); color: var(--text); border:1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 16px; font-size:.8rem;" />
+                        <p:commandButton value="#{msg.yes}" icon="pi pi-trash" actionListener="#{disciplineController.delete}"
+                            process="@this" update=":formDisciplines:dtDisciplines :formDisciplines:messages"
+                            oncomplete="PF('deleteDisciplineDialog').hide()"
+                            style="background: linear-gradient(135deg, var(--black) 0%, var(--red) 100%); color:#fff; border:none; border-radius: var(--radius-sm); padding: 7px 16px; font-size:.8rem;" />
+                    </div>
+                </p:dialog>
+            </h:form>
+
+            <ui:include src="discipline/discipline-create.xhtml" />
+            <ui:include src="discipline/discipline-edit.xhtml" />
+        </div>
+    </ui:define>
+
+</ui:composition>

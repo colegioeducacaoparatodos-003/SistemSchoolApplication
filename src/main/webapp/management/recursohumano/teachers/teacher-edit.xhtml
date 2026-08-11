@@ -1,0 +1,133 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui" xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <p:dialog id="editTeacherDialog" widgetVar="editTeacherDialog" header="#{msg.editTeacher}" modal="true"
+              showEffect="fade" hideEffect="fade" closeOnEscape="true" styleClass="sc-dialog-edit" width="1000"
+              dynamic="true" resizable="false" appendTo="@(body)">
+
+        <h:form id="teacherEditForm" styleClass="ui-fluid" enctype="multipart/form-data">
+            <div class="sc-create-body">
+                <p:messages id="msgsEdit" showDetail="true" closable="true"/>
+
+                <!-- 1 · IDENTIFICAÇÃO DO PROFESSOR -->
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-user"></i> #{msg.teacherIdentification}</div>
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank" columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+                        <p:outputLabel for="teacherNumber" value="#{msg.teacherNumber}" styleClass="sc-label"/>
+                        <p:inputText id="teacherNumber" value="#{teacherController.editDto.teacherNumber}"/>
+
+                        <p:outputLabel for="firstName" value="#{msg.firstName}" styleClass="sc-label req"/>
+                        <p:inputText id="firstName" value="#{teacherController.editDto.fristName}" required="true"/>
+
+                        <p:outputLabel for="lastName" value="#{msg.lastName}" styleClass="sc-label req"/>
+                        <p:inputText id="lastName" value="#{teacherController.editDto.lastName}" required="true"/>
+
+                        <p:outputLabel for="gender" value="#{msg.gender}" styleClass="sc-label req"/>
+                        <p:selectOneMenu id="gender" value="#{teacherController.editDto.gender}" required="true">
+                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{teacherController.genders}" var="g"
+                                           itemLabel="#{teacherController.genderLabel(g)}" itemValue="#{g}"/>
+                        </p:selectOneMenu>
+                    </p:panelGrid>
+                </div>
+
+                <!-- 2 · QUALIFICAÇÃO E VÍNCULO -->
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-briefcase"></i> #{msg.professionalQualification}</div>
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank" columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+                        <p:outputLabel for="qualification" value="#{msg.qualificationLevel}" styleClass="sc-label req"/>
+                        <p:selectOneMenu id="qualification" value="#{teacherController.editDto.qualificationLivel}" required="true">
+                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{teacherController.qualificationLevels}" var="q"
+                                           itemLabel="#{teacherController.qualificationLabel(q)}" itemValue="#{q}"/>
+                        </p:selectOneMenu>
+
+                        <p:outputLabel for="contractType" value="#{msg.contractType}" styleClass="sc-label req"/>
+                        <p:selectOneMenu id="contractType" value="#{teacherController.editDto.contractType}" required="true">
+                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{teacherController.contractTypes}" var="c"
+                                           itemLabel="#{teacherController.contractTypeLabel(c)}" itemValue="#{c}"/>
+                        </p:selectOneMenu>
+
+                        <p:outputLabel for="baseSalary" value="#{msg.baseSalary}" styleClass="sc-label"/>
+                        <p:inputNumber id="baseSalary" value="#{teacherController.editDto.baseSalary}"
+                                       symbol=" Kz" symbolPosition="s" decimalPlaces="2"
+                                       thousandSeparator="." decimalSeparator=","/>
+                    </p:panelGrid>
+                </div>
+
+                <!-- 3 · DOCUMENTOS E CONTACTO -->
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-id-card"></i> #{msg.documentsAndContact}</div>
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank" columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+                        <p:outputLabel for="biNumber" value="#{msg.idCardNumber}" styleClass="sc-label"/>
+                        <p:inputText id="biNumber" value="#{teacherController.editDto.biNumber}"/>
+
+                        <p:outputLabel for="biExpiry" value="#{msg.idCardExpiryDate}" styleClass="sc-label"/>
+                        <p:datePicker id="biExpiry" value="#{teacherController.editDto.biExpiryDate}" pattern="dd/MM/yyyy" showIcon="true"/>
+
+                        <p:outputLabel for="email" value="#{msg.email}" styleClass="sc-label"/>
+                        <p:inputText id="email" value="#{teacherController.editDto.email}" placeholder="professor@escola.ao"/>
+
+                        <p:outputLabel for="phone" value="#{msg.phone1}" styleClass="sc-label"/>
+                        <p:inputMask id="phone" value="#{teacherController.editDto.phone}" mask="999 999 999"/>
+
+                        <p:outputLabel for="mobilePhone" value="#{msg.phone2}" styleClass="sc-label"/>
+                        <p:inputMask id="mobilePhone" value="#{teacherController.editDto.mobilePhone}" mask="999 999 999"/>
+                    </p:panelGrid>
+                </div>
+
+                <!-- 4 · MORADA -->
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-map-marker"></i> #{msg.residentialAddress}</div>
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank" columnClasses="p-col-12 p-md-8, p-col-12 p-md-4">
+                        <p:outputLabel for="addressStreet" value="#{msg.addressStreet}" styleClass="sc-label"/>
+                        <p:inputText id="addressStreet" value="#{teacherController.editDto.addressStreet}"/>
+
+                        <p:outputLabel for="province" value="#{msg.province}" styleClass="sc-label"/>
+                        <p:inputText id="province" value="#{teacherController.editDto.addressProvice}"/>
+                    </p:panelGrid>
+                </div>
+
+                <!-- 5 · STATUS, FOTO E NOTAS -->
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-check-circle"></i> #{msg.registrationFinalization}</div>
+                    <p:panelGrid columns="1" layout="grid" styleClass="ui-panelgrid-blank">
+                        <p:outputLabel for="status" value="#{msg.status}" styleClass="sc-label req"/>
+                        <p:selectOneMenu id="status" value="#{teacherController.editDto.status}" required="true">
+                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{teacherController.teacherStatuses}" var="s"
+                                           itemLabel="#{teacherController.statusLabel(s)}" itemValue="#{s}"/>
+                        </p:selectOneMenu>
+
+                        <p:outputLabel for="photo" value="#{msg.teacherPhoto}" styleClass="sc-label"/>
+                        <p:fileUpload id="photo" value="#{teacherController.uploadedPhoto}" mode="simple" skinSimple="true"
+                                      label="#{msg.choose}" styleClass="p-button-sm"/>
+                        <div class="text-muted small mt-1">JPG, PNG ou WEBP (Máx 2MB)</div>
+
+                        <p:outputLabel for="notes" value="#{msg.notes}" styleClass="sc-label"/>
+                        <p:inputTextarea id="notes" value="#{teacherController.editDto.obs}" rows="3"
+                                         placeholder="#{msg.additionalNotesPlaceholder}"/>
+                    </p:panelGrid>
+                </div>
+
+            </div>
+
+            <div class="sc-create-footer">
+                <p:commandButton value="#{msg.cancel}" icon="pi pi-times"
+                                 styleClass="sc-btn-cancel"
+                                 type="button"
+                                 onclick="PF('editTeacherDialog').hide()"/>
+
+                <p:commandButton value="#{msg.save}" icon="pi pi-save"
+                                 styleClass="sc-btn-save"
+                                 action="#{teacherController.saveUpdate}"
+                                 ajax="false"
+                                 update=":formTeachers:dtTeachers messages"
+                                 oncomplete="if (!args.validationFailed) { PF('editTeacherDialog').hide(); }"/>
+            </div>
+        </h:form>
+    </p:dialog>
+
+</ui:composition>

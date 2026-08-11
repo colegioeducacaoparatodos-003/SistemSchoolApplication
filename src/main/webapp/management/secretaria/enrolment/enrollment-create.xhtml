@@ -1,0 +1,171 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <p:dialog id="createEnrollmentDialog" widgetVar="createEnrollmentDialog" header="#{msg.newEnrollment}" modal="true"
+        showEffect="fade" hideEffect="fade" closeOnEscape="true" style="width: 90vw; max-width: 780px;" dynamic="true"
+        resizable="false" appendTo="@(body)" styleClass="sc-dialog-create" responsive="true" fitViewport="true">
+
+        <h:form id="enrollmentCreateForm" styleClass="ui-fluid">
+            <p:messages id="msgsCreate" showDetail="true" closable="true" globalOnly="true" />
+
+            <div style="padding: .5rem 0 1rem;">
+                <div
+                    style="font-size:1rem; font-weight:700; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem;">
+                    <i class="pi pi-id-card" style="color:var(--enr-red, #c8102e);"></i> #{msg.enrollmentData}
+                </div>
+
+                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
+                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+
+                    <p:outputLabel for="enrolmentNumer" value="#{msg.enrollmentNumber}" styleClass="sc-label" />
+                    <p:inputText id="enrolmentNumer" value="#{enrolmentController.enrolment.enrolmentNumer}"
+                        readonly="true" styleClass="sc-readonly-field" style="background:#f3f4f6;" />
+
+                    <p:outputLabel for="studentCreate" value="#{msg.selectStudent}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:selectOneMenu id="studentCreate" value="#{enrolmentController.selectedStudentId}"
+                            required="true" requiredMessage="#{msg.requiredStudent}" filter="true"
+                            filterMatchMode="contains" style="width:100%;">
+                            <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{enrolmentController.students}" var="st"
+                                itemLabel="#{st.fullName} (#{st.sudentNumber})" itemValue="#{st.pkStudent}" />
+                        </p:selectOneMenu>
+                        <p:message for="studentCreate" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="schoolClassCreate" value="#{msg.selectSchoolClass}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:selectOneMenu id="schoolClassCreate" value="#{enrolmentController.selectedSchoolClassId}"
+                            required="true" requiredMessage="#{msg.requiredSchoolClass}" filter="true"
+                            filterMatchMode="contains" style="width:100%;">
+                            <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{enrolmentController.schoolClasses}" var="sc"
+                                itemLabel="#{sc.classCode} — #{sc.className}" itemValue="#{sc.pkSchoolClass}" />
+                        </p:selectOneMenu>
+                        <p:message for="schoolClassCreate" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="shiftCreate" value="#{msg.selectShift}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:selectOneMenu id="shiftCreate" value="#{enrolmentController.enrolment.shift}" required="true"
+                            requiredMessage="#{msg.requiredShift}" style="width:100%;">
+                            <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{enrolmentController.shifts}" var="sh" itemLabel="#{sh}"
+                                itemValue="#{sh}" />
+                        </p:selectOneMenu>
+                        <p:message for="shiftCreate" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="enrolmentTypeCreate" value="#{msg.enrollmentTypeLabel}" styleClass="sc-label req" />
+                    <h:panelGroup>
+                        <p:selectOneMenu id="enrolmentTypeCreate" value="#{enrolmentController.enrolment.enrolmentType}"
+                            required="true" requiredMessage="#{msg.requiredType}" style="width:100%;">
+                            <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{enrolmentController.enrolmentTypes}" var="et" itemLabel="#{et}"
+                                itemValue="#{et}" />
+                        </p:selectOneMenu>
+                        <p:message for="enrolmentTypeCreate" display="text" styleClass="sc-field-msg" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="enrolmentDataCreate" value="#{msg.enrollmentDate}" styleClass="sc-label" />
+                    <p:datePicker id="enrolmentDataCreate" value="#{enrolmentController.enrolment.enrolmentData}"
+                        pattern="dd/MM/yyyy" showIcon="true" locale="pt" style="width:100%;"
+                        monthNavigator="true" yearNavigator="true" yearRange="2020:2030" />
+
+                </p:panelGrid>
+
+                <div style="margin-top:1.2rem;">
+                    <p:outputLabel for="notesCreate" value="#{msg.observations}" styleClass="sc-label" />
+                    <p:inputTextarea id="notesCreate" value="#{enrolmentController.enrolment.obs}" rows="3"
+                        maxlength="500" counter="notesCounterCreate" counterTemplate="{0} / 500"
+                        placeholder="#{msg.additionalNotesPlaceholder}" style="width:100%;" />
+                    <h:outputText id="notesCounterCreate"
+                        style="display:block; text-align:right; font-size:11px; color:#888; margin-top:2px;" />
+                </div>
+            </div>
+
+            <div
+                style="display:flex; justify-content:flex-end; gap:.6rem; padding-top:1rem; border-top:1px solid #e5e7eb; flex-wrap: wrap;">
+                <p:commandButton value="#{msg.cancel}" icon="pi pi-times" type="button"
+                    onclick="PF('createEnrollmentDialog').hide()" styleClass="ui-button-outlined ui-button-secondary" />
+                <p:commandButton value="#{msg.saveEnrollment}" icon="pi pi-save" styleClass="ui-button-success"
+                    action="#{enrolmentController.saveEnrolment}" process="@form"
+                    update=":enrollmentCreateForm:msgsCreate :formEnrollments:dtEnrollments :formEnrollments:messages"
+                    onstart="showScLoading()"
+                    oncomplete="hideScLoading(); if (!args.validationFailed) { PF('createEnrollmentDialog').hide(); }" />
+            </div>
+        </h:form>
+    </p:dialog>
+
+    <style>
+        /* ===== RESPONSIVO COM MARGENS — DESKTOP / TABLET ===== */
+        @media (min-width: 768px) {
+            .sc-dialog-create .ui-dialog {
+                top: 1rem !important;
+                left: 1rem !important;
+                right: 1rem !important;
+                bottom: 1rem !important;
+                width: auto !important;
+                height: auto !important;
+                max-width: 900px !important;
+                margin: 0 auto !important;
+                border-radius: 6px !important;
+            }
+            .sc-dialog-create .ui-dialog-content {
+                height: calc(100vh - 180px) !important;
+                max-height: calc(100vh - 180px) !important;
+                overflow-y: auto !important;
+            }
+        }
+
+        /* ===== MARGENS EM TELAS PEQUENAS ===== */
+        @media (max-width: 767px) {
+            .sc-dialog-create .ui-dialog {
+                top: .5rem !important;
+                left: .5rem !important;
+                right: .5rem !important;
+                bottom: .5rem !important;
+                width: auto !important;
+                height: auto !important;
+                max-width: none !important;
+                margin: 0 !important;
+            }
+            .sc-dialog-create .ui-dialog-content {
+                max-height: calc(100vh - 140px) !important;
+                overflow-y: auto !important;
+            }
+        }
+
+        .sc-label {
+            font-size: .88rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: .3rem;
+            display: block;
+        }
+
+        .sc-label.req::after {
+            content: " *";
+            color: #dc2626;
+        }
+
+        .sc-field-msg {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            color: #dc2626;
+        }
+
+        .sc-readonly-field {
+            opacity: .8;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 576px) {
+            .sc-dialog-create .ui-dialog-content {
+                padding: .5rem !important;
+            }
+        }
+    </style>
+</ui:composition>

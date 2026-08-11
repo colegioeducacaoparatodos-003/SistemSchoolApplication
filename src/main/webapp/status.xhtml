@@ -1,0 +1,17 @@
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="titulo">#{msg.status}</ui:define>
+
+    <ui:define name="content">
+        <div class="p-4">
+            <h1 class="h3 mb-3">#{msg.status}</h1>
+            <p:card header="#{msg.status}">
+                <p class="mb-0">Sistema operacional e sessão ativos.</p>
+            </p:card>
+        </div>
+    </ui:define>
+</ui:composition>

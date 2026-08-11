@@ -1,0 +1,552 @@
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <ui:define name="titulo">#{msg.schoolClassList}</ui:define>
+
+    <ui:define name="content">
+        <style type="text/css">
+            /* <![CDATA[ */
+            :root {
+                --enr-black: #141414;
+                --enr-red: #c8102e;
+                --enr-yellow: #f5b400;
+                --enr-blue: #1a5fb4;
+                --enr-green: #1e824c;
+                --enr-surface: #ffffff;
+                --enr-surface-2: #f7f7f8;
+                --enr-border: #e6e6e8;
+                --enr-text: #141414;
+                --enr-muted: #666a70;
+                --enr-radius: 12px;
+                --enr-shadow: 0 4px 20px rgba(20, 20, 20, .10);
+                --black-mid: #262626;
+                --yellow: var(--enr-yellow);
+                --font-mono: 'DM Mono', monospace;
+            }
+
+            .breadcrumb-pill {
+                display: inline-flex; align-items: center; gap: 5px;
+                background: #fff8e1; border: 1px solid rgba(245, 180, 0, .35);
+                color: #8a6400; border-radius: 99px; padding: 3px 12px;
+                font-size: .72rem; font-weight: 600;
+            }
+
+            .t-num {
+                display: inline-flex; align-items: center; gap: 4px;
+                background: #262626; color: var(--enr-yellow);
+                border-radius: 5px; padding: 3px 9px;
+                font-family: 'DM Mono', monospace; font-size: .75rem;
+            }
+
+            .doc-page { padding: 1.2rem; }
+            @media(min-width:768px) { .doc-page { padding: 1.6rem 2rem 2.5rem; } }
+
+            .doc-header {
+                display: flex; align-items: flex-start; justify-content: space-between;
+                flex-wrap: wrap; gap: 1rem; margin-bottom: 1.4rem;
+            }
+            .doc-header-left { display: flex; align-items: center; gap: 1rem; }
+            .doc-header-icon {
+                width: 46px; height: 46px; border-radius: 12px;
+                background: linear-gradient(135deg, var(--enr-black) 0%, var(--enr-red) 100%);
+                display: flex; align-items: center; justify-content: center;
+                color: var(--enr-yellow); font-size: 1.2rem; flex-shrink: 0;
+            }
+            .doc-header-title h1 { font-size: 1.35rem; font-weight: 800; margin: 0 0 .2rem; color: var(--enr-text); }
+            .doc-header-title p { font-size: .85rem; color: var(--enr-muted); margin: 0; }
+
+            .doc-stats {
+                display: grid; grid-template-columns: repeat(1, 1fr); gap: .9rem; margin-bottom: 1.4rem;
+            }
+            @media(min-width:576px) { .doc-stats { grid-template-columns: repeat(2, 1fr); } }
+            @media(min-width:992px) { .doc-stats { grid-template-columns: repeat(4, 1fr); } }
+
+            .doc-stat {
+                background: var(--enr-surface); border: 1px solid var(--enr-border);
+                border-radius: var(--enr-radius); box-shadow: var(--enr-shadow);
+                padding: 1.1rem 1.2rem; display: flex; align-items: center; justify-content: space-between;
+                transition: transform .2s;
+            }
+            .doc-stat:hover { transform: translateY(-2px); }
+            .doc-stat-label { font-size: .72rem; color: var(--enr-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+            .doc-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--enr-text); margin-top: .15rem; }
+            .doc-stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+            .doc-stat-icon.dark { background: var(--enr-black); color: var(--enr-yellow); }
+            .doc-stat-icon.yellow { background: #fff8e1; color: #8a6400; }
+            .doc-stat-icon.red { background: #fdecee; color: var(--enr-red); }
+            .doc-stat-icon.blue { background: #eaf1fb; color: var(--enr-blue); }
+
+            .doc-card {
+                background: var(--enr-surface); border: 1px solid var(--enr-border);
+                border-radius: var(--enr-radius); box-shadow: var(--enr-shadow); overflow: hidden;
+            }
+
+            .doc-toolbar {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 1rem 1.2rem; border-bottom: 1px solid var(--enr-border);
+                gap: 1rem; flex-wrap: wrap;
+            }
+            .doc-toolbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+            .doc-toolbar-right { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+
+            .doc-filters {
+                display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+                padding: .8rem 1.2rem; background: var(--enr-surface-2);
+                border-bottom: 1px solid var(--enr-border);
+            }
+            .doc-filters .ui-inputfield, .doc-filters .ui-selectonemenu { min-width: 160px; }
+
+            .doc-table.p-datatable .p-datatable-thead>tr>th {
+                background: var(--enr-black) !important; color: var(--enr-yellow) !important;
+                font-size: .7rem !important; text-transform: uppercase !important;
+                padding: .7rem 1rem !important; border-color: var(--enr-black) !important;
+            }
+            .doc-table.p-datatable .p-datatable-tbody>tr>td {
+                font-size: .82rem !important; padding: .72rem 1rem !important;
+            }
+            .doc-table.p-datatable .p-datatable-tbody>tr:hover { background: var(--enr-surface-2) !important; }
+
+            .doc-avatar {
+                width: 36px; height: 36px; border-radius: 50%;
+                background: var(--enr-black); color: var(--enr-yellow);
+                font-size: .8rem; font-weight: 700;
+                display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+            }
+
+            .doc-badge {
+                display: inline-flex; align-items: center; gap: 5px;
+                padding: 3px 10px; border-radius: 99px; font-size: .72rem; font-weight: 700;
+            }
+            .doc-badge.type { background: #eaf1fb; color: var(--enr-blue); border: 1px solid rgba(26, 95, 180, .25); }
+            .doc-badge.shift { background: #fff8e1; color: #8a6400; border: 1px solid rgba(245, 180, 0, .35); }
+            .doc-badge.active { background: #e9f7ef; color: var(--enr-green); border: 1px solid rgba(30, 130, 76, .25); }
+            .doc-badge.inactive { background: #fdecee; color: var(--enr-red); border: 1px solid rgba(200, 16, 46, .25); }
+            .doc-badge.canceled { background: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; }
+
+            .doc-actions { display: flex; align-items: center; gap: 4px; justify-content: center; flex-wrap: wrap; }
+            .doc-act {
+                width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--enr-border);
+                display: inline-flex; align-items: center; justify-content: center;
+                font-size: .8rem; cursor: pointer; transition: all .15s;
+            }
+            .doc-act:hover { transform: scale(1.08); }
+            .doc-act.view { color: var(--enr-blue); background: #eaf1fb; }
+            .doc-act.edit { color: #8a6400; background: #fff8e1; }
+            .doc-act.delete { color: var(--enr-red); background: #fdecee; }
+
+            .doc-empty { text-align: center; padding: 3rem 1rem; color: var(--enr-muted); }
+            .doc-empty i { font-size: 2.5rem; opacity: .2; margin-bottom: .5rem; display: block; }
+
+            .doc-dialog-footer { display: flex; justify-content: flex-end; gap: .6rem; margin-top: .5rem; flex-wrap: wrap; }
+
+            .doc-detail-box { background: #f9fafb; padding: .7rem 1rem; border-radius: 8px; }
+            .doc-detail-label { font-size: .72rem; color: var(--enr-muted); text-transform: uppercase; font-weight: 700; }
+
+            /* ===== LOADING OVERLAY ===== */
+            .sc-loading-overlay {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+                z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s ease;
+            }
+            .sc-loading-overlay.active { opacity: 1; visibility: visible; }
+            .sc-loading-box {
+                background: var(--enr-surface); border-radius: var(--enr-radius); padding: 2.5rem 3rem;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); display: flex; flex-direction: column;
+                align-items: center; gap: 1.2rem; border: 1px solid var(--enr-border); min-width: 260px;
+                transform: scale(0.9); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .sc-loading-overlay.active .sc-loading-box { transform: scale(1); }
+            .sc-loader-rings { position: relative; width: 72px; height: 72px; }
+            .sc-loader-rings::before, .sc-loader-rings::after {
+                content: ''; position: absolute; border-radius: 50%; border: 3px solid transparent;
+            }
+            .sc-loader-rings::before {
+                top: 0; left: 0; width: 100%; height: 100%;
+                border-top-color: var(--enr-red); border-right-color: var(--enr-yellow);
+                animation: scSpin 1.2s linear infinite;
+            }
+            .sc-loader-rings::after {
+                top: 10px; left: 10px; width: calc(100% - 20px); height: calc(100% - 20px);
+                border-bottom-color: var(--enr-black); border-left-color: #e63946;
+                animation: scSpinReverse 0.9s linear infinite;
+            }
+            .sc-loader-core {
+                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                width: 16px; height: 16px;
+                background: linear-gradient(135deg, var(--enr-red), var(--enr-yellow));
+                border-radius: 50%; animation: scPulse 1s ease-in-out infinite;
+                box-shadow: 0 0 15px rgba(200, 16, 46, 0.5);
+            }
+            @keyframes scSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            @keyframes scSpinReverse { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+            @keyframes scPulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.7; } }
+            .sc-loading-text { font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 600; color: var(--enr-text); text-align: center; }
+            .sc-loading-sub { font-size: 0.78rem; color: var(--enr-muted); text-align: center; margin-top: -0.6rem; }
+            .sc-loading-dots::after { content: ''; animation: scDots 1.5s steps(4, end) infinite; }
+            @keyframes scDots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } 100% { content: ''; } }
+            .sc-loading-progress { width: 100%; height: 3px; background: var(--enr-border); border-radius: 99px; overflow: hidden; margin-top: 0.3rem; }
+            .sc-loading-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow)); border-radius: 99px; animation: scProgress 2s ease-in-out infinite; }
+            @keyframes scProgress { 0% { width: 0%; margin-left: 0%; } 50% { width: 60%; margin-left: 20%; } 100% { width: 0%; margin-left: 100%; } }
+
+            @media (max-width: 576px) {
+                .doc-header { flex-direction: column; align-items: stretch; }
+                .doc-header-left { width: 100%; }
+                .doc-toolbar { flex-direction: column; align-items: stretch; }
+                .doc-toolbar-left, .doc-toolbar-right { width: 100%; }
+                .doc-toolbar-right .ui-button, .doc-toolbar-right .ui-menubutton { width: 100%; }
+                .doc-filters { flex-direction: column; align-items: stretch; gap: .5rem; }
+                .doc-filters .ui-inputfield, .doc-filters .ui-selectonemenu, .doc-filters .ui-button { width: 100% !important; min-width: unset !important; }
+                .doc-stat-value { font-size: 1.25rem; }
+                .doc-actions { gap: 6px; }
+                .doc-act { width: 34px; height: 34px; font-size: .9rem; }
+                .doc-dialog-footer { justify-content: stretch; }
+                .doc-dialog-footer .ui-button { flex: 1 1 auto; }
+                .sc-loading-box { padding: 2rem 1.5rem; min-width: 220px; margin: 0 1rem; }
+            }
+            /* ]]> */
+        </style>
+
+        <div id="scLoadingOverlay" class="sc-loading-overlay">
+            <div class="sc-loading-box">
+                <div class="sc-loader-rings"><div class="sc-loader-core"></div></div>
+                <div class="sc-loading-text">#{msg.processing}<span class="sc-loading-dots"></span></div>
+                <div class="sc-loading-sub">#{msg.pleaseWait}</div>
+                <div class="sc-loading-progress"><div class="sc-loading-progress-bar"></div></div>
+            </div>
+        </div>
+
+        <div class="doc-page">
+            <h:form id="formSchoolClasses">
+                <p:growl id="messages" showDetail="true" life="5000">
+                    <p:autoUpdate />
+                </p:growl>
+
+                <!-- HEADER -->
+                <div class="doc-header">
+                    <div class="doc-header-left">
+                        <div class="doc-header-icon"><i class="pi pi-sitemap" /></div>
+                        <div class="doc-header-title">
+                            <h1>#{msg.schoolClassList}</h1>
+                            <p>#{msg.classManagement}</p>
+                        </div>
+                    </div>
+                    <span class="breadcrumb-pill">
+                        <i class="pi pi-home" style="font-size:.65rem" /> #{msg.schoolManagement} &#8250; #{msg.schoolClassList}
+                    </span>
+                </div>
+
+                <!-- STATS -->
+                <div class="doc-stats">
+                    <div class="doc-stat">
+                        <div>
+                            <div class="doc-stat-label">#{msg.totalClasses}</div>
+                            <div class="doc-stat-value">
+                                <h:outputText value="#{schoolClassController.totalSchoolClassCount}">
+                                    <f:convertNumber pattern="#,#0" />
+                                </h:outputText>
+                            </div>
+                        </div>
+                        <div class="doc-stat-icon dark"><i class="pi pi-sitemap" /></div>
+                    </div>
+                    <div class="doc-stat">
+                        <div>
+                            <div class="doc-stat-label">#{msg.activeClasses}</div>
+                            <div class="doc-stat-value">
+                                <h:outputText value="#{schoolClassController.activeSchoolClassCount}">
+                                    <f:convertNumber pattern="#,#0" />
+                                </h:outputText>
+                            </div>
+                        </div>
+                        <div class="doc-stat-icon yellow"><i class="pi pi-check-circle" /></div>
+                    </div>
+                    <div class="doc-stat">
+                        <div>
+                            <div class="doc-stat-label">#{msg.distinctShifts}</div>
+                            <div class="doc-stat-value">
+                                <h:outputText value="#{schoolClassController.distinctTurnosCount}">
+                                    <f:convertNumber pattern="#,#0" />
+                                </h:outputText>
+                            </div>
+                        </div>
+                        <div class="doc-stat-icon blue"><i class="pi pi-clock" /></div>
+                    </div>
+                    <div class="doc-stat">
+                        <div>
+                            <div class="doc-stat-label">#{msg.totalCapacity}</div>
+                            <div class="doc-stat-value">
+                                <h:outputText value="#{schoolClassController.totalCapacityCount}">
+                                    <f:convertNumber pattern="#,#0" />
+                                </h:outputText>
+                            </div>
+                        </div>
+                        <div class="doc-stat-icon red"><i class="pi pi-users" /></div>
+                    </div>
+                </div>
+
+                <!-- MAIN CARD -->
+                <div class="doc-card">
+                    <div class="doc-toolbar">
+                        <div class="doc-toolbar-left">
+                            <span style="font-weight:700; font-size:.9rem; color:var(--enr-text);">
+                                <i class="pi pi-list" style="color:var(--enr-red); margin-right:.4rem;" />
+                                #{msg.record}
+                            </span>
+                        </div>
+                        <div class="doc-toolbar-right">
+                            <p:commandButton value="#{msg.newSchoolClass}" icon="pi pi-plus"
+                                onstart="showScLoading()"
+                                oncomplete="hideScLoading(); PF('createSchoolClassDialog').show()"
+                                update=":schoolClassCreateForm"
+                                process="@this" styleClass="ui-button-success" />
+                        </div>
+                    </div>
+
+                    <div class="doc-filters">
+                        <p:selectOneMenu value="#{schoolClassController.filterClasse}" placeholder="#{msg.classe}" style="min-width:160px;">
+                            <f:selectItem itemLabel="#{msg.allClasses}" itemValue="#{null}" />
+                            <f:selectItems value="#{schoolClassController.classes}" var="cl" itemLabel="#{cl}" itemValue="#{cl}" />
+                            <p:ajax event="change" listener="#{schoolClassController.applyFilters}" update="dtSchoolClasses messages" process="@this" />
+                        </p:selectOneMenu>
+
+                        <p:selectOneMenu value="#{schoolClassController.filterTurno}" placeholder="#{msg.shift}" style="min-width:160px;">
+                            <f:selectItem itemLabel="#{msg.allShifts}" itemValue="#{null}" />
+                            <f:selectItems value="#{schoolClassController.turnos}" var="sh" itemLabel="#{sh}" itemValue="#{sh}" />
+                            <p:ajax event="change" listener="#{schoolClassController.applyFilters}" update="dtSchoolClasses messages" process="@this" />
+                        </p:selectOneMenu>
+
+                        <p:selectOneMenu value="#{schoolClassController.filterStatus}" placeholder="#{msg.status}" style="min-width:140px;">
+                            <f:selectItem itemLabel="#{msg.allStatuses}" itemValue="#{null}" />
+                            <f:selectItems value="#{schoolClassController.statuses}" var="st" itemLabel="#{st}" itemValue="#{st}" />
+                            <p:ajax event="change" listener="#{schoolClassController.applyFilters}" update="dtSchoolClasses messages" process="@this" />
+                        </p:selectOneMenu>
+
+                        <p:inputText value="#{schoolClassController.filterAnoLectivo}" placeholder="#{msg.academicYear}..." style="min-width:140px;">
+                            <p:ajax event="keyup" delay="400" listener="#{schoolClassController.applyFilters}" update="dtSchoolClasses messages" process="@this" />
+                        </p:inputText>
+
+                        <p:inputText value="#{schoolClassController.filterSearchText}" placeholder="#{msg.search}..." style="min-width:200px;">
+                            <p:ajax event="keyup" delay="400" listener="#{schoolClassController.applyFilters}" update="dtSchoolClasses messages" process="@this" />
+                        </p:inputText>
+
+                        <p:commandButton icon="pi pi-filter" value="#{msg.apply}" action="#{schoolClassController.applyFilters}" update="dtSchoolClasses messages" styleClass="ui-button-primary" />
+                        <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}" action="#{schoolClassController.clearFilters}" update="@form" styleClass="ui-button-outlined ui-button-secondary" />
+                    </div>
+
+                    <p:dataTable id="dtSchoolClasses" widgetVar="dtSchoolClasses" styleClass="doc-table" var="schoolClass"
+                        value="#{schoolClassController.lazyModel}" lazy="true" paginator="true" rows="8" reflow="true"
+                        scrollable="true" scrollHeight="320px"
+                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        currentPageReportTemplate="{startRecord}-{endRecord} #{msg.of} {totalRecords}"
+                        rowsPerPageTemplate="5,8,10,20" emptyMessage="#{msg.noSchoolClassFound}">
+
+                        <p:column headerText="#{msg.classCode}" sortBy="#{schoolClass.classCode}" style="width:120px">
+                            <span class="t-num">
+                                <i class="pi pi-hashtag" style="font-size:.65rem" />
+                                <h:outputText value="#{schoolClass.classCode}" />
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.className}" sortBy="#{schoolClass.className}">
+                            <div style="display:flex; align-items:center; gap:.7rem;">
+                                <div class="doc-avatar">
+                                    <h:outputText value="#{schoolClass.className.substring(0,1)}" />
+                                </div>
+                                <div>
+                                    <div style="font-weight:700; color:var(--enr-text);">#{schoolClass.className}</div>
+                                    <div style="font-size:.75rem; color:var(--enr-muted);">#{msg.room} #{schoolClass.room}</div>
+                                </div>
+                            </div>
+                        </p:column>
+
+                        <p:column headerText="#{msg.classe}" sortBy="#{schoolClass.classe}" style="width:120px; text-align:center">
+                            <span class="doc-badge type">
+                                <i class="pi pi-book" style="font-size:.65rem" />
+                                <h:outputText value="#{schoolClass.classe}" />
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.shift}" sortBy="#{schoolClass.turno}" style="width:130px; text-align:center">
+                            <span class="doc-badge shift">
+                                <i class="pi pi-clock" style="font-size:.65rem" />
+                                <h:outputText value="#{schoolClass.turno}" />
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.academicYear}" sortBy="#{schoolClass.anoLectivo}" style="width:120px; text-align:center">
+                            <h:outputText value="#{schoolClass.anoLectivo}" />
+                        </p:column>
+
+                        <p:column headerText="#{msg.capacity}" sortBy="#{schoolClass.capacidade}" style="width:100px; text-align:center">
+                            <h:outputText value="#{schoolClass.capacidade}" />
+                        </p:column>
+
+                        <p:column headerText="#{msg.status}" sortBy="#{schoolClass.status}" style="width:120px; text-align:center">
+                            <span class="doc-badge #{schoolClass.status.name().toLowerCase()}">
+                                <i class="pi pi-circle-fill" style="font-size:.55rem" />
+                                <h:outputText value="#{schoolClass.status}" />
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.actions}" style="width:150px; text-align:center" exportable="false">
+                            <div class="doc-actions">
+                                <p:commandButton styleClass="doc-act view" icon="pi pi-eye" title="#{msg.view}"
+                                    actionListener="#{schoolClassController.loadSelectedSchoolClass}"
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('viewSchoolClassDialog').show()"
+                                    update=":viewFormSchoolClass" process="@this">
+                                    <f:setPropertyActionListener value="#{schoolClass.pkSchoolClass}" target="#{schoolClassController.selectedId}" />
+                                </p:commandButton>
+
+                                <p:commandButton styleClass="doc-act edit" icon="pi pi-pencil" title="#{msg.edit}"
+                                    actionListener="#{schoolClassController.openEditDialog}"
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('editSchoolClassDialog').show()"
+                                    update=":schoolClassEditForm" process="@this">
+                                    <f:setPropertyActionListener value="#{schoolClass.pkSchoolClass}" target="#{schoolClassController.selectedId}" />
+                                </p:commandButton>
+
+                                <p:commandButton styleClass="doc-act delete" icon="pi pi-trash" title="#{msg.delete}"
+                                    process="@this"
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('deleteSchoolClassDialog').show()">
+                                    <f:setPropertyActionListener value="#{schoolClass.pkSchoolClass}" target="#{schoolClassController.selectedId}" />
+                                </p:commandButton>
+                            </div>
+                        </p:column>
+
+                        <f:facet name="emptyMessage">
+                            <div class="doc-empty"><i class="pi pi-sitemap" /><div>#{msg.noSchoolClassFound}</div></div>
+                        </f:facet>
+                    </p:dataTable>
+                </div>
+
+                <!-- DELETE DIALOG -->
+                <p:dialog widgetVar="deleteSchoolClassDialog" modal="true" resizable="false"
+                    header="#{msg.confirmDelete}" style="width: 90vw; max-width: 420px;" closable="true"
+                    responsive="true" fitViewport="true">
+                    <div style="padding: .8rem 0 1.2rem; display:flex; gap:1rem; align-items:flex-start;">
+                        <i class="pi pi-exclamation-triangle" style="color:var(--enr-red); font-size:1.8rem; flex-shrink:0;" />
+                        <div>
+                            <div style="font-weight:700; margin-bottom:.3rem;">#{msg.areYouSure}</div>
+                            <div style="font-size:.88rem; color:var(--enr-muted);">#{msg.deleteQuestion}</div>
+                        </div>
+                    </div>
+                    <div class="doc-dialog-footer">
+                        <p:commandButton value="#{msg.cancel}" type="button" onclick="PF('deleteSchoolClassDialog').hide()"
+                            styleClass="ui-button-outlined ui-button-secondary" />
+                        <p:commandButton value="#{msg.yesDelete}" icon="pi pi-trash" styleClass="ui-button-danger"
+                            actionListener="#{schoolClassController.delete}" process="@this"
+                            update=":formSchoolClasses:dtSchoolClasses :formSchoolClasses:messages"
+                            oncomplete="PF('deleteSchoolClassDialog').hide()" />
+                    </div>
+                </p:dialog>
+            </h:form>
+
+            <!-- VIEW DIALOG -->
+            <h:form id="viewFormSchoolClass">
+                <p:dialog widgetVar="viewSchoolClassDialog" modal="true" resizable="false"
+                    header="#{msg.schoolClassDetails}" style="width: 90vw; max-width: 520px;"
+                    closable="true" responsive="true" fitViewport="true">
+                    <div style="padding: 1rem; margin: 0.5rem;">
+                        <div style="text-align:center; margin-bottom:1.2rem;">
+                            <div class="doc-avatar" style="width:64px; height:64px; font-size:1.5rem; margin:0 auto .6rem;">
+                                <h:outputText value="#{schoolClassController.selectedSchoolClass.className.substring(0,1)}"
+                                    rendered="#{not empty schoolClassController.selectedSchoolClass.className}" />
+                            </div>
+                            <div style="font-size:1.15rem; font-weight:700;"><h:outputText value="#{schoolClassController.selectedSchoolClass.className}" /></div>
+                            <div style="font-size:.85rem; color:var(--enr-muted);"><h:outputText value="#{schoolClassController.selectedSchoolClass.classCode}" /></div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; font-size:.9rem;">
+                            <div class="doc-detail-box">
+                                <div class="doc-detail-label">#{msg.classCode}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{schoolClassController.selectedSchoolClass.classCode}" /></div>
+                            </div>
+                            <div class="doc-detail-box">
+                                <div class="doc-detail-label">#{msg.classe}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{schoolClassController.selectedSchoolClass.classe}" /></div>
+                            </div>
+                            <div class="doc-detail-box">
+                                <div class="doc-detail-label">#{msg.shift}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{schoolClassController.selectedSchoolClass.turno}" /></div>
+                            </div>
+                            <div class="doc-detail-box">
+                                <div class="doc-detail-label">#{msg.academicYear}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{schoolClassController.selectedSchoolClass.anoLectivo}" /></div>
+                            </div>
+                            <div class="doc-detail-box">
+                                <div class="doc-detail-label">#{msg.capacity}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{schoolClassController.selectedSchoolClass.capacidade}" /></div>
+                            </div>
+                            <div class="doc-detail-box">
+                                <div class="doc-detail-label">#{msg.room}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{schoolClassController.selectedSchoolClass.room}" /></div>
+                            </div>
+                            <div class="doc-detail-box">
+                                <div class="doc-detail-label">#{msg.status}</div>
+                                <div style="font-weight:700;">
+                                    <span class="doc-badge #{schoolClassController.selectedSchoolClass.status.name().toLowerCase()}">
+                                        <h:outputText value="#{schoolClassController.selectedSchoolClass.status}" />
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="doc-detail-box">
+                                <div class="doc-detail-label">#{msg.createdAt}</div>
+                                <div style="font-weight:700;">
+                                    <h:outputText value="#{schoolClassController.selectedSchoolClass.createdAt}">
+                                        <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm" />
+                                    </h:outputText>
+                                </div>
+                            </div>
+                            <h:panelGroup layout="block" style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;"
+                                rendered="#{not empty schoolClassController.selectedSchoolClass.obs}">
+                                <div class="doc-detail-label">#{msg.observation}</div>
+                                <div><h:outputText value="#{schoolClassController.selectedSchoolClass.obs}" /></div>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+                    <div class="doc-dialog-footer">
+                        <p:commandButton value="#{msg.close}" type="button" onclick="PF('viewSchoolClassDialog').hide()"
+                            styleClass="ui-button-outlined ui-button-secondary" />
+                    </div>
+                </p:dialog>
+            </h:form>
+
+            <ui:include src="schoolClass/schoolClass-create.xhtml" />
+            <ui:include src="schoolClass/schoolClass-edit.xhtml" />
+        </div>
+
+        <script type="text/javascript">
+            //<![CDATA[
+            function showScLoading() {
+                var overlay = document.getElementById('scLoadingOverlay');
+                if (overlay) overlay.classList.add('active');
+            }
+            function hideScLoading() {
+                var overlay = document.getElementById('scLoadingOverlay');
+                if (overlay) overlay.classList.remove('active');
+            }
+            if (window.PrimeFaces) {
+                PrimeFaces.ajax.Queue.originalAdd = PrimeFaces.ajax.Queue.add;
+                PrimeFaces.ajax.Queue.add = function (req) {
+                    req.originalOncomplete = req.onsuccess;
+                    req.onsuccess = function (xhr, status, args) {
+                        hideScLoading();
+                        if (req.originalOncomplete) req.originalOncomplete(xhr, status, args);
+                    };
+                    req.originalOnerror = req.onerror;
+                    req.onerror = function (xhr, status, error) {
+                        hideScLoading();
+                        if (req.originalOnerror) req.originalOnerror(xhr, status, error);
+                    };
+                    PrimeFaces.ajax.Queue.originalAdd(req);
+                };
+            }
+            //]]>
+        </script>
+    </ui:define>
+</ui:composition>
