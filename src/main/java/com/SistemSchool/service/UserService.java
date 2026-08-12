@@ -153,4 +153,8 @@ public class UserService {
         }
         userRepository.updateFkPerson(pkUser, pkPerson);
     }
+
+    public boolean existsAnyAdmin() {
+        return userRepository.countAdminUsersNative() > 0;
+    }
 }

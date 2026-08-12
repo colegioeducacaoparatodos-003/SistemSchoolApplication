@@ -71,5 +71,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             "GROUP BY u.perfil")
     List<ProfileCountDTO> countUsersByPerfil();
 
+    @Query(value = "SELECT COUNT(*) FROM tb_user WHERE perfil = 'ADMIN'", nativeQuery = true)
+    long countAdminUsersNative();
+
     long countByActiveTrue();
 }

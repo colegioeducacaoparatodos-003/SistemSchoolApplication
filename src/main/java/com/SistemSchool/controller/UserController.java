@@ -229,15 +229,19 @@ public class UserController implements Serializable {
             if (!isNewUserDataValid()) {
                 return null;
             }
-
+            
             // ── BLOQUEIO DE SEGURANÇA: só ADMIN pode criar outro ADMIN ──
             if (newUserPerfil == Perfil.ADMIN) {
+                boolean existsAdmin = userService.existsAnyAdmin(); // verifica no banco
                 UserDTO.UserResponseDTO current = sessionBean.getLoggedUser();
-                if (current == null || current.getPerfil() != Perfil.ADMIN) {
+
+                // Se já existe pelo menos um ADMIN, apenas outro ADMIN pode criar
+                if (existsAdmin && (current == null || current.getPerfil() != Perfil.ADMIN)) {
                     addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
                             "Não tem permissão para criar um utilizador Administrador.");
                     return null;
                 }
+                // Se não existe nenhum ADMIN (existsAdmin == false), permite criar o primeiro
             }
 
             UserDTO.CreateUserDTO createUserDTO = new UserDTO.CreateUserDTO();
