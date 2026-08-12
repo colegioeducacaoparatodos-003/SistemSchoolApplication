@@ -394,7 +394,7 @@ public class UserController implements Serializable {
 
     public String openSignUpPage() {
         resetNewUserFields();
-        return "/sign_in.xhtml?faces-redirect=true";
+        return "/components/dashboard/sign_in.xhtml?faces-redirect=true";
     }
 
     // ========== RESET DE CAMPOS ==========
