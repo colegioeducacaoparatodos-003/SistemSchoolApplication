@@ -433,7 +433,7 @@
                                 <p:commandButton styleClass="doc-act download" icon="pi pi-download"
                                     title="#{msg.download}" ajax="false"
                                     action="#{documentController.downloadDocumento}"
-                                    onclick="showScLoading()">
+                                    onclick="showScLoading(); setTimeout(hideScLoading, 2500);">
                                     <f:param name="documentId" value="#{document.phDocument}" />
                                 </p:commandButton>
 
@@ -517,10 +517,10 @@
                         </div>
                     </div>
                     <div class="doc-dialog-footer">
-                        <p:commandButton value="#{msg.close}" type="button" onclick="PF('viewDocumentDialog').hide()"
+                        <p:commandButton value="#{msg.close}" type="button" onclick="hideScLoading(); PF('viewDocumentDialog').hide()"
                             styleClass="ui-button-outlined ui-button-secondary" />
                         <p:commandButton value="#{msg.print}" icon="pi pi-print"
-                            onclick="window.print(); return false;"
+                            onclick="hideScLoading(); window.print(); return false;"
                             styleClass="ui-button-primary" />
                     </div>
                 </p:dialog>
@@ -542,7 +542,7 @@
                         </div>
                     </div>
                     <div class="doc-dialog-footer">
-                        <p:commandButton value="#{msg.cancel}" type="button" onclick="PF('deleteDocumentDialog').hide()"
+                        <p:commandButton value="#{msg.cancel}" type="button" onclick="hideScLoading(); PF('deleteDocumentDialog').hide()"
                             styleClass="ui-button-outlined ui-button-secondary" />
                         <p:commandButton value="#{msg.yesDelete}" icon="pi pi-trash" styleClass="ui-button-danger"
                             action="#{documentController.delete}" process="@this"

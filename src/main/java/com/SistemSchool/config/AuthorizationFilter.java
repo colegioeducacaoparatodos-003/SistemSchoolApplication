@@ -49,7 +49,7 @@ public class AuthorizationFilter implements Filter {
 
     private static final String[] PUBLIC_ROUTES = {
             "/login.xhtml",
-            "/sign_in.xhtml",
+            "/components/dashboard/sign_in.xhtml",
             "/access-denied.xhtml"
     };
 

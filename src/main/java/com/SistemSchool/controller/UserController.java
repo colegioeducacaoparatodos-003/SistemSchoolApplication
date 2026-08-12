@@ -91,6 +91,43 @@ public class UserController implements Serializable {
         resetEditFields();
     }
 
+    // ========== VERIFICAÇÕES DE SEGURANÇA ==========
+
+    /**
+     * TRUE quando não existe nenhum ADMIN no sistema (primeiro acesso).
+     */
+    public boolean isFirstAdminSetup() {
+        try {
+            return userService.countAdmins() == 0;
+        } catch (Exception e) {
+            logger.error("Erro ao verificar existência de administradores", e);
+            return false;
+        }
+    }
+
+    /**
+     * TRUE quando o usuário logado é ADMIN.
+     */
+    public boolean isAdminLoggedIn() {
+        UserDTO.UserResponseDTO current = sessionBean.getLoggedUser();
+        return current != null && current.getPerfil() == Perfil.ADMIN;
+    }
+
+    /**
+     * Perfis disponíveis para criação na tela de registo.
+     */
+    public List<Perfil> getAvailablePerfisForSignup() {
+        if (isFirstAdminSetup()) {
+            return List.of(Perfil.ADMIN);
+        }
+        if (isAdminLoggedIn()) {
+            List<Perfil> lista = new ArrayList<>(List.of(Perfil.values()));
+            lista.remove(Perfil.ADMIN);
+            return lista;
+        }
+        return List.of();
+    }
+
     // ========== AUTENTICAÇÃO ==========
 
     public String login() {
@@ -142,14 +179,13 @@ public class UserController implements Serializable {
                     "Ocorreu um erro inesperado. Por favor, contate o administrador.");
         }
 
-        return "/components/public/dashboard.xhtml?faces-redirect=true";
+        return null;
     }
 
     private String redirectByPerfil(Perfil perfil) {
         if (perfil == null) {
             throw new PerfilNotDefinedException("Usuário autenticado sem perfil definido: " + loginEmail);
         }
-
         return "/components/public/dashboard.xhtml?faces-redirect=true";
     }
 
@@ -222,6 +258,7 @@ public class UserController implements Serializable {
     }
 
     // ========== CRUD DE USUÁRIOS ==========
+
     public String createUser() {
         try {
             logger.info("Criando novo usuário com email: {}", newUserEmail);
@@ -229,19 +266,29 @@ public class UserController implements Serializable {
             if (!isNewUserDataValid()) {
                 return null;
             }
-            
-            // ── BLOQUEIO DE SEGURANÇA: só ADMIN pode criar outro ADMIN ──
-            if (newUserPerfil == Perfil.ADMIN) {
-                boolean existsAdmin = userService.existsAnyAdmin(); // verifica no banco
-                UserDTO.UserResponseDTO current = sessionBean.getLoggedUser();
 
-                // Se já existe pelo menos um ADMIN, apenas outro ADMIN pode criar
-                if (existsAdmin && (current == null || current.getPerfil() != Perfil.ADMIN)) {
-                    addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
-                            "Não tem permissão para criar um utilizador Administrador.");
-                    return null;
-                }
-                // Se não existe nenhum ADMIN (existsAdmin == false), permite criar o primeiro
+            boolean firstSetup = isFirstAdminSetup();
+            UserDTO.UserResponseDTO current = sessionBean.getLoggedUser();
+
+            // REGRA 1: Se já existe ADMIN e ninguém está logado, bloquear
+            if (!firstSetup && (current == null || current.getPerfil() != Perfil.ADMIN)) {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
+                        "Apenas o Administrador pode criar novas contas.");
+                return null;
+            }
+
+            // REGRA 2: Só pode existir um ADMIN no sistema
+            if (newUserPerfil == Perfil.ADMIN && !firstSetup) {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
+                        "Já existe um Administrador no sistema. Apenas um é permitido.");
+                return null;
+            }
+
+            // REGRA 3: No primeiro setup, só pode criar ADMIN
+            if (firstSetup && newUserPerfil != Perfil.ADMIN) {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
+                        "O primeiro utilizador deve ser um Administrador.");
+                return null;
             }
 
             UserDTO.CreateUserDTO createUserDTO = new UserDTO.CreateUserDTO();
@@ -258,7 +305,10 @@ public class UserController implements Serializable {
             resetNewUserFields();
             addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Usuário criado com sucesso!");
 
-            return "/login.xhtml?faces-redirect=true";
+            if (firstSetup) {
+                return "/login.xhtml?faces-redirect=true";
+            }
+            return null;
 
         } catch (RuntimeException e) {
             logger.error("Erro ao criar usuário", e);
@@ -454,245 +504,96 @@ public class UserController implements Serializable {
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
-
-        // PrimeFaces.current().ajax().update(":messages");
     }
 
     // ========== GETTERS E SETTERS ==========
 
-    public String getLoginEmail() {
-        return loginEmail;
-    }
+    public String getLoginEmail() { return loginEmail; }
+    public void setLoginEmail(String loginEmail) { this.loginEmail = loginEmail; }
 
-    public void setLoginEmail(String loginEmail) {
-        this.loginEmail = loginEmail;
-    }
+    public String getLoginPassword() { return loginPassword; }
+    public void setLoginPassword(String loginPassword) { this.loginPassword = loginPassword; }
 
-    public String getLoginPassword() {
-        return loginPassword;
-    }
+    public boolean isRememberMe() { return rememberMe; }
+    public void setRememberMe(boolean rememberMe) { this.rememberMe = rememberMe; }
 
-    public void setLoginPassword(String loginPassword) {
-        this.loginPassword = loginPassword;
-    }
+    public boolean isLoginDialogVisible() { return loginDialogVisible; }
+    public void setLoginDialogVisible(boolean loginDialogVisible) { this.loginDialogVisible = loginDialogVisible; }
 
-    public boolean isRememberMe() {
-        return rememberMe;
-    }
+    public String getNewFirstName() { return newFirstName; }
+    public void setNewFirstName(String newFirstName) { this.newFirstName = newFirstName; }
 
-    public void setRememberMe(boolean rememberMe) {
-        this.rememberMe = rememberMe;
-    }
+    public String getNewMiddleName() { return newMiddleName; }
+    public void setNewMiddleName(String newMiddleName) { this.newMiddleName = newMiddleName; }
 
-    public boolean isLoginDialogVisible() {
-        return loginDialogVisible;
-    }
+    public String getNewLastName() { return newLastName; }
+    public void setNewLastName(String newLastName) { this.newLastName = newLastName; }
 
-    public void setLoginDialogVisible(boolean loginDialogVisible) {
-        this.loginDialogVisible = loginDialogVisible;
-    }
+    public String getNewUserEmail() { return newUserEmail; }
+    public void setNewUserEmail(String newUserEmail) { this.newUserEmail = newUserEmail; }
 
-    public String getNewFirstName() {
-        return newFirstName;
-    }
+    public String getNewUserPassword() { return newUserPassword; }
+    public void setNewUserPassword(String newUserPassword) { this.newUserPassword = newUserPassword; }
 
-    public void setNewFirstName(String newFirstName) {
-        this.newFirstName = newFirstName;
-    }
+    public String getNewUserConfirmPassword() { return newUserConfirmPassword; }
+    public void setNewUserConfirmPassword(String newUserConfirmPassword) { this.newUserConfirmPassword = newUserConfirmPassword; }
 
-    public String getNewMiddleName() {
-        return newMiddleName;
-    }
+    public Integer getNewUserFkPerson() { return newUserFkPerson; }
+    public void setNewUserFkPerson(Integer newUserFkPerson) { this.newUserFkPerson = newUserFkPerson; }
 
-    public void setNewMiddleName(String newMiddleName) {
-        this.newMiddleName = newMiddleName;
-    }
+    public Perfil getNewUserPerfil() { return newUserPerfil; }
+    public void setNewUserPerfil(Perfil newUserPerfil) { this.newUserPerfil = newUserPerfil; }
 
-    public String getNewLastName() {
-        return newLastName;
-    }
+    public boolean isNewUserActive() { return newUserActive; }
+    public void setNewUserActive(boolean newUserActive) { this.newUserActive = newUserActive; }
 
-    public void setNewLastName(String newLastName) {
-        this.newLastName = newLastName;
-    }
+    public String getNewUserDeviceToken() { return newUserDeviceToken; }
+    public void setNewUserDeviceToken(String newUserDeviceToken) { this.newUserDeviceToken = newUserDeviceToken; }
 
-    public String getNewUserEmail() {
-        return newUserEmail;
-    }
+    public boolean isRegisterDialogVisible() { return registerDialogVisible; }
+    public void setRegisterDialogVisible(boolean registerDialogVisible) { this.registerDialogVisible = registerDialogVisible; }
 
-    public void setNewUserEmail(String newUserEmail) {
-        this.newUserEmail = newUserEmail;
-    }
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
 
-    public String getNewUserPassword() {
-        return newUserPassword;
-    }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
 
-    public void setNewUserPassword(String newUserPassword) {
-        this.newUserPassword = newUserPassword;
-    }
+    public String getImagePerson() { return imagePerson; }
+    public void setImagePerson(String imagePerson) { this.imagePerson = imagePerson; }
 
-    public String getNewUserConfirmPassword() {
-        return newUserConfirmPassword;
-    }
+    public UserDTO.UserResponseDTO getSelectedUser() { return selectedUser; }
+    public void setSelectedUser(UserDTO.UserResponseDTO selectedUser) { this.selectedUser = selectedUser; }
 
-    public void setNewUserConfirmPassword(String newUserConfirmPassword) {
-        this.newUserConfirmPassword = newUserConfirmPassword;
-    }
+    public String getEditUserEmail() { return editUserEmail; }
+    public void setEditUserEmail(String editUserEmail) { this.editUserEmail = editUserEmail; }
 
-    public Integer getNewUserFkPerson() {
-        return newUserFkPerson;
-    }
+    public String getEditUserDeviceToken() { return editUserDeviceToken; }
+    public void setEditUserDeviceToken(String editUserDeviceToken) { this.editUserDeviceToken = editUserDeviceToken; }
 
-    public void setNewUserFkPerson(Integer newUserFkPerson) {
-        this.newUserFkPerson = newUserFkPerson;
-    }
+    public boolean isEditUserActive() { return editUserActive; }
+    public void setEditUserActive(boolean editUserActive) { this.editUserActive = editUserActive; }
 
-    public Perfil getNewUserPerfil() {
-        return newUserPerfil;
-    }
+    public Perfil getEditUserPerfil() { return editUserPerfil; }
+    public void setEditUserPerfil(Perfil editUserPerfil) { this.editUserPerfil = editUserPerfil; }
 
-    public void setNewUserPerfil(Perfil newUserPerfil) {
-        this.newUserPerfil = newUserPerfil;
-    }
+    public boolean isEditMode() { return editMode; }
+    public void setEditMode(boolean editMode) { this.editMode = editMode; }
 
-    public boolean isNewUserActive() {
-        return newUserActive;
-    }
+    public List<UserDTO.UserResponseDTO> getUsers() { return users; }
+    public void setUsers(List<UserDTO.UserResponseDTO> users) { this.users = users; }
 
-    public void setNewUserActive(boolean newUserActive) {
-        this.newUserActive = newUserActive;
-    }
+    public List<UserDTO.UserResponseDTO> getFilteredUsers() { return filteredUsers != null ? filteredUsers : users; }
+    public void setFilteredUsers(List<UserDTO.UserResponseDTO> filteredUsers) { this.filteredUsers = filteredUsers; }
 
-    public String getNewUserDeviceToken() {
-        return newUserDeviceToken;
-    }
+    public UserDTO.UserResponseDTO getLoggedUser() { return sessionBean.getLoggedUser(); }
 
-    public void setNewUserDeviceToken(String newUserDeviceToken) {
-        this.newUserDeviceToken = newUserDeviceToken;
-    }
+    public String getFilterEmail() { return filterEmail; }
+    public void setFilterEmail(String filterEmail) { this.filterEmail = filterEmail; }
 
-    public boolean isRegisterDialogVisible() {
-        return registerDialogVisible;
-    }
+    public Perfil getFilterPerfil() { return filterPerfil; }
+    public void setFilterPerfil(Perfil filterPerfil) { this.filterPerfil = filterPerfil; }
 
-    public void setRegisterDialogVisible(boolean registerDialogVisible) {
-        this.registerDialogVisible = registerDialogVisible;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getImagePerson() {
-        return imagePerson;
-    }
-
-    public void setImagePerson(String imagePerson) {
-        this.imagePerson = imagePerson;
-    }
-
-    public UserDTO.UserResponseDTO getSelectedUser() {
-        return selectedUser;
-    }
-
-    public void setSelectedUser(UserDTO.UserResponseDTO selectedUser) {
-        this.selectedUser = selectedUser;
-    }
-
-    public String getEditUserEmail() {
-        return editUserEmail;
-    }
-
-    public void setEditUserEmail(String editUserEmail) {
-        this.editUserEmail = editUserEmail;
-    }
-
-    public String getEditUserDeviceToken() {
-        return editUserDeviceToken;
-    }
-
-    public void setEditUserDeviceToken(String editUserDeviceToken) {
-        this.editUserDeviceToken = editUserDeviceToken;
-    }
-
-    public boolean isEditUserActive() {
-        return editUserActive;
-    }
-
-    public void setEditUserActive(boolean editUserActive) {
-        this.editUserActive = editUserActive;
-    }
-
-    public Perfil getEditUserPerfil() {
-        return editUserPerfil;
-    }
-
-    public void setEditUserPerfil(Perfil editUserPerfil) {
-        this.editUserPerfil = editUserPerfil;
-    }
-
-    public boolean isEditMode() {
-        return editMode;
-    }
-
-    public void setEditMode(boolean editMode) {
-        this.editMode = editMode;
-    }
-
-    public List<UserDTO.UserResponseDTO> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<UserDTO.UserResponseDTO> users) {
-        this.users = users;
-    }
-
-    public List<UserDTO.UserResponseDTO> getFilteredUsers() {
-        return filteredUsers != null ? filteredUsers : users;
-    }
-
-    public void setFilteredUsers(List<UserDTO.UserResponseDTO> filteredUsers) {
-        this.filteredUsers = filteredUsers;
-    }
-
-    public UserDTO.UserResponseDTO getLoggedUser() {
-        return sessionBean.getLoggedUser();
-    }
-
-    public String getFilterEmail() {
-        return filterEmail;
-    }
-
-    public void setFilterEmail(String filterEmail) {
-        this.filterEmail = filterEmail;
-    }
-
-    public Perfil getFilterPerfil() {
-        return filterPerfil;
-    }
-
-    public void setFilterPerfil(Perfil filterPerfil) {
-        this.filterPerfil = filterPerfil;
-    }
-
-    public Boolean getFilterActive() {
-        return filterActive;
-    }
-
-    public void setFilterActive(Boolean filterActive) {
-        this.filterActive = filterActive;
-    }
+    public Boolean getFilterActive() { return filterActive; }
+    public void setFilterActive(Boolean filterActive) { this.filterActive = filterActive; }
 }

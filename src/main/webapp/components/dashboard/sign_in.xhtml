@@ -11,83 +11,297 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     </f:facet>
     
-    <title>#{msg.createAccount} | Gestão Escolar</title>
+    <title>#{userController.firstAdminSetup ? 'Configuração Inicial' : msg.createAccount} | Gestão Escolar</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    
+    <style>
+        :root {
+            --enr-black: #141414;
+            --enr-red: #c8102e;
+            --enr-yellow: #f5b400;
+            --enr-surface: #ffffff;
+            --enr-border: #e6e6e8;
+            --enr-text: #141414;
+            --enr-muted: #666a70;
+        }
+
+        .sc-loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s ease;
+        }
+        .sc-loading-overlay.active { opacity: 1; visibility: visible; }
+        .sc-loading-box {
+            background: var(--enr-surface); border-radius: 12px; padding: 2.5rem 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); display: flex; flex-direction: column;
+            align-items: center; gap: 1.2rem; border: 1px solid var(--enr-border); min-width: 260px;
+            transform: scale(0.9); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .sc-loading-overlay.active .sc-loading-box { transform: scale(1); }
+        .sc-loader-rings { position: relative; width: 72px; height: 72px; }
+        .sc-loader-rings::before, .sc-loader-rings::after {
+            content: ''; position: absolute; border-radius: 50%; border: 3px solid transparent;
+        }
+        .sc-loader-rings::before {
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-top-color: var(--enr-red); border-right-color: var(--enr-yellow);
+            animation: scSpin 1.2s linear infinite;
+        }
+        .sc-loader-rings::after {
+            top: 10px; left: 10px; width: calc(100% - 20px); height: calc(100% - 20px);
+            border-bottom-color: var(--enr-black); border-left-color: #e63946;
+            animation: scSpinReverse 0.9s linear infinite;
+        }
+        .sc-loader-core {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 16px; height: 16px;
+            background: linear-gradient(135deg, var(--enr-red), var(--enr-yellow));
+            border-radius: 50%; animation: scPulse 1s ease-in-out infinite;
+            box-shadow: 0 0 15px rgba(200, 16, 46, 0.5);
+        }
+        @keyframes scSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes scSpinReverse { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+        @keyframes scPulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.7; } }
+        .sc-loading-text { font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 600; color: var(--enr-text); text-align: center; }
+        .sc-loading-sub { font-size: 0.78rem; color: var(--enr-muted); text-align: center; margin-top: -0.6rem; }
+        .sc-loading-dots::after { content: ''; animation: scDots 1.5s steps(4, end) infinite; }
+        @keyframes scDots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } 100% { content: ''; } }
+        .sc-loading-progress { width: 100%; height: 3px; background: var(--enr-border); border-radius: 99px; overflow: hidden; margin-top: 0.3rem; }
+        .sc-loading-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow)); border-radius: 99px; animation: scProgress 2s ease-in-out infinite; }
+        @keyframes scProgress { 0% { width: 0%; margin-left: 0%; } 50% { width: 60%; margin-left: 20%; } 100% { width: 0%; margin-left: 100%; } }
+
+        .setup-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff8e1;
+            border: 1px solid rgba(245, 180, 0, .35);
+            color: #8a6400;
+            border-radius: 99px;
+            padding: 4px 14px;
+            font-size: .78rem;
+            font-weight: 600;
+        }
+        .access-denied {
+            text-align: center;
+            padding: 3rem 1.5rem;
+        }
+        .access-denied i {
+            font-size: 3rem;
+            color: #c8102e;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        @media (max-width: 576px) {
+            .sc-loading-box { padding: 2rem 1.5rem; min-width: 220px; margin: 0 1rem; }
+        }
+    </style>
 </h:head>
 
 <h:body class="bg-light">
+
+    <div id="scLoadingOverlay" class="sc-loading-overlay">
+        <div class="sc-loading-box">
+            <div class="sc-loader-rings"><div class="sc-loader-core"></div></div>
+            <div class="sc-loading-text">A processar<span class="sc-loading-dots"></span></div>
+            <div class="sc-loading-sub">Por favor aguarde</div>
+            <div class="sc-loading-progress"><div class="sc-loading-progress-bar"></div></div>
+        </div>
+    </div>
+
     <div class="container d-flex align-items-center justify-content-center py-5" style="min-height: 100vh;">
         <div class="card shadow-sm" style="max-width: 620px; width: 100%;">
             <div class="card-body p-4">
 
-                <div class="text-center mb-4">
-                    <h1 class="h4 mb-1">#{msg.createAccount}</h1>
-                    <p class="text-muted small mb-0">Registo de novo utilizador do sistema</p>
-                </div>
-
-                <p:messages id="messages" showDetail="true" showSummary="true" closable="true" />
-
-                <h:form id="signupForm">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <h:outputLabel for="firstName" value="#{msg.firstName}" styleClass="form-label" />
-                            <p:inputText id="firstName" value="#{userController.newFirstName}" required="true"
-                                         requiredMessage="O primeiro nome é obrigatório." style="width: 100%;"
-                                         placeholder="Ex: João" />
+                <!-- PRIMEIRO ACESSO — CRIAR ADMIN -->
+                <h:panelGroup rendered="#{userController.firstAdminSetup}">
+                    <div class="text-center mb-4">
+                        <div class="setup-badge mb-3">
+                            <i class="pi pi-cog" style="font-size:.7rem" /> Configuração Inicial
                         </div>
-
-                        <div class="col-md-6">
-                            <h:outputLabel for="lastName" value="#{msg.lastName}" styleClass="form-label" />
-                            <p:inputText id="lastName" value="#{userController.newLastName}" required="true"
-                                         requiredMessage="O último nome é obrigatório." style="width: 100%;"
-                                         placeholder="Ex: Muanda" />
-                        </div>
-
-                        <div class="col-12">
-                            <h:outputLabel for="email" value="#{msg.email}" styleClass="form-label" />
-                            <p:inputText id="email" value="#{userController.newUserEmail}" required="true"
-                                         requiredMessage="O email é obrigatório." placeholder="seu.email@escola.co.ao"
-                                         style="width: 100%;" />
-                        </div>
-
-                        <div class="col-12">
-                            <h:outputLabel for="perfil" value="#{msg.type}" styleClass="form-label" />
-                            <p:selectOneMenu id="perfil" value="#{userController.newUserPerfil}" required="true"
-                                             requiredMessage="O perfil é obrigatório."
-                                             converter="perfilConverter" style="width: 100%;">
-                                <f:selectItem itemLabel="Selecione um perfil" itemValue="#{null}" noSelectionOption="true" />
-                                <f:selectItems value="#{userController.perfis}" var="p"
-                                               itemLabel="#{p.descricao}" itemValue="#{p}" />
-                            </p:selectOneMenu>
-                        </div>
-
-                        <div class="col-md-6">
-                            <h:outputLabel for="password" value="#{msg.password}" styleClass="form-label" />
-                            <p:password id="password" value="#{userController.newUserPassword}" required="true"
-                                        requiredMessage="A senha é obrigatória." feedback="true" style="width: 100%;" />
-                        </div>
-
-                        <div class="col-md-6">
-                            <h:outputLabel for="confirmPassword" value="#{msg.confirmPassword}" styleClass="form-label" />
-                            <p:password id="confirmPassword" value="#{userController.newUserConfirmPassword}"
-                                        required="true" requiredMessage="A confirmação de senha é obrigatória."
-                                        style="width: 100%;" />
-                        </div>
+                        <h1 class="h4 mb-1">Criar Administrador</h1>
+                        <p class="text-muted small mb-0">
+                            Este é o primeiro acesso ao sistema. Crie a conta do Administrador para continuar.
+                        </p>
                     </div>
 
-                    <p:commandButton value="#{msg.createAccount}" action="#{userController.createUser}"
-                                     update="@form" ajax="false" style="width: 100%;" styleClass="mt-4" />
+                    <p:messages id="messagesSetup" showDetail="true" showSummary="true" closable="true" />
 
-                    <p class="text-center small text-muted mt-3 mb-0">
-                        Já tem conta?
-                        <h:outputLink value="#{request.contextPath}/login.xhtml" styleClass="text-decoration-none fw-semibold">
-                            #{msg.goBackToLogin}
+                    <h:form id="setupForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <h:outputLabel for="firstNameSetup" value="#{msg.firstName}" styleClass="form-label" />
+                                <p:inputText id="firstNameSetup" value="#{userController.newFirstName}" required="true"
+                                             requiredMessage="O primeiro nome é obrigatório." style="width: 100%;"
+                                             placeholder="Ex: João" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <h:outputLabel for="lastNameSetup" value="#{msg.lastName}" styleClass="form-label" />
+                                <p:inputText id="lastNameSetup" value="#{userController.newLastName}" required="true"
+                                             requiredMessage="O último nome é obrigatório." style="width: 100%;"
+                                             placeholder="Ex: Muanda" />
+                            </div>
+
+                            <div class="col-12">
+                                <h:outputLabel for="emailSetup" value="#{msg.email}" styleClass="form-label" />
+                                <p:inputText id="emailSetup" value="#{userController.newUserEmail}" required="true"
+                                             requiredMessage="O email é obrigatório." placeholder="seu.email@escola.co.ao"
+                                             style="width: 100%;" />
+                            </div>
+
+                            <div class="col-12">
+                                <h:outputLabel value="Perfil" styleClass="form-label" />
+                                <div class="form-control bg-light" style="width: 100%;">
+                                    <i class="pi pi-shield" style="color:#c8102e; margin-right:.4rem;" />
+                                    <strong>Administrador</strong>
+                                    <span class="text-muted small ms-2">(único permitido nesta fase)</span>
+                                </div>
+                                <p:remoteCommand name="forceAdmin" autoRun="true"
+                                    actionListener="#{userController.setNewUserPerfil('ADMIN')}" process="@this" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <h:outputLabel for="passwordSetup" value="#{msg.password}" styleClass="form-label" />
+                                <p:password id="passwordSetup" value="#{userController.newUserPassword}" required="true"
+                                            requiredMessage="A senha é obrigatória." feedback="true" style="width: 100%;" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <h:outputLabel for="confirmPasswordSetup" value="#{msg.confirmPassword}" styleClass="form-label" />
+                                <p:password id="confirmPasswordSetup" value="#{userController.newUserConfirmPassword}"
+                                            required="true" requiredMessage="A confirmação de senha é obrigatória."
+                                            style="width: 100%;" />
+                            </div>
+                        </div>
+
+                        <p:commandButton value="Criar Administrador" action="#{userController.createUser}"
+                                         update="@form :messagesSetup" ajax="false" style="width: 100%;" styleClass="mt-4 ui-button-success"
+                                         onstart="showScLoading()" />
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- ADMIN LOGADO — CRIAR OUTROS PERFIS -->
+                <h:panelGroup rendered="#{userController.adminLoggedIn}">
+                    <div class="text-center mb-4">
+                        <h1 class="h4 mb-1">#{msg.createAccount}</h1>
+                        <p class="text-muted small mb-0">Registo de novo utilizador do sistema</p>
+                    </div>
+
+                    <p:messages id="messagesAdmin" showDetail="true" showSummary="true" closable="true" />
+
+                    <h:form id="signupForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <h:outputLabel for="firstName" value="#{msg.firstName}" styleClass="form-label" />
+                                <p:inputText id="firstName" value="#{userController.newFirstName}" required="true"
+                                             requiredMessage="O primeiro nome é obrigatório." style="width: 100%;"
+                                             placeholder="Ex: João" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <h:outputLabel for="lastName" value="#{msg.lastName}" styleClass="form-label" />
+                                <p:inputText id="lastName" value="#{userController.newLastName}" required="true"
+                                             requiredMessage="O último nome é obrigatório." style="width: 100%;"
+                                             placeholder="Ex: Muanda" />
+                            </div>
+
+                            <div class="col-12">
+                                <h:outputLabel for="email" value="#{msg.email}" styleClass="form-label" />
+                                <p:inputText id="email" value="#{userController.newUserEmail}" required="true"
+                                             requiredMessage="O email é obrigatório." placeholder="seu.email@escola.co.ao"
+                                             style="width: 100%;" />
+                            </div>
+
+                            <div class="col-12">
+                                <h:outputLabel for="perfil" value="#{msg.type}" styleClass="form-label" />
+                                <p:selectOneMenu id="perfil" value="#{userController.newUserPerfil}" required="true"
+                                                 requiredMessage="O perfil é obrigatório."
+                                                 converter="perfilConverter" style="width: 100%;">
+                                    <f:selectItem itemLabel="Selecione um perfil" itemValue="#{null}" noSelectionOption="true" />
+                                    <f:selectItems value="#{userController.availablePerfisForSignup}" var="p"
+                                                   itemLabel="#{userController.getPerfilLabel(p)}" itemValue="#{p}" />
+                                </p:selectOneMenu>
+                                <div class="form-text text-muted small mt-1">
+                                    <i class="pi pi-info-circle" /> O perfil Administrador não está disponível — já existe um no sistema.
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h:outputLabel for="password" value="#{msg.password}" styleClass="form-label" />
+                                <p:password id="password" value="#{userController.newUserPassword}" required="true"
+                                            requiredMessage="A senha é obrigatória." feedback="true" style="width: 100%;" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <h:outputLabel for="confirmPassword" value="#{msg.confirmPassword}" styleClass="form-label" />
+                                <p:password id="confirmPassword" value="#{userController.newUserConfirmPassword}"
+                                            required="true" requiredMessage="A confirmação de senha é obrigatória."
+                                            style="width: 100%;" />
+                            </div>
+                        </div>
+
+                        <p:commandButton value="#{msg.createAccount}" action="#{userController.createUser}"
+                                         update="@form :messagesAdmin" ajax="false" style="width: 100%;" styleClass="mt-4"
+                                         onstart="showScLoading()" />
+
+                        <p class="text-center small text-muted mt-3 mb-0">
+                            <h:outputLink value="#{request.contextPath}/components/public/dashboard.xhtml" styleClass="text-decoration-none fw-semibold">
+                                <i class="pi pi-arrow-left" style="font-size:.7rem" /> Voltar ao Painel
+                            </h:outputLink>
+                        </p>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- ACESSO NEGADO -->
+                <h:panelGroup rendered="#{!userController.firstAdminSetup and !userController.adminLoggedIn}">
+                    <div class="access-denied">
+                        <i class="pi pi-lock" />
+                        <h2 class="h5 mb-2">Acesso Restrito</h2>
+                        <p class="text-muted mb-4">
+                            Apenas o <strong>Administrador</strong> pode criar novas contas no sistema.<br/>
+                            Se já possui credenciais, faça login para continuar.
+                        </p>
+                        <h:outputLink value="#{request.contextPath}/login.xhtml" styleClass="btn btn-primary">
+                            <i class="pi pi-sign-in" /> Ir para o Login
                         </h:outputLink>
-                    </p>
-                </h:form>
+                    </div>
+                </h:panelGroup>
+
             </div>
         </div>
     </div>
+
+    <script type="text/javascript">
+        //<![CDATA[
+        function showScLoading() {
+            var overlay = document.getElementById('scLoadingOverlay');
+            if (overlay) overlay.classList.add('active');
+        }
+        function hideScLoading() {
+            var overlay = document.getElementById('scLoadingOverlay');
+            if (overlay) overlay.classList.remove('active');
+        }
+        if (window.PrimeFaces) {
+            PrimeFaces.ajax.Queue.originalAdd = PrimeFaces.ajax.Queue.add;
+            PrimeFaces.ajax.Queue.add = function (req) {
+                req.originalOncomplete = req.onsuccess;
+                req.onsuccess = function (xhr, status, args) {
+                    hideScLoading();
+                    if (req.originalOncomplete) req.originalOncomplete(xhr, status, args);
+                };
+                req.originalOnerror = req.onerror;
+                req.onerror = function (xhr, status, error) {
+                    hideScLoading();
+                    if (req.originalOnerror) req.originalOnerror(xhr, status, error);
+                };
+                PrimeFaces.ajax.Queue.originalAdd(req);
+            };
+        }
+        //]]>
+    </script>
 </h:body>
 
 </html>

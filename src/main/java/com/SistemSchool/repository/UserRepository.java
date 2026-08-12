@@ -74,5 +74,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query(value = "SELECT COUNT(*) FROM tb_user WHERE perfil = 'ADMIN'", nativeQuery = true)
     long countAdminUsersNative();
 
+     long countByPerfilAndActiveTrue(Perfil perfil);
     long countByActiveTrue();
 }

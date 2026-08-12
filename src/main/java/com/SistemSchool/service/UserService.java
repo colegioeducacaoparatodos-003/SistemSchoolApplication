@@ -12,6 +12,9 @@ import com.SistemSchool.mapper.UserMapper;
 import com.SistemSchool.model.User;
 import com.SistemSchool.repository.UserRepository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +29,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -156,5 +162,12 @@ public class UserService {
 
     public boolean existsAnyAdmin() {
         return userRepository.countAdminUsersNative() > 0;
+    }
+
+    @Transactional(readOnly = true)
+    public long countAdmins() {
+        String sql = "SELECT COUNT(*) FROM tb_user WHERE perfil = 'ADMIN' AND active = true";
+        Number result = (Number) entityManager.createNativeQuery(sql).getSingleResult();
+        return result.longValue();
     }
 }
