@@ -109,7 +109,7 @@ public class StudentController implements Serializable {
         }
     }
 
-    public String load() {
+    public String loadStudents() {
         try {
             init();
         } catch (Exception e) {
@@ -134,17 +134,21 @@ public class StudentController implements Serializable {
 
         return allStudents.stream()
                 .filter(s -> isBlank(filterStudentNumber)
-                        || (s.getSudentNumber() != null && s.getSudentNumber().toLowerCase().contains(filterStudentNumber.toLowerCase())))
+                        || (s.getSudentNumber() != null
+                                && s.getSudentNumber().toLowerCase().contains(filterStudentNumber.toLowerCase())))
                 .filter(s -> isBlank(filterFullName)
-                        || (s.getFullName() != null && s.getFullName().toLowerCase().contains(filterFullName.toLowerCase())))
+                        || (s.getFullName() != null
+                                && s.getFullName().toLowerCase().contains(filterFullName.toLowerCase())))
                 .filter(s -> filterGender == null
                         || (s.getGender() != null && s.getGender().equals(filterGender)))
                 .filter(s -> filterStatus == null
                         || (s.getStatus() != null && s.getStatus().equals(filterStatus)))
                 .filter(s -> isBlank(filterProvince)
-                        || (s.getAddressProvice() != null && s.getAddressProvice().toLowerCase().contains(filterProvince.toLowerCase())))
+                        || (s.getAddressProvice() != null
+                                && s.getAddressProvice().toLowerCase().contains(filterProvince.toLowerCase())))
                 .filter(s -> isBlank(filterBiNumber)
-                        || (s.getBiNumber() != null && s.getBiNumber().toLowerCase().contains(filterBiNumber.toLowerCase())))
+                        || (s.getBiNumber() != null
+                                && s.getBiNumber().toLowerCase().contains(filterBiNumber.toLowerCase())))
                 .collect(Collectors.toList());
     }
 
@@ -225,7 +229,8 @@ public class StudentController implements Serializable {
                 || (student.getEmail() != null && student.getEmail().toLowerCase().contains(filterText))
                 || (student.getPhone_1() != null && student.getPhone_1().toLowerCase().contains(filterText))
                 || (student.getBiNumber() != null && student.getBiNumber().toLowerCase().contains(filterText))
-                || (student.getAddressProvice() != null && student.getAddressProvice().toLowerCase().contains(filterText));
+                || (student.getAddressProvice() != null
+                        && student.getAddressProvice().toLowerCase().contains(filterText));
     }
 
     // ════════════════════════════════════════════════════════════
@@ -416,7 +421,8 @@ public class StudentController implements Serializable {
     }
 
     public void delete(Long id) {
-        if (id == null) return;
+        if (id == null)
+            return;
         try {
             studentService.delete(id);
             selectedId = null;
@@ -548,44 +554,106 @@ public class StudentController implements Serializable {
     // GETTERS E SETTERS
     // ════════════════════════════════════════════════════════════
 
-    public Student getStudent() { return student; }
-    public void setStudent(Student student) { this.student = student; }
+    public Student getStudent() {
+        return student;
+    }
 
-    public UploadedFile getUploadedPhoto() { return uploadedPhoto; }
-    public void setUploadedPhoto(UploadedFile uploadedPhoto) { this.uploadedPhoto = uploadedPhoto; }
+    public void setStudent(Student student) {
+        this.student = student;
+    }
 
-    public StudentDTO getEditDto() { return editDto; }
-    public void setEditDto(StudentDTO editDto) { this.editDto = editDto; }
+    public UploadedFile getUploadedPhoto() {
+        return uploadedPhoto;
+    }
 
-    public StudentDTO getSelectedStudent() { return selectedStudent; }
-    public void setSelectedStudent(StudentDTO selectedStudent) { this.selectedStudent = selectedStudent; }
+    public void setUploadedPhoto(UploadedFile uploadedPhoto) {
+        this.uploadedPhoto = uploadedPhoto;
+    }
 
-    public Long getSelectedId() { return selectedId; }
-    public void setSelectedId(Long selectedId) { this.selectedId = selectedId; }
+    public StudentDTO getEditDto() {
+        return editDto;
+    }
 
-    public void setLazyModel(StudentLazyModel lazyModel) { this.lazyModel = lazyModel; }
+    public void setEditDto(StudentDTO editDto) {
+        this.editDto = editDto;
+    }
 
-    public StudentService getStudentService() { return studentService; }
-    public void setStudentService(StudentService studentService) { this.studentService = studentService; }
+    public StudentDTO getSelectedStudent() {
+        return selectedStudent;
+    }
+
+    public void setSelectedStudent(StudentDTO selectedStudent) {
+        this.selectedStudent = selectedStudent;
+    }
+
+    public Long getSelectedId() {
+        return selectedId;
+    }
+
+    public void setSelectedId(Long selectedId) {
+        this.selectedId = selectedId;
+    }
+
+    public void setLazyModel(StudentLazyModel lazyModel) {
+        this.lazyModel = lazyModel;
+    }
+
+    public StudentService getStudentService() {
+        return studentService;
+    }
+
+    public void setStudentService(StudentService studentService) {
+        this.studentService = studentService;
+    }
 
     // ── Filtros ──
-    public String getFilterStudentNumber() { return filterStudentNumber; }
-    public void setFilterStudentNumber(String filterStudentNumber) { this.filterStudentNumber = filterStudentNumber; }
+    public String getFilterStudentNumber() {
+        return filterStudentNumber;
+    }
 
-    public String getFilterFullName() { return filterFullName; }
-    public void setFilterFullName(String filterFullName) { this.filterFullName = filterFullName; }
+    public void setFilterStudentNumber(String filterStudentNumber) {
+        this.filterStudentNumber = filterStudentNumber;
+    }
 
-    public Gender getFilterGender() { return filterGender; }
-    public void setFilterGender(Gender filterGender) { this.filterGender = filterGender; }
+    public String getFilterFullName() {
+        return filterFullName;
+    }
 
-    public StudentStatus getFilterStatus() { return filterStatus; }
-    public void setFilterStatus(StudentStatus filterStatus) { this.filterStatus = filterStatus; }
+    public void setFilterFullName(String filterFullName) {
+        this.filterFullName = filterFullName;
+    }
 
-    public String getFilterProvince() { return filterProvince; }
-    public void setFilterProvince(String filterProvince) { this.filterProvince = filterProvince; }
+    public Gender getFilterGender() {
+        return filterGender;
+    }
 
-    public String getFilterBiNumber() { return filterBiNumber; }
-    public void setFilterBiNumber(String filterBiNumber) { this.filterBiNumber = filterBiNumber; }
+    public void setFilterGender(Gender filterGender) {
+        this.filterGender = filterGender;
+    }
+
+    public StudentStatus getFilterStatus() {
+        return filterStatus;
+    }
+
+    public void setFilterStatus(StudentStatus filterStatus) {
+        this.filterStatus = filterStatus;
+    }
+
+    public String getFilterProvince() {
+        return filterProvince;
+    }
+
+    public void setFilterProvince(String filterProvince) {
+        this.filterProvince = filterProvince;
+    }
+
+    public String getFilterBiNumber() {
+        return filterBiNumber;
+    }
+
+    public void setFilterBiNumber(String filterBiNumber) {
+        this.filterBiNumber = filterBiNumber;
+    }
 
     // ════════════════════════════════════════════════════════════
     // ENUMS PARA DROPDOWNS
@@ -605,8 +673,19 @@ public class StudentController implements Serializable {
 
     // Métodos para estatísticas
 
-    public long getTotalStudentCount() { return totalStudentCount; }
-    public long getActiveStudentCount() { return activeStudentCount; }
-    public long getInactiveStudentCount() { return inactiveStudentCount; }
-    public long getNewStudentCount() { return newStudentCount; }
+    public long getTotalStudentCount() {
+        return totalStudentCount;
+    }
+
+    public long getActiveStudentCount() {
+        return activeStudentCount;
+    }
+
+    public long getInactiveStudentCount() {
+        return inactiveStudentCount;
+    }
+
+    public long getNewStudentCount() {
+        return newStudentCount;
+    }
 }
