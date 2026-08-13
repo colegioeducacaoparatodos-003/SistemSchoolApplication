@@ -201,7 +201,7 @@
     </p:dialog>
 
     <style>
-        /* ===== RESPONSIVO COM MARGENS — DESKTOP / TABLET ===== */
+        /* ===== DESKTOP / TABLET — margens em todos os lados ===== */
         @media (min-width: 768px) {
             .sc-dialog-edit .ui-dialog {
                 top: 1rem !important;
@@ -210,9 +210,9 @@
                 bottom: 1rem !important;
                 width: auto !important;
                 height: auto !important;
-                max-width: 1000px !important;
+                max-width: 900px !important;
                 margin: 0 auto !important;
-                border-radius: 6px !important;
+                border-radius: 12px !important;
             }
             .sc-dialog-edit .ui-dialog-content {
                 height: calc(100vh - 180px) !important;
@@ -221,20 +221,21 @@
             }
         }
 
-        /* ===== MARGENS EM TELAS PEQUENAS ===== */
+        /* ===== MOBILE — margens em todos os lados ===== */
         @media (max-width: 767px) {
             .sc-dialog-edit .ui-dialog {
-                top: .5rem !important;
-                left: .5rem !important;
-                right: .5rem !important;
-                bottom: .5rem !important;
+                top: 1rem !important;
+                left: 1rem !important;
+                right: 1rem !important;
+                bottom: 1rem !important;
                 width: auto !important;
                 height: auto !important;
                 max-width: none !important;
                 margin: 0 !important;
+                border-radius: 12px !important;
             }
             .sc-dialog-edit .ui-dialog-content {
-                max-height: calc(100vh - 140px) !important;
+                max-height: calc(100vh - 180px) !important;
                 overflow-y: auto !important;
             }
         }

@@ -27,6 +27,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.SistemSchool.report.PdfReportService;
@@ -38,6 +40,7 @@ import com.itextpdf.text.DocumentException;
 public class StudentController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(StudentController.class.getName());
 
     private static final String STUDENT_IMG_FOLDER = "student_img";
     private static final String STUDENT_IMG_WEB = "/" + STUDENT_IMG_FOLDER + "/";
@@ -122,12 +125,10 @@ public class StudentController implements Serializable {
 
     public String loadStudents() {
         try {
-            lazyModel = new StudentLazyModel(studentService);
-            loadAllStudents();
-            loadStatistics();
+            init();
         } catch (Exception e) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao carregar alunos", e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Erro ao carregar alunos", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
         }
         return "/management/secretaria/students.xhtml?faces-redirect=true";
     }
@@ -197,12 +198,16 @@ public class StudentController implements Serializable {
         uploadedPhoto = null;
     }
 
+    /**
+     * CRIAR — retorna String com redirect (mesmo padrão do EnrolmentController).
+     * O form usa ajax="false" devido ao p:fileUpload mode="simple".
+     */
     public String saveStudent() {
         try {
-            // 0. Validar BI antes de qualquer persistência
+            // 0. Validar BI
             if (student.getBiNumber() != null && !student.getBiNumber().isEmpty()
                     && !biValidationService.validar(student.getBiNumber())) {
-                addMessage(FacesMessage.SEVERITY_ERROR, "BI inválido",
+                addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
                         "Informe um número de BI válido (formato: 9 dígitos + 2 letras + 3 dígitos, ex: 123456789LA042).");
                 return null;
             }
@@ -210,26 +215,18 @@ public class StudentController implements Serializable {
             // 1. Upload da foto
             processPhotoUpload();
 
-            // 2. Persistir o aluno
+            // 2. Persistir
             studentService.save(student);
 
-            // 3. Repor estado
-            student = new Student();
-            uploadedPhoto = null;
-            init();
-
-            FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .getFlash()
-                    .setKeepMessages(true);
-
-            addMessage(FacesMessage.SEVERITY_INFO, "Aluno", "Aluno registado com sucesso");
+            // 3. Flash message + redirect
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Aluno registado com sucesso");
 
             return "/management/secretaria/students.xhtml?faces-redirect=true";
 
         } catch (Exception e) {
-            e.printStackTrace();
-            addMessage(FacesMessage.SEVERITY_ERROR, "Aluno", e.getMessage());
+            LOGGER.log(Level.SEVERE, "Erro ao gravar aluno", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
             return null;
         }
     }
@@ -246,7 +243,7 @@ public class StudentController implements Serializable {
     }
 
     /**
-     * Lógica de upload centralizada, chamada dentro do saveStudent.
+     * Lógica de upload centralizada.
      */
     private void processPhotoUpload() throws IOException {
         if (uploadedPhoto == null || uploadedPhoto.getContent() == null
@@ -256,10 +253,6 @@ public class StudentController implements Serializable {
 
         if (uploadedPhoto.getSize() > 2097152) {
             throw new IOException("O arquivo excede o tamanho máximo de 2MB.");
-        }
-
-        if (uploadedPhoto.getContent().length > 2 * 1024 * 1024) {
-            throw new IllegalArgumentException("A foto não pode exceder 2 MB.");
         }
 
         String originalName = uploadedPhoto.getFileName();
@@ -289,13 +282,53 @@ public class StudentController implements Serializable {
         student.setUploadPhoto(STUDENT_IMG_WEB + uniqueName);
     }
 
+    /**
+     * Upload reutilizável que retorna o caminho (usado na edição).
+     */
+    private String processPhotoUploadInternal() throws IOException {
+        if (uploadedPhoto == null || uploadedPhoto.getContent() == null
+                || uploadedPhoto.getContent().length == 0) {
+            return null;
+        }
+
+        if (uploadedPhoto.getSize() > 2097152) {
+            throw new IOException("O arquivo excede o tamanho máximo de 2MB.");
+        }
+
+        String originalName = uploadedPhoto.getFileName();
+        if (originalName == null || !originalName.matches("(?i).+\\.(jpg|jpeg|png|webp)$")) {
+            throw new IllegalArgumentException("Apenas ficheiros JPG, PNG ou WEBP são permitidos.");
+        }
+
+        String realPath = FacesContext.getCurrentInstance()
+                .getExternalContext()
+                .getRealPath(STUDENT_IMG_WEB);
+
+        Path uploadDir = Paths.get(realPath);
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+        }
+
+        String extension = originalName.contains(".")
+                ? originalName.substring(originalName.lastIndexOf(".")).toLowerCase()
+                : ".jpg";
+        String uniqueName = UUID.randomUUID().toString() + extension;
+
+        Path destination = uploadDir.resolve(uniqueName);
+        try (InputStream is = uploadedPhoto.getInputStream()) {
+            Files.copy(is, destination, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        return STUDENT_IMG_WEB + uniqueName;
+    }
+
     // ════════════════════════════════════════════════════════════
     // EDIT / UPDATE / DELETE
     // ════════════════════════════════════════════════════════════
 
     public void openEditDialog(Long id) {
         if (id == null) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Nenhum aluno selecionado!", "");
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhum aluno selecionado");
             return;
         }
         this.selectedId = id;
@@ -308,15 +341,15 @@ public class StudentController implements Serializable {
         if (dto != null) {
             mapDtoFields(dto, editDto = new StudentDTO());
             mapDtoFields(dto, selectedStudent);
+            uploadedPhoto = null;
         } else {
-            addMessage(FacesMessage.SEVERITY_WARN, "Aluno não encontrado", "");
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Aluno não encontrado");
         }
     }
 
-
     public void openViewDialog(Long id) {
         if (id == null) {
-            addMessage(FacesMessage.SEVERITY_WARN, "Nenhum aluno selecionado!", "");
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhum aluno selecionado");
             return;
         }
         this.selectedId = id;
@@ -329,46 +362,47 @@ public class StudentController implements Serializable {
         if (dto != null) {
             mapDtoFields(dto, selectedStudent);
         } else {
-            addMessage(FacesMessage.SEVERITY_WARN, "Aluno nao encontrado", "");
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Aluno não encontrado");
         }
     }
 
+    public void openDeleteDialog(Long id) {
+        if (id == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhum aluno selecionado");
+            return;
+        }
+        this.selectedId = id;
+    }
+
+    public void deleteStudent() {
+        if (selectedId == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhum aluno selecionado para eliminar");
+            return;
+        }
+        try {
+            studentService.delete(selectedId);
+            selectedId = null;
+            init();
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Aluno eliminado com sucesso");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Erro ao eliminar aluno", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
+        }
+    }
+
+    /**
+     * Método legado com parâmetro — mantido para compatibilidade se chamado diretamente.
+     */
     public void delete(Long id) {
         if (id == null) return;
         try {
             studentService.delete(id);
             selectedId = null;
             init();
-            addMessage(FacesMessage.SEVERITY_INFO, "Aluno", "Aluno eliminado com sucesso");
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Aluno eliminado com sucesso");
         } catch (Exception e) {
-            e.printStackTrace();
-            addMessage(FacesMessage.SEVERITY_ERROR, "Aluno", e.getMessage());
-        }
-    }
-
-    public void printStudentPdf(Long id) {
-        if (id == null) {
-            addMessage(FacesMessage.SEVERITY_WARN, "Nenhum aluno selecionado!", "");
-            return;
-        }
-        try {
-            StudentDTO dto = allStudents.stream()
-                    .filter(s -> s.getPkStudent().equals(id))
-                    .findFirst()
-                    .orElse(null);
-
-            if (dto == null) {
-                addMessage(FacesMessage.SEVERITY_WARN, "Aluno não encontrado", "");
-                return;
-            }
-
-            byte[] pdf = PdfReportService.generateStudentReport(dto);
-            String fileName = "aluno_" + dto.getSudentNumber() + ".pdf";
-            PdfReportService.streamToResponse(pdf, fileName);
-
-        } catch (DocumentException | IOException e) {
-            e.printStackTrace();
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao gerar PDF", e.getMessage());
+            LOGGER.log(Level.SEVERE, "Erro ao eliminar aluno", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
         }
     }
 
@@ -385,7 +419,7 @@ public class StudentController implements Serializable {
         if (dto != null) {
             mapDtoFields(dto, selectedStudent);
         } else {
-            addMessage(FacesMessage.SEVERITY_WARN, "Aluno não encontrado", "");
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Aluno não encontrado");
         }
     }
 
@@ -413,35 +447,37 @@ public class StudentController implements Serializable {
         target.setUpdatedAt(source.getUpdatedAt());
     }
 
+    /**
+     * EDITAR — void (mesmo padrão do EnrolmentController.saveUpdate).
+     * O form usa ajax="false" devido ao p:fileUpload mode="simple".
+     */
     public void saveUpdate() {
         try {
             if (editDto.getBiNumber() != null && !editDto.getBiNumber().isEmpty()
                     && !biValidationService.validar(editDto.getBiNumber())) {
-                addMessage(FacesMessage.SEVERITY_ERROR, "BI inválido",
-                        "Informe um número de BI válido.");
+                addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "Informe um número de BI válido.");
                 return;
+            }
+
+            // Processar nova foto se foi selecionada
+            if (uploadedPhoto != null && uploadedPhoto.getContent() != null 
+                    && uploadedPhoto.getContent().length > 0) {
+                String photoPath = processPhotoUploadInternal();
+                if (photoPath != null) {
+                    editDto.setUploadPhoto(photoPath);
+                }
             }
 
             studentService.update(editDto);
             init();
             editDto = new StudentDTO();
             selectedId = null;
-            addMessage(FacesMessage.SEVERITY_INFO, "Aluno", "Aluno atualizado com sucesso");
-        } catch (Exception e) {
-            e.printStackTrace();
-            addMessage(FacesMessage.SEVERITY_ERROR, "Aluno", e.getMessage());
-        }
-    }
+            uploadedPhoto = null;
 
-    public void delete() {
-        try {
-            studentService.delete(selectedId);
-            selectedId = null;
-            init();
-            addMessage(FacesMessage.SEVERITY_INFO, "Aluno", "Aluno eliminado com sucesso");
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Aluno atualizado com sucesso");
         } catch (Exception e) {
-            e.printStackTrace();
-            addMessage(FacesMessage.SEVERITY_ERROR, "Aluno", e.getMessage());
+            LOGGER.log(Level.SEVERE, "Erro ao atualizar aluno", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
         }
     }
 
@@ -449,9 +485,35 @@ public class StudentController implements Serializable {
     // PDF
     // ════════════════════════════════════════════════════════════
 
+    public void printStudentPdf(Long id) {
+        if (id == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhum aluno selecionado");
+            return;
+        }
+        try {
+            StudentDTO dto = allStudents.stream()
+                    .filter(s -> s.getPkStudent().equals(id))
+                    .findFirst()
+                    .orElse(null);
+
+            if (dto == null) {
+                addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Aluno não encontrado");
+                return;
+            }
+
+            byte[] pdf = PdfReportService.generateStudentReport(dto);
+            String fileName = "aluno_" + dto.getSudentNumber() + ".pdf";
+            PdfReportService.streamToResponse(pdf, fileName);
+
+        } catch (DocumentException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Erro ao gerar PDF", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
+        }
+    }
+
     public void printStudentPdf() {
         if (selectedId == null) {
-            addMessage(FacesMessage.SEVERITY_WARN, "Nenhum aluno selecionado!", "");
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhum aluno selecionado");
             return;
         }
         try {
@@ -461,7 +523,7 @@ public class StudentController implements Serializable {
                     .orElse(null);
 
             if (dto == null) {
-                addMessage(FacesMessage.SEVERITY_WARN, "Aluno não encontrado", "");
+                addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Aluno não encontrado");
                 return;
             }
 
@@ -470,8 +532,8 @@ public class StudentController implements Serializable {
             PdfReportService.streamToResponse(pdf, fileName);
 
         } catch (DocumentException | IOException e) {
-            e.printStackTrace();
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao gerar PDF", e.getMessage());
+            LOGGER.log(Level.SEVERE, "Erro ao gerar PDF", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
         }
     }
 
@@ -484,7 +546,7 @@ public class StudentController implements Serializable {
             List<StudentDTO> students = allStudents;
 
             if (students == null || students.isEmpty()) {
-                addMessage(FacesMessage.SEVERITY_WARN, "Nenhum aluno para exportar", "");
+                addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhum aluno para exportar");
                 return;
             }
 
@@ -493,8 +555,8 @@ public class StudentController implements Serializable {
             PdfReportService.streamToResponse(pdf, fileName, true);
 
         } catch (DocumentException | IOException e) {
-            e.printStackTrace();
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao exportar lista", e.getMessage());
+            LOGGER.log(Level.SEVERE, "Erro ao exportar lista", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
         }
     }
 

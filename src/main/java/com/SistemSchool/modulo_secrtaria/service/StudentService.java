@@ -45,26 +45,26 @@ public class StudentService {
         }
         return prefix + String.format("%04d", nextSeq);
     }
-    // ─────────────────────────────────────────────────────────────
+    // ---------------------------------------------------------------
     // CRUD PRINCIPAL
-    // ─────────────────────────────────────────────────────────────
+    // ---------------------------------------------------------------
 
     public Student save(Student student) {
         if (repository.existsBySudentNumber(student.getSudentNumber())) {
-            throw new RuntimeException("Número de aluno já existe: " + student.getSudentNumber());
+            throw new RuntimeException("Numero de aluno ja existe: " + student.getSudentNumber());
         }
         if (repository.existsByBiNumber(student.getBiNumber())) {
-            throw new RuntimeException("Número de BI já registado: " + student.getBiNumber());
+            throw new RuntimeException("Numero de BI ja registado: " + student.getBiNumber());
         }
         if (student.getEmail() != null && repository.existsByEmail(student.getEmail())) {
-            throw new RuntimeException("Email já registado: " + student.getEmail());
+            throw new RuntimeException("Email ja registado: " + student.getEmail());
         }
         return repository.save(student);
     }
 
     public void update(StudentDTO dto) {
         Student student = repository.findById(dto.getPkStudent())
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado com id: " + dto.getPkStudent()));
+                .orElseThrow(() -> new RuntimeException("Aluno nao encontrado com id: " + dto.getPkStudent()));
 
         student.setSudentNumber(dto.getSudentNumber());
         student.setFristName(dto.getFristName());
@@ -90,22 +90,22 @@ public class StudentService {
 
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Aluno não encontrado com id: " + id);
+            throw new RuntimeException("Aluno nao encontrado com id: " + id);
         }
         repository.deleteById(id);
     }
 
-    // ─────────────────────────────────────────────────────────────
+    // ---------------------------------------------------------------
     // BUSCAR TODOS (lista completa com DTO)
-    // ─────────────────────────────────────────────────────────────
+    // ---------------------------------------------------------------
 
     public List<StudentDTO> getAllStudents() {
         return repository.findAllStudentsDTO();
     }
 
-    // ─────────────────────────────────────────────────────────────
+    // ---------------------------------------------------------------
     // LAZY LOADING PARA TABELA
-    // ─────────────────────────────────────────────────────────────
+    // ---------------------------------------------------------------
 
     public Page<StudentDTO> findLazy(int page, int size, Sort sort, Map<String, Object> filters) {
         Pageable pageable = PageRequest.of(page, size, sort);
@@ -136,9 +136,9 @@ public class StudentService {
                 p.getUpdatedAt()));
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // QUERIES UTILITÁRIAS
-    // ─────────────────────────────────────────────────────────────
+    // ---------------------------------------------------------------
+    // QUERIES UTILITARIAS
+    // ---------------------------------------------------------------
 
     public long countAll() {
         return repository.count();
@@ -162,11 +162,11 @@ public class StudentService {
 
     public Student getById(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado com id: " + id));
+                .orElseThrow(() -> new RuntimeException("Aluno nao encontrado com id: " + id));
     }
 
     public Student findById(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Estudante não encontrado com id: " + id));
+                .orElseThrow(() -> new RuntimeException("Estudante nao encontrado com id: " + id));
     }
 }
