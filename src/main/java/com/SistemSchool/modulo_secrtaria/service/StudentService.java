@@ -2,18 +2,19 @@ package com.SistemSchool.modulo_secrtaria.service;
 
 import com.SistemSchool.modulo_secrtaria.dto.StudentDTO;
 import com.SistemSchool.io.Gender;
-import com.SistemSchool.modulo_secrtaria.interfaces.StudentTableProjection;
 import com.SistemSchool.modulo_secrtaria.io.StudentStatus;
 import com.SistemSchool.modulo_secrtaria.model.Student;
 import com.SistemSchool.modulo_secrtaria.repository.StudentRepository;
 
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,6 +46,7 @@ public class StudentService {
         }
         return prefix + String.format("%04d", nextSeq);
     }
+
     // ---------------------------------------------------------------
     // CRUD PRINCIPAL
     // ---------------------------------------------------------------
@@ -108,32 +110,94 @@ public class StudentService {
     // ---------------------------------------------------------------
 
     public Page<StudentDTO> findLazy(int page, int size, Sort sort, Map<String, Object> filters) {
-        Pageable pageable = PageRequest.of(page, size, sort);
+        List<StudentDTO> all = getAllStudents();
+        List<StudentDTO> filtered = applyFilters(all, filters);
 
-        Page<StudentTableProjection> projections = repository.findAllForTable(pageable);
+        int fromIndex = Math.min(page * size, filtered.size());
+        int toIndex = Math.min(fromIndex + size, filtered.size());
 
-        return projections.map(p -> new StudentDTO(
-                p.getPkStudent(),
-                p.getSudentNumber(),
-                p.getFristName(),
-                p.getLastName(),
-                p.getFullName(),
-                null,
-                p.getBiNumber(),
-                p.getNascDate(),
-                p.getBiExpiryData(),
-                p.getAddressStreet(),
-                p.getAddressProvice(),
-                p.getNameFather(),
-                p.getNameMather(),
-                p.getEmail(),
-                p.getPhone_1(),
-                p.getPhone_2(),
-                p.getUploadPhoto(),
-                null,
-                p.getObs(),
-                p.getCreatedAt(),
-                p.getUpdatedAt()));
+        List<StudentDTO> pageContent = filtered.subList(fromIndex, toIndex);
+        return new PageImpl<>(pageContent, PageRequest.of(page, size, sort), filtered.size());
+    }
+
+    private List<StudentDTO> applyFilters(List<StudentDTO> source, Map<String, Object> filters) {
+        if (filters == null || filters.isEmpty()) {
+            return source;
+        }
+
+        List<StudentDTO> filtered = new ArrayList<>();
+        String globalTerm = normalize(filters.get("global"));
+
+        for (StudentDTO dto : source) {
+            boolean matches = true;
+
+            if (!globalTerm.isEmpty()) {
+                matches = matchesGlobal(dto, globalTerm);
+            }
+
+            if (matches) {
+                for (Map.Entry<String, Object> entry : filters.entrySet()) {
+                    String field = entry.getKey();
+                    if ("global".equals(field)) {
+                        continue;
+                    }
+                    String expected = normalize(entry.getValue());
+                    if (expected.isEmpty()) {
+                        continue;
+                    }
+
+                    boolean fieldMatches = switch (field) {
+                        case "sudentNumber" -> contains(dto.getSudentNumber(), expected);
+                        case "fullName" -> contains(dto.getFullName(), expected);
+                        case "gender" -> contains(dto.getGender() != null ? dto.getGender().name() : null, expected);
+                        case "status" -> contains(dto.getStatus() != null ? dto.getStatus().name() : null, expected);
+                        case "addressProvice" -> contains(dto.getAddressProvice(), expected);
+                        case "biNumber" -> contains(dto.getBiNumber(), expected);
+                        case "email" -> contains(dto.getEmail(), expected);
+                        case "phone_1" -> contains(dto.getPhone_1(), expected);
+                        default -> true;
+                    };
+
+                    if (!fieldMatches) {
+                        matches = false;
+                        break;
+                    }
+                }
+            }
+
+            if (matches) {
+                filtered.add(dto);
+            }
+        }
+
+        return filtered;
+    }
+
+    private boolean matchesGlobal(StudentDTO dto, String globalTerm) {
+        return contains(dto.getSudentNumber(), globalTerm)
+                || contains(dto.getFullName(), globalTerm)
+                || contains(dto.getBiNumber(), globalTerm)
+                || contains(dto.getEmail(), globalTerm)
+                || contains(dto.getPhone_1(), globalTerm)
+                || contains(dto.getAddressProvice(), globalTerm)
+                || contains(dto.getGender() != null ? dto.getGender().name() : null, globalTerm)
+                || contains(dto.getStatus() != null ? dto.getStatus().name() : null, globalTerm);
+    }
+
+    private boolean contains(String value, String expected) {
+        return value != null && value.toLowerCase().contains(expected.toLowerCase());
+    }
+
+    private String normalize(Object value) {
+        return value == null ? "" : value.toString().trim();
+    }
+
+    // ---------------------------------------------------------------
+    // CONTAGEM
+    // ---------------------------------------------------------------
+
+    public long count() {
+        return repository.count();
     }
 
     // ---------------------------------------------------------------
