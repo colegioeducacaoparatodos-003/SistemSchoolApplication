@@ -261,7 +261,7 @@
                         <div>
                             <div class="enr-stat-label">#{msg.totalStudents}</div>
                             <div class="enr-stat-value">
-                                <h:outputText value="#{studentController.totalStudentCount}"><f:convertNumber pattern="#&#44;##0" /></h:outputText>
+                                <h:outputText value="#{studentController.totalStudentCount}"><f:convertNumber pattern="#,##0" /></h:outputText>
                             </div>
                         </div>
                         <div class="enr-stat-icon dark"><i class="pi pi-list"></i></div>
@@ -270,7 +270,7 @@
                         <div>
                             <div class="enr-stat-label">#{msg.activeStudents}</div>
                             <div class="enr-stat-value">
-                                <h:outputText value="#{studentController.activeStudentCount}"><f:convertNumber pattern="#&#44;##0" /></h:outputText>
+                                <h:outputText value="#{studentController.activeStudentCount}"><f:convertNumber pattern="#,##0" /></h:outputText>
                             </div>
                         </div>
                         <div class="enr-stat-icon green"><i class="pi pi-check-circle"></i></div>
@@ -279,7 +279,7 @@
                         <div>
                             <div class="enr-stat-label">#{msg.inactiveStudents}</div>
                             <div class="enr-stat-value">
-                                <h:outputText value="#{studentController.inactiveStudentCount}"><f:convertNumber pattern="#&#44;##0" /></h:outputText>
+                                <h:outputText value="#{studentController.inactiveStudentCount}"><f:convertNumber pattern="#,##0" /></h:outputText>
                             </div>
                         </div>
                         <div class="enr-stat-icon blue"><i class="pi pi-times-circle"></i></div>
@@ -288,7 +288,7 @@
                         <div>
                             <div class="enr-stat-label">#{msg.newStudentsThisMonth}</div>
                             <div class="enr-stat-value">
-                                <h:outputText value="#{studentController.newStudentCount}"><f:convertNumber pattern="#&#44;##0" /></h:outputText>
+                                <h:outputText value="#{studentController.newStudentCount}"><f:convertNumber pattern="#,##0" /></h:outputText>
                             </div>
                         </div>
                         <div class="enr-stat-icon yellow"><i class="pi pi-user-plus"></i></div>
@@ -411,7 +411,7 @@
                                 <p:commandButton styleClass="enr-act pdf" icon="pi pi-file-pdf" title="#{msg.printPdf}"
                                     action="#{studentController.printStudentPdf(student.pkStudent)}" ajax="false" />
                                 <p:commandButton styleClass="enr-act delete" icon="pi pi-trash" title="#{msg.delete}"
-                                    actionListener="#{studentController.delete(student.pkStudent)}" process="@this" update="dtStudents messages">
+                                    actionListener="#{studentController.openDeleteDialog(student.pkStudent)}" process="@this" update=":formStudents:confirmDeleteStudent">
                                     <p:confirm header="#{msg.confirmDeletion}" message="#{msg.deleteStudent}" icon="pi pi-exclamation-triangle" />
                                 </p:commandButton>
                             </div>
@@ -429,6 +429,7 @@
                 <p:commandButton value="#{msg.yes}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
             </p:confirmDialog>
 
+            <!-- View Dialog inline (mesmo padrão Enrolment) -->
             <h:form id="viewStudentForm">
                 <p:dialog widgetVar="viewStudentDialog" modal="true" resizable="false" header="#{msg.studentDetails}"
                     style="width: 90vw; max-width: 560px;" closable="true" responsive="true" fitViewport="true">
@@ -509,19 +510,6 @@
             function hideScLoading() {
                 var overlay = document.getElementById('scLoadingOverlay');
                 if (overlay) overlay.classList.remove('active');
-            }
-            function handleStudentSaveComplete() {
-                // Fechar diálogos de criação e edição após salvamento bem-sucedido
-                if (PrimeFaces && PrimeFaces.widgets) {
-                    var createDialog = PrimeFaces.widgets['createStudentDialog'];
-                    var editDialog = PrimeFaces.widgets['editStudentDialog'];
-                    if (createDialog && createDialog.isVisible()) {
-                        createDialog.hide();
-                    }
-                    if (editDialog && editDialog.isVisible()) {
-                        editDialog.hide();
-                    }
-                }
             }
             if (window.PrimeFaces) {
                 PrimeFaces.ajax.Queue.originalAdd = PrimeFaces.ajax.Queue.add;

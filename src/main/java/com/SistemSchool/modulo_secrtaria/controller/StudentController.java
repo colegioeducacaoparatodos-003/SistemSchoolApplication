@@ -23,9 +23,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,7 +71,6 @@ public class StudentController implements Serializable {
     // ════════════════════════════════════════════════════════════
 
     private List<StudentDTO> allStudents = new ArrayList<>();
-    private List<StudentDTO> filteredStudents = new ArrayList<>();
 
     private String filterStudentNumber;
     private String filterFullName;
@@ -96,7 +99,7 @@ public class StudentController implements Serializable {
     public void init() {
         lazyModel = new StudentLazyModel(studentService);
         loadAllStudents();
-        loadStatistics();
+        computeStatistics();
     }
 
     private void loadAllStudents() {
@@ -104,31 +107,14 @@ public class StudentController implements Serializable {
         if (allStudents == null) {
             allStudents = new ArrayList<>();
         }
-        filteredStudents = new ArrayList<>(allStudents);
     }
 
-    private void loadStatistics() {
-        totalStudentCount = studentService.countAll();
-        activeStudentCount = studentService.countByStatus(StudentStatus.ACTIVE);
-        inactiveStudentCount = studentService.countByStatus(StudentStatus.INACTIVE);
-
-        if (allStudents == null || allStudents.isEmpty()) {
-            newStudentCount = 0;
-            return;
-        }
-
-        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-        newStudentCount = allStudents.stream()
-                .filter(s -> s.getCreatedAt() != null && s.getCreatedAt().isAfter(thirtyDaysAgo))
-                .count();
-    }
-
-    public String loadStudents() {
+    public String load() {
         try {
             init();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erro ao carregar alunos", e);
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao carregar alunos", e.getMessage());
         }
         return "/management/secretaria/students.xhtml?faces-redirect=true";
     }
@@ -138,29 +124,33 @@ public class StudentController implements Serializable {
     }
 
     // ════════════════════════════════════════════════════════════
-    // FILTROS FUNCIONAIS
+    // FILTROS E ESTATÍSTICAS (padrão EnrolmentController)
     // ════════════════════════════════════════════════════════════
 
-    public void applyFilters() {
+    public List<StudentDTO> getFilteredStudents() {
         if (allStudents == null) {
-            filteredStudents = new ArrayList<>();
-            return;
+            return new ArrayList<>();
         }
 
-        filteredStudents = allStudents.stream()
-                .filter(s -> filterStudentNumber == null || filterStudentNumber.isEmpty()
+        return allStudents.stream()
+                .filter(s -> isBlank(filterStudentNumber)
                         || (s.getSudentNumber() != null && s.getSudentNumber().toLowerCase().contains(filterStudentNumber.toLowerCase())))
-                .filter(s -> filterFullName == null || filterFullName.isEmpty()
+                .filter(s -> isBlank(filterFullName)
                         || (s.getFullName() != null && s.getFullName().toLowerCase().contains(filterFullName.toLowerCase())))
                 .filter(s -> filterGender == null
                         || (s.getGender() != null && s.getGender().equals(filterGender)))
                 .filter(s -> filterStatus == null
                         || (s.getStatus() != null && s.getStatus().equals(filterStatus)))
-                .filter(s -> filterProvince == null || filterProvince.isEmpty()
+                .filter(s -> isBlank(filterProvince)
                         || (s.getAddressProvice() != null && s.getAddressProvice().toLowerCase().contains(filterProvince.toLowerCase())))
-                .filter(s -> filterBiNumber == null || filterBiNumber.isEmpty()
+                .filter(s -> isBlank(filterBiNumber)
                         || (s.getBiNumber() != null && s.getBiNumber().toLowerCase().contains(filterBiNumber.toLowerCase())))
                 .collect(Collectors.toList());
+    }
+
+    public void applyFilters() {
+        computeStatistics();
+        addMessage(FacesMessage.SEVERITY_INFO, "Filtros aplicados", "");
     }
 
     public void clearFilters() {
@@ -170,7 +160,57 @@ public class StudentController implements Serializable {
         filterStatus = null;
         filterProvince = null;
         filterBiNumber = null;
-        filteredStudents = new ArrayList<>(allStudents);
+        if (lazyModel != null) {
+            lazyModel.clearFilters();
+        }
+        computeStatistics();
+        addMessage(FacesMessage.SEVERITY_INFO, "Filtros limpos", "");
+    }
+
+    private void computeStatistics() {
+        try {
+            List<StudentDTO> filtered = getFilteredStudents();
+            totalStudentCount = filtered.size();
+            activeStudentCount = filtered.stream()
+                    .filter(s -> s.getStatus() == StudentStatus.ACTIVE)
+                    .count();
+            inactiveStudentCount = filtered.stream()
+                    .filter(s -> s.getStatus() == StudentStatus.INACTIVE)
+                    .count();
+
+            YearMonth currentMonth = YearMonth.from(LocalDate.now());
+            newStudentCount = filtered.stream()
+                    .filter(s -> s.getCreatedAt() != null)
+                    .filter(s -> YearMonth.from(s.getCreatedAt()).equals(currentMonth))
+                    .count();
+        } catch (Exception e) {
+            totalStudentCount = 0;
+            activeStudentCount = 0;
+            inactiveStudentCount = 0;
+            newStudentCount = 0;
+            LOGGER.log(Level.SEVERE, "Erro ao calcular estatísticas", e);
+        }
+    }
+
+    public String buildFilterDescription() {
+        StringBuilder sb = new StringBuilder();
+        if (!isBlank(filterStudentNumber))
+            sb.append("Nº: ").append(filterStudentNumber).append(" | ");
+        if (!isBlank(filterFullName))
+            sb.append("Nome: ").append(filterFullName).append(" | ");
+        if (filterGender != null)
+            sb.append("Género: ").append(filterGender).append(" | ");
+        if (filterStatus != null)
+            sb.append("Status: ").append(filterStatus).append(" | ");
+        if (!isBlank(filterProvince))
+            sb.append("Província: ").append(filterProvince).append(" | ");
+        if (!isBlank(filterBiNumber))
+            sb.append("BI: ").append(filterBiNumber).append(" | ");
+        return sb.length() > 0 ? sb.toString() : null;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     public boolean globalFilterFunction(Object value, Object filter, String filterLocale) {
@@ -198,13 +238,8 @@ public class StudentController implements Serializable {
         uploadedPhoto = null;
     }
 
-    /**
-     * CRIAR — retorna String com redirect (mesmo padrão do EnrolmentController).
-     * O form usa ajax="false" devido ao p:fileUpload mode="simple".
-     */
     public String saveStudent() {
         try {
-            // 0. Validar BI
             if (student.getBiNumber() != null && !student.getBiNumber().isEmpty()
                     && !biValidationService.validar(student.getBiNumber())) {
                 addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
@@ -212,13 +247,9 @@ public class StudentController implements Serializable {
                 return null;
             }
 
-            // 1. Upload da foto
             processPhotoUpload();
-
-            // 2. Persistir
             studentService.save(student);
 
-            // 3. Flash message + redirect
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Aluno registado com sucesso");
 
@@ -242,9 +273,6 @@ public class StudentController implements Serializable {
         }
     }
 
-    /**
-     * Lógica de upload centralizada.
-     */
     private void processPhotoUpload() throws IOException {
         if (uploadedPhoto == null || uploadedPhoto.getContent() == null
                 || uploadedPhoto.getContent().length == 0) {
@@ -282,9 +310,6 @@ public class StudentController implements Serializable {
         student.setUploadPhoto(STUDENT_IMG_WEB + uniqueName);
     }
 
-    /**
-     * Upload reutilizável que retorna o caminho (usado na edição).
-     */
     private String processPhotoUploadInternal() throws IOException {
         if (uploadedPhoto == null || uploadedPhoto.getContent() == null
                 || uploadedPhoto.getContent().length == 0) {
@@ -390,9 +415,6 @@ public class StudentController implements Serializable {
         }
     }
 
-    /**
-     * Método legado com parâmetro — mantido para compatibilidade se chamado diretamente.
-     */
     public void delete(Long id) {
         if (id == null) return;
         try {
@@ -447,10 +469,6 @@ public class StudentController implements Serializable {
         target.setUpdatedAt(source.getUpdatedAt());
     }
 
-    /**
-     * EDITAR — void (mesmo padrão do EnrolmentController.saveUpdate).
-     * O form usa ajax="false" devido ao p:fileUpload mode="simple".
-     */
     public void saveUpdate() {
         try {
             if (editDto.getBiNumber() != null && !editDto.getBiNumber().isEmpty()
@@ -459,8 +477,7 @@ public class StudentController implements Serializable {
                 return;
             }
 
-            // Processar nova foto se foi selecionada
-            if (uploadedPhoto != null && uploadedPhoto.getContent() != null 
+            if (uploadedPhoto != null && uploadedPhoto.getContent() != null
                     && uploadedPhoto.getContent().length > 0) {
                 String photoPath = processPhotoUploadInternal();
                 if (photoPath != null) {
@@ -516,48 +533,7 @@ public class StudentController implements Serializable {
             addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhum aluno selecionado");
             return;
         }
-        try {
-            StudentDTO dto = allStudents.stream()
-                    .filter(s -> s.getPkStudent().equals(selectedId))
-                    .findFirst()
-                    .orElse(null);
-
-            if (dto == null) {
-                addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Aluno não encontrado");
-                return;
-            }
-
-            byte[] pdf = PdfReportService.generateStudentReport(dto);
-            String fileName = "aluno_" + dto.getSudentNumber() + ".pdf";
-            PdfReportService.streamToResponse(pdf, fileName);
-
-        } catch (DocumentException | IOException e) {
-            LOGGER.log(Level.SEVERE, "Erro ao gerar PDF", e);
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
-        }
-    }
-
-    // ════════════════════════════════════════════════════════════
-    // EXPORTAR LISTA
-    // ════════════════════════════════════════════════════════════
-
-    public void exportStudentListPdf() {
-        try {
-            List<StudentDTO> students = allStudents;
-
-            if (students == null || students.isEmpty()) {
-                addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhum aluno para exportar");
-                return;
-            }
-
-            byte[] pdf = PdfReportService.generateStudentListReport(students);
-            String fileName = "lista_alunos_" + java.time.LocalDate.now() + ".pdf";
-            PdfReportService.streamToResponse(pdf, fileName, true);
-
-        } catch (DocumentException | IOException e) {
-            LOGGER.log(Level.SEVERE, "Erro ao exportar lista", e);
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
-        }
+        printStudentPdf(selectedId);
     }
 
     // ════════════════════════════════════════════════════════════
@@ -593,9 +569,6 @@ public class StudentController implements Serializable {
     public void setStudentService(StudentService studentService) { this.studentService = studentService; }
 
     // ── Filtros ──
-    public List<StudentDTO> getFilteredStudents() { return filteredStudents; }
-    public void setFilteredStudents(List<StudentDTO> filteredStudents) { this.filteredStudents = filteredStudents; }
-
     public String getFilterStudentNumber() { return filterStudentNumber; }
     public void setFilterStudentNumber(String filterStudentNumber) { this.filterStudentNumber = filterStudentNumber; }
 
@@ -626,7 +599,7 @@ public class StudentController implements Serializable {
         return StudentStatus.values();
     }
 
-    public java.util.List<StudentDTO> getStudents() {
+    public List<StudentDTO> getStudents() {
         return allStudents;
     }
 

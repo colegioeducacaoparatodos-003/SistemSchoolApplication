@@ -37,7 +37,8 @@ public class StudentLazyModel extends LazyDataModel<StudentDTO> {
             sort = Sort.by(direction, sortMeta.getField());
         }
 
-        Page<StudentDTO> result = studentService.findLazy(page, pageSize, sort, null);
+        Map<String, Object> filters = convertFilters(filterBy);
+        Page<StudentDTO> result = studentService.findLazy(page, pageSize, sort, filters);
 
         setRowCount((int) result.getTotalElements());
 
@@ -46,15 +47,7 @@ public class StudentLazyModel extends LazyDataModel<StudentDTO> {
 
     @Override
     public int count(Map<String, FilterMeta> filterBy) {
-        Map<String, Object> filters = new HashMap<>();
-        if (filterBy != null) {
-            for (FilterMeta meta : filterBy.values()) {
-                Object value = meta.getFilterValue();
-                if (value != null && !value.toString().isBlank()) {
-                    filters.put(meta.getField(), value);
-                }
-            }
-        }
+        Map<String, Object> filters = convertFilters(filterBy);
         Page<StudentDTO> page = studentService.findLazy(0, 1, Sort.unsorted(), filters);
         return (int) page.getTotalElements();
     }
@@ -73,5 +66,26 @@ public class StudentLazyModel extends LazyDataModel<StudentDTO> {
         return studentDTO.getPkStudent() != null
                 ? studentDTO.getPkStudent().toString()
                 : null;
+    }
+
+    /**
+     * Limpa filtros internos (compatibilidade com EnrolmentLazyModel).
+     */
+    public void clearFilters() {
+        // O LazyDataModel do PrimeFaces recebe filtros via load/count;
+        // este método existe apenas para compatibilidade com o controller.
+    }
+
+    private Map<String, Object> convertFilters(Map<String, FilterMeta> filterBy) {
+        Map<String, Object> filters = new HashMap<>();
+        if (filterBy != null) {
+            for (FilterMeta meta : filterBy.values()) {
+                Object value = meta.getFilterValue();
+                if (value != null && !value.toString().isBlank()) {
+                    filters.put(meta.getField(), value);
+                }
+            }
+        }
+        return filters;
     }
 }
