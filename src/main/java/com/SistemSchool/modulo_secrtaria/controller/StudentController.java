@@ -284,6 +284,46 @@ public class StudentController implements Serializable {
     // GETTERS / SETTERS
     // ─────────────────────────────────────────────────────────────
 
+    public StudentStatus getFilterStatus() {
+        return filterStatus;
+    }
+
+    public void setFilterStatus(StudentStatus filterStatus) {
+        this.filterStatus = filterStatus;
+    }
+
+    public Gender getFilterGender() {
+        return filterGender;
+    }
+
+    public void setFilterGender(Gender filterGender) {
+        this.filterGender = filterGender;
+    }
+
+    public LocalDate getFilterBirthDateFrom() {
+        return filterBirthDateFrom;
+    }
+
+    public void setFilterBirthDateFrom(LocalDate filterBirthDateFrom) {
+        this.filterBirthDateFrom = filterBirthDateFrom;
+    }
+
+    public LocalDate getFilterBirthDateTo() {
+        return filterBirthDateTo;
+    }
+
+    public void setFilterBirthDateTo(LocalDate filterBirthDateTo) {
+        this.filterBirthDateTo = filterBirthDateTo;
+    }
+
+    public String getFilterStudentName() {
+        return filterStudentName;
+    }
+
+    public void setFilterStudentName(String filterStudentName) {
+        this.filterStudentName = filterStudentName;
+    }
+
     public StudentStatus[] getStatusList() {
         return StudentStatus.values();
     }
