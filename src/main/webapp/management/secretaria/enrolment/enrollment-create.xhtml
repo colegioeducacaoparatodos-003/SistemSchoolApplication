@@ -27,7 +27,8 @@
                         <p:selectOneMenu id="studentCreate" value="#{enrolmentController.selectedStudentId}"
                             required="true" requiredMessage="#{msg.requiredStudent}" filter="true"
                             filterMatchMode="contains" style="width:100%;">
-                            <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}"
+                                noSelectionOption="true" />
                             <f:selectItems value="#{enrolmentController.students}" var="st"
                                 itemLabel="#{st.fullName} (#{st.sudentNumber})" itemValue="#{st.pkStudent}" />
                         </p:selectOneMenu>
@@ -39,7 +40,8 @@
                         <p:selectOneMenu id="schoolClassCreate" value="#{enrolmentController.selectedSchoolClassId}"
                             required="true" requiredMessage="#{msg.requiredSchoolClass}" filter="true"
                             filterMatchMode="contains" style="width:100%;">
-                            <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}"
+                                noSelectionOption="true" />
                             <f:selectItems value="#{enrolmentController.schoolClasses}" var="sc"
                                 itemLabel="#{sc.classCode} — #{sc.className}" itemValue="#{sc.pkSchoolClass}" />
                         </p:selectOneMenu>
@@ -50,19 +52,22 @@
                     <h:panelGroup>
                         <p:selectOneMenu id="shiftCreate" value="#{enrolmentController.enrolment.shift}" required="true"
                             requiredMessage="#{msg.requiredShift}" style="width:100%;">
-                            <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}" noSelectionOption="true" />
-                            <f:selectItems value="#{enrolmentController.shifts}" var="sh" itemLabel="#{sh}"
+                            <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}"
+                                noSelectionOption="true" />
+                            <f:selectItems value="#{enrolmentController.shifts}" var="sh" itemLabel="#{msg[sh]}"
                                 itemValue="#{sh}" />
                         </p:selectOneMenu>
                         <p:message for="shiftCreate" display="text" styleClass="sc-field-msg" />
                     </h:panelGroup>
 
-                    <p:outputLabel for="enrolmentTypeCreate" value="#{msg.enrollmentTypeLabel}" styleClass="sc-label req" />
+                    <p:outputLabel for="enrolmentTypeCreate" value="#{msg.enrollmentTypeLabel}"
+                        styleClass="sc-label req" />
                     <h:panelGroup>
                         <p:selectOneMenu id="enrolmentTypeCreate" value="#{enrolmentController.enrolment.enrolmentType}"
                             required="true" requiredMessage="#{msg.requiredType}" style="width:100%;">
-                            <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}" noSelectionOption="true" />
-                            <f:selectItems value="#{enrolmentController.enrolmentTypes}" var="et" itemLabel="#{et}"
+                            <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}"
+                                noSelectionOption="true" />
+                            <f:selectItems value="#{enrolmentController.enrolmentTypes}" var="et" itemLabel="#{msg[et]}"
                                 itemValue="#{et}" />
                         </p:selectOneMenu>
                         <p:message for="enrolmentTypeCreate" display="text" styleClass="sc-field-msg" />
@@ -70,8 +75,8 @@
 
                     <p:outputLabel for="enrolmentDataCreate" value="#{msg.enrollmentDate}" styleClass="sc-label" />
                     <p:datePicker id="enrolmentDataCreate" value="#{enrolmentController.enrolment.enrolmentData}"
-                        pattern="dd/MM/yyyy" showIcon="true" locale="pt" style="width:100%;"
-                        monthNavigator="true" yearNavigator="true" yearRange="2020:2030" />
+                        pattern="dd/MM/yyyy" showIcon="true" locale="pt" style="width:100%;" monthNavigator="true"
+                        yearNavigator="true" yearRange="2020:2030" />
 
                 </p:panelGrid>
 
@@ -112,6 +117,7 @@
                 margin: 0 auto !important;
                 border-radius: 6px !important;
             }
+
             .sc-dialog-create .ui-dialog-content {
                 height: calc(100vh - 180px) !important;
                 max-height: calc(100vh - 180px) !important;
@@ -131,6 +137,7 @@
                 max-width: none !important;
                 margin: 0 !important;
             }
+
             .sc-dialog-create .ui-dialog-content {
                 max-height: calc(100vh - 140px) !important;
                 overflow-y: auto !important;

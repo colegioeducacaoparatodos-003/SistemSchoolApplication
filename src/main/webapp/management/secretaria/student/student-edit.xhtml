@@ -6,147 +6,204 @@
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <p:dialog id="editStudentDialog" widgetVar="editStudentDialog" header="#{msg.editStudent}" modal="true"
-        showEffect="fade" hideEffect="fade" closeOnEscape="true" style="width: 90vw; max-width: 860px;" dynamic="true"
+        showEffect="fade" hideEffect="fade" closeOnEscape="true" dynamic="true"
         resizable="false" appendTo="@(body)" styleClass="sc-dialog-edit-student" responsive="true" fitViewport="true">
 
         <h:form id="studentEditForm" styleClass="ui-fluid" enctype="multipart/form-data">
             <p:messages id="msgsEdit" showDetail="true" closable="true" globalOnly="true" />
 
+            <!--
+                Alerta tipo "toast" para a confirmacao de validacao do BI.
+                Nao fica vinculado ao layout da view (nao ocupa espaco fixo,
+                aparece sobreposto e desaparece sozinho ao fim de "life" ms).
+            -->
+            <p:growl id="biGrowlEdit" showDetail="true" life="3500" styleClass="sc-bi-growl" />
+
             <div class="sc-dialog-body">
 
-                <div class="sc-section-title">
-                    <i class="pi pi-id-card"></i> #{msg.identification}
+                <!-- ====================================================
+                     SECCAO 1 – IDENTIFICACAO
+                     ==================================================== -->
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-id-card"></i> #{msg.identification}</div>
+
+                    <div class="sc-field-row">
+                        <p:outputLabel for="studentNumberEdit" value="#{msg.studentNumber}" styleClass="sc-label sc-label-col" />
+                        <div class="sc-field-col">
+                            <p:inputText id="studentNumberEdit" value="#{studentController.editDto.sudentNumber}"
+                                readonly="true" styleClass="sc-readonly-field" style="width:100%;" />
+                        </div>
+                    </div>
+
+                    <div class="sc-field-row">
+                        <p:outputLabel for="fristNameEdit" value="#{msg.firstName}" styleClass="sc-label sc-label-col req" />
+                        <div class="sc-field-col">
+                            <p:inputText id="fristNameEdit" value="#{studentController.editDto.fristName}"
+                                required="true" requiredMessage="#{msg.firstNameRequired}" style="width:100%;" />
+                            <p:message for="fristNameEdit" display="text" styleClass="sc-field-msg" />
+                        </div>
+                    </div>
+
+                    <div class="sc-field-row">
+                        <p:outputLabel for="lastNameEdit" value="#{msg.lastName}" styleClass="sc-label sc-label-col req" />
+                        <div class="sc-field-col">
+                            <p:inputText id="lastNameEdit" value="#{studentController.editDto.lastName}"
+                                required="true" requiredMessage="#{msg.lastNameRequired}" style="width:100%;" />
+                            <p:message for="lastNameEdit" display="text" styleClass="sc-field-msg" />
+                        </div>
+                    </div>
+
+                    <div class="sc-field-row">
+                        <p:outputLabel for="genderEdit" value="#{msg.gender}" styleClass="sc-label sc-label-col req" />
+                        <div class="sc-field-col">
+                            <p:selectOneMenu id="genderEdit" value="#{studentController.editDto.gender}"
+                                required="true" requiredMessage="#{msg.genderRequired}" style="width:100%;">
+                                <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{studentController.generos}" var="g" itemLabel="#{msg['gender.'.concat(g.name())]}" itemValue="#{g}" />
+                            </p:selectOneMenu>
+                            <p:message for="genderEdit" display="text" styleClass="sc-field-msg" />
+                        </div>
+                    </div>
+
+                    <div class="sc-field-row">
+                        <p:outputLabel for="nascDateEdit" value="#{msg.birthDate}" styleClass="sc-label sc-label-col" />
+                        <div class="sc-field-col">
+                            <p:datePicker id="nascDateEdit" value="#{studentController.editDto.nascDate}"
+                                pattern="dd/MM/yyyy" showIcon="true" monthNavigator="true" yearNavigator="true"
+                                yearRange="1950:2030" locale="pt" style="width:100%;" />
+                        </div>
+                    </div>
+
+                    <div class="sc-field-row">
+                        <p:outputLabel for="biNumberEdit" value="#{msg.biNumber}" styleClass="sc-label sc-label-col req" />
+                        <div class="sc-field-col">
+                            <p:inputText id="biNumberEdit" value="#{studentController.editDto.biNumber}"
+                                required="true" requiredMessage="#{msg.biNumberRequired}"
+                                placeholder="123456789LA042" style="width:100%;">
+                                <!-- confirmacao de validacao do BI sai apenas no toast (biGrowlEdit) -->
+                                <p:ajax event="blur" listener="#{studentController.validarBI}" update="biGrowlEdit" process="@this" />
+                            </p:inputText>
+                            <p:message for="biNumberEdit" display="text" styleClass="sc-field-msg" />
+                        </div>
+                    </div>
+
+                    <div class="sc-field-row">
+                        <p:outputLabel for="biExpiryDataEdit" value="#{msg.biExpiryDate}" styleClass="sc-label sc-label-col" />
+                        <div class="sc-field-col">
+                            <p:datePicker id="biExpiryDataEdit" value="#{studentController.editDto.biExpiryData}"
+                                pattern="dd/MM/yyyy" showIcon="true" monthNavigator="true" yearNavigator="true"
+                                yearRange="2020:2050" locale="pt" style="width:100%;" />
+                        </div>
+                    </div>
+
+                    <div class="sc-field-row">
+                        <p:outputLabel for="statusEdit" value="#{msg.status}" styleClass="sc-label sc-label-col" />
+                        <div class="sc-field-col">
+                            <p:selectOneMenu id="statusEdit" value="#{studentController.editDto.status}" style="width:100%;">
+                                <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{studentController.estados}" var="s" itemLabel="#{msg['studentStatus.'.concat(s.name())]}" itemValue="#{s}" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
                 </div>
 
-                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
-                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+                <!-- ====================================================
+                     SECCAO 2 – DOCUMENTO E FOTO
+                     ==================================================== -->
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-image"></i> #{msg.photo}</div>
 
-                    <p:outputLabel for="studentNumberEdit" value="#{msg.studentNumber}" styleClass="sc-label" />
-                    <p:inputText id="studentNumberEdit" value="#{studentController.editDto.sudentNumber}"
-                        readonly="true" styleClass="sc-input sc-readonly-field" />
+                    <div class="sc-photo-row">
+                        <div class="sc-photo-preview">
+                            <!-- uploadPhoto guarda apenas o nome do ficheiro; o caminho vem do resource,
+                                 tal como na listagem (h:graphicImage value="#{resource['uploads/alunosFotos']}/...") -->
+                            <h:graphicImage id="scPhotoPreviewImg" value="#{resource['uploads/alunosFotos']}/#{studentController.editDto.uploadPhoto}"
+                                styleClass="#{empty studentController.editDto.uploadPhoto ? 'sc-photo-preview-img sc-hidden' : 'sc-photo-preview-img'}" />
+                            <i id="scPhotoPlaceholderIcon"
+                                class="#{empty studentController.editDto.uploadPhoto ? 'pi pi-user sc-photo-placeholder-icon' : 'pi pi-user sc-photo-placeholder-icon sc-hidden'}"></i>
+                        </div>
 
-                    <p:outputLabel for="fristNameEdit" value="#{msg.firstName}" styleClass="sc-label req" />
-                    <h:panelGroup>
-                        <p:inputText id="fristNameEdit" value="#{studentController.editDto.fristName}"
-                            required="true" requiredMessage="#{msg.firstNameRequired}" styleClass="sc-input" />
-                        <p:message for="fristNameEdit" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
-
-                    <p:outputLabel for="lastNameEdit" value="#{msg.lastName}" styleClass="sc-label req" />
-                    <h:panelGroup>
-                        <p:inputText id="lastNameEdit" value="#{studentController.editDto.lastName}"
-                            required="true" requiredMessage="#{msg.lastNameRequired}" styleClass="sc-input" />
-                        <p:message for="lastNameEdit" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
-
-                    <p:outputLabel for="genderEdit" value="#{msg.gender}" styleClass="sc-label req" />
-                    <h:panelGroup>
-                        <p:selectOneMenu id="genderEdit" value="#{studentController.editDto.gender}"
-                            required="true" requiredMessage="#{msg.genderRequired}" style="width:100%;">
-                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
-                            <f:selectItems value="#{studentController.genders}" var="g" itemLabel="#{msg['gender.'.concat(g.name())]}" itemValue="#{g}" />
-                        </p:selectOneMenu>
-                        <p:message for="genderEdit" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
-
-                    <p:outputLabel for="nascDateEdit" value="#{msg.birthDate}" styleClass="sc-label" />
-                    <p:datePicker id="nascDateEdit" value="#{studentController.editDto.nascDate}"
-                        pattern="dd/MM/yyyy" showIcon="true" locale="pt" style="width:100%;" />
-
-                    <p:outputLabel for="statusEdit" value="#{msg.status}" styleClass="sc-label" />
-                    <p:selectOneMenu id="statusEdit" value="#{studentController.editDto.status}" style="width:100%;">
-                        <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
-                        <f:selectItems value="#{studentController.studentStatuses}" var="st" itemLabel="#{msg['studentStatus.'.concat(st.name())]}" itemValue="#{st}" />
-                    </p:selectOneMenu>
-
-                </p:panelGrid>
-
-                <div class="sc-section-title" style="margin-top:1.4rem;">
-                    <i class="pi pi-shield"></i> #{msg.documentAndPhoto}
+                        <div class="sc-photo-upload-control">
+                            <p:fileUpload id="photoEdit" value="#{studentController.uploadedPhoto}"
+                                mode="simple" skinSimple="true" label="#{msg.changePhoto}"
+                                allowTypes="/(\.|\/)(jpe?g|png|webp)$/i" style="width:100%;"
+                                onchange="scPreviewSimpleFile(this,'scPhotoPreviewImg','scPhotoPlaceholderIcon')" />
+                        </div>
+                    </div>
                 </div>
 
-                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
-                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+                <!-- ====================================================
+                     SECCAO 3 – MORADA E FAMILIA
+                     ==================================================== -->
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-map-marker"></i> #{msg.addressAndFamily}</div>
 
-                    <p:outputLabel for="biNumberEdit" value="#{msg.biNumber}" styleClass="sc-label req" />
-                    <h:panelGroup>
-                        <p:inputText id="biNumberEdit" value="#{studentController.editDto.biNumber}"
-                            required="true" requiredMessage="#{msg.biNumberRequired}" styleClass="sc-input"
-                            placeholder="123456789LA042">
-                            <p:ajax event="blur" listener="#{studentController.validarBI}" update="msgsEdit" process="@this" />
-                        </p:inputText>
-                        <p:message for="biNumberEdit" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
+                    <div class="sc-field-row">
+                        <p:outputLabel for="addressStreetEdit" value="#{msg.street}" styleClass="sc-label sc-label-col" />
+                        <div class="sc-field-col">
+                            <p:inputText id="addressStreetEdit" value="#{studentController.editDto.addressStreet}" style="width:100%;" />
+                        </div>
+                    </div>
 
-                    <p:outputLabel for="biExpiryDataEdit" value="#{msg.biExpiryDate}" styleClass="sc-label" />
-                    <p:datePicker id="biExpiryDataEdit" value="#{studentController.editDto.biExpiryData}"
-                        pattern="dd/MM/yyyy" showIcon="true" locale="pt" style="width:100%;" />
+                    <div class="sc-field-row">
+                        <p:outputLabel for="addressProviceEdit" value="#{msg.province}" styleClass="sc-label sc-label-col" />
+                        <div class="sc-field-col">
+                            <p:inputText id="addressProviceEdit" value="#{studentController.editDto.addressProvice}" style="width:100%;" />
+                        </div>
+                    </div>
 
-                    <p:outputLabel for="photoEdit" value="#{msg.photo}" styleClass="sc-label" />
-                    <h:panelGroup layout="block">
-                        <!-- uploadPhoto guarda apenas o nome do ficheiro; o caminho vem do resource,
-                             tal como na listagem (h:graphicImage value="#{resource['uploads/alunosFotos']}/...") -->
-                        <h:graphicImage value="#{resource['uploads/alunosFotos']}/#{studentController.editDto.uploadPhoto}"
-                            style="width:44px; height:44px; border-radius:50%; object-fit:cover; margin-bottom:.5rem; border:1px solid var(--enr-border,#e6e6e8);"
-                            rendered="#{not empty studentController.editDto.uploadPhoto}" />
-                        <p:fileUpload id="photoEdit" value="#{studentController.uploadedPhoto}"
-                            mode="simple" skinSimple="true" label="#{msg.changePhoto}"
-                            allowTypes="/(\.|\/)(jpe?g|png|webp)$/i" style="width:100%;" />
-                    </h:panelGroup>
+                    <div class="sc-field-row">
+                        <p:outputLabel for="nameFatherEdit" value="#{msg.father}" styleClass="sc-label sc-label-col" />
+                        <div class="sc-field-col">
+                            <p:inputText id="nameFatherEdit" value="#{studentController.editDto.nameFather}" style="width:100%;" />
+                        </div>
+                    </div>
 
-                </p:panelGrid>
-
-                <div class="sc-section-title" style="margin-top:1.4rem;">
-                    <i class="pi pi-map-marker"></i> #{msg.addressAndFamily}
+                    <div class="sc-field-row">
+                        <p:outputLabel for="nameMatherEdit" value="#{msg.mother}" styleClass="sc-label sc-label-col" />
+                        <div class="sc-field-col">
+                            <p:inputText id="nameMatherEdit" value="#{studentController.editDto.nameMather}" style="width:100%;" />
+                        </div>
+                    </div>
                 </div>
 
-                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
-                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+                <!-- ====================================================
+                     SECCAO 4 – CONTACTOS
+                     ==================================================== -->
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-phone"></i> #{msg.contacts}</div>
 
-                    <p:outputLabel for="addressStreetEdit" value="#{msg.street}" styleClass="sc-label" />
-                    <p:inputText id="addressStreetEdit" value="#{studentController.editDto.addressStreet}" styleClass="sc-input" />
+                    <!-- validacao de email removida a pedido -->
+                    <div class="sc-field-row">
+                        <p:outputLabel for="emailEdit" value="#{msg.email}" styleClass="sc-label sc-label-col" />
+                        <div class="sc-field-col">
+                            <p:inputText id="emailEdit" value="#{studentController.editDto.email}" style="width:100%;" />
+                        </div>
+                    </div>
 
-                    <p:outputLabel for="addressProviceEdit" value="#{msg.province}" styleClass="sc-label" />
-                    <p:inputText id="addressProviceEdit" value="#{studentController.editDto.addressProvice}" styleClass="sc-input" />
+                    <div class="sc-field-row">
+                        <p:outputLabel for="phone1Edit" value="#{msg.phone}" styleClass="sc-label sc-label-col req" />
+                        <div class="sc-field-col">
+                            <p:inputText id="phone1Edit" value="#{studentController.editDto.phone_1}"
+                                required="true" requiredMessage="#{msg.phoneRequired}" style="width:100%;" />
+                            <p:message for="phone1Edit" display="text" styleClass="sc-field-msg" />
+                        </div>
+                    </div>
 
-                    <p:outputLabel for="nameFatherEdit" value="#{msg.father}" styleClass="sc-label" />
-                    <p:inputText id="nameFatherEdit" value="#{studentController.editDto.nameFather}" styleClass="sc-input" />
-
-                    <p:outputLabel for="nameMatherEdit" value="#{msg.mother}" styleClass="sc-label" />
-                    <p:inputText id="nameMatherEdit" value="#{studentController.editDto.nameMather}" styleClass="sc-input" />
-
-                </p:panelGrid>
-
-                <div class="sc-section-title" style="margin-top:1.4rem;">
-                    <i class="pi pi-phone"></i> #{msg.contacts}
+                    <div class="sc-field-row">
+                        <p:outputLabel for="phone2Edit" value="#{msg.alternatePhone}" styleClass="sc-label sc-label-col" />
+                        <div class="sc-field-col">
+                            <p:inputText id="phone2Edit" value="#{studentController.editDto.phone_2}" style="width:100%;" />
+                        </div>
+                    </div>
                 </div>
 
-                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
-                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
-
-                    <p:outputLabel for="emailEdit" value="#{msg.email}" styleClass="sc-label" />
-                    <h:panelGroup>
-                        <p:inputText id="emailEdit" value="#{studentController.editDto.email}" styleClass="sc-input">
-                            <f:validator validatorId="jakarta.faces.Email" disabled="#{empty studentController.editDto.email}" />
-                        </p:inputText>
-                        <p:message for="emailEdit" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
-
-                    <p:outputLabel for="phone1Edit" value="#{msg.phone}" styleClass="sc-label req" />
-                    <h:panelGroup>
-                        <p:inputText id="phone1Edit" value="#{studentController.editDto.phone_1}"
-                            required="true" requiredMessage="#{msg.phoneRequired}" styleClass="sc-input" />
-                        <p:message for="phone1Edit" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
-
-                    <p:outputLabel for="phone2Edit" value="#{msg.alternatePhone}" styleClass="sc-label" />
-                    <p:inputText id="phone2Edit" value="#{studentController.editDto.phone_2}" styleClass="sc-input" />
-
-                </p:panelGrid>
-
-                <div class="sc-fullwidth-field">
-                    <p:outputLabel for="obsEdit" value="#{msg.observation}" styleClass="sc-label" />
-                    <p:inputTextarea id="obsEdit" value="#{studentController.editDto.obs}" rows="3"
+                <!-- ====================================================
+                     SECCAO 5 – OBSERVACOES
+                     ==================================================== -->
+                <div class="sc-section">
+                    <div class="sc-section-title"><i class="pi pi-file-edit"></i> #{msg.observation}</div>
+                    <p:inputTextarea id="obsEdit" value="#{studentController.editDto.obs}" rows="3" autoResize="false"
                         maxlength="500" counter="obsCounterEdit" counterTemplate="{0} / 500"
                         placeholder="#{msg.additionalNotesPlaceholder}" style="width:100%;" />
                     <h:outputText id="obsCounterEdit" styleClass="sc-counter" />
@@ -163,56 +220,170 @@
             </div>
         </h:form>
 
+        <script type="text/javascript">
+            /* <![CDATA[ */
+            // Pre-visualizacao client-side da foto escolhida no upload simples (documento e foto).
+            function scPreviewSimpleFile(input, imgId, iconId) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        var img = document.getElementById(imgId);
+                        var icon = document.getElementById(iconId);
+                        if (img) {
+                            img.src = e.target.result;
+                            img.classList.remove('sc-hidden');
+                        }
+                        if (icon) {
+                            icon.classList.add('sc-hidden');
+                        }
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+            /* ]]> */
+        </script>
+
         <style type="text/css">
             /* <![CDATA[ */
+
+            /* ============================================================
+               VARIAVEIS (identicas ao dialog de criacao)
+               ============================================================ */
+            .sc-dialog-edit-student {
+                --sc-primary: #c8102e;
+                --sc-text-main: #374151;
+                --sc-border: #e5e7eb;
+                --sc-bg-body: #f9fafb;
+            }
+
+            /* ============================================================
+               DIALOG – ALTURA TOTAL DO VIEWPORT
+               ============================================================ */
+            .sc-dialog-edit-student .ui-dialog {
+                display: flex !important;
+                flex-direction: column !important;
+                margin: 0 auto !important;
+                border-radius: 8px !important;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+            }
+
+            .sc-dialog-edit-student .ui-dialog-titlebar {
+                background: #fff !important;
+                border-bottom: 1px solid var(--sc-border) !important;
+                padding: 1rem 1.25rem !important;
+                font-size: 1.1rem !important;
+                font-weight: 700 !important;
+                color: var(--sc-text-main) !important;
+            }
+
             .sc-dialog-edit-student .ui-dialog-content {
+                background: var(--sc-bg-body) !important;
                 padding: 0 !important;
+                flex: 1 1 auto !important;
+                overflow: hidden !important;
+                display: flex !important;
+                flex-direction: column !important;
             }
+
+            /* ============================================================
+               CORPO COM SCROLL INTERNO
+               ============================================================ */
             .sc-dialog-body {
-                padding: 1.2rem 1.5rem 1rem;
-                max-height: calc(90vh - 120px);
-                overflow-y: auto;
+                flex: 1 1 auto !important;
+                overflow-y: auto !important;
+                padding: 1rem 1.25rem !important;
             }
+
+            /* ============================================================
+               SECCOES
+               ============================================================ */
+            .sc-section {
+                background: #fff;
+                border-radius: 8px;
+                padding: 1rem 1.25rem;
+                margin-bottom: 1rem;
+                border: 1px solid var(--sc-border);
+            }
+            .sc-section:last-child {
+                margin-bottom: 0;
+            }
+
             .sc-section-title {
-                font-size: 1rem;
+                font-size: 0.95rem;
                 font-weight: 700;
+                color: var(--sc-text-main);
                 margin-bottom: 1rem;
                 display: flex;
                 align-items: center;
-                gap: .5rem;
-                color: var(--enr-text, #141414);
+                gap: 0.5rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 1px solid var(--sc-border);
             }
             .sc-section-title i {
-                color: var(--enr-red, #c8102e);
+                color: var(--sc-primary);
+                font-size: 1.1rem;
             }
+
+            /* ============================================================
+               LINHAS DE CAMPO – TITULO A ESQUERDA, CAMPO A DIREITA
+               ============================================================ */
+            .sc-field-row {
+                display: flex;
+                align-items: flex-start;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+            .sc-field-row:last-child {
+                margin-bottom: 0;
+            }
+            .sc-label-col {
+                flex: 0 0 150px;
+                max-width: 150px;
+                padding-top: 0.6rem;
+                margin-bottom: 0 !important;
+            }
+            .sc-field-col {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
+            /* ============================================================
+               LABELS
+               ============================================================ */
             .sc-label {
-                font-size: .88rem;
+                font-size: 0.88rem;
                 font-weight: 600;
-                color: #374151;
-                margin-bottom: .35rem;
+                color: var(--sc-text-main);
                 display: block;
             }
             .sc-label.req::after {
                 content: " *";
                 color: #dc2626;
             }
+
+            /* ============================================================
+               CAMPO SOMENTE LEITURA (numero de aluno)
+               ============================================================ */
+            .sc-readonly-field.ui-state-disabled,
+            .sc-readonly-field[readonly] {
+                background: #f3f4f6 !important;
+                opacity: 0.85 !important;
+                color: #6b7280 !important;
+                cursor: not-allowed;
+            }
+
+            /* ============================================================
+               MENSAGENS DE VALIDACAO
+               ============================================================ */
             .sc-field-msg {
                 display: block;
                 margin-top: 4px;
-                font-size: 12px;
+                font-size: 0.8rem;
+            }
+            .sc-field-msg.ui-message-error {
                 color: #dc2626;
             }
-            .sc-input {
-                width: 100%;
-            }
-            .sc-readonly-field {
-                background: #f3f4f6 !important;
-                opacity: .8;
-                cursor: not-allowed;
-            }
-            .sc-fullwidth-field {
-                margin-top: 1.2rem;
-            }
+
             .sc-counter {
                 display: block;
                 text-align: right;
@@ -220,15 +391,87 @@
                 color: #888;
                 margin-top: 2px;
             }
+
+            /* ============================================================
+               TOAST DE VALIDACAO DO BI
+               ============================================================ */
+            .sc-bi-growl.ui-growl {
+                position: fixed !important;
+                top: 20px !important;
+                right: 20px !important;
+                left: auto !important;
+                z-index: 100000 !important;
+                width: 320px !important;
+            }
+
+            /* ============================================================
+               INPUTS
+               ============================================================ */
+            .sc-dialog-edit-student .ui-inputfield,
+            .sc-dialog-edit-student .ui-selectonemenu {
+                width: 100% !important;
+            }
+
+            /* ============================================================
+               FOTO – CARTAO DE PRE-VISUALIZACAO + BOTAO A DIREITA
+               ============================================================ */
+            .sc-photo-row {
+                display: flex;
+                align-items: center;
+                gap: 1.25rem;
+            }
+            .sc-photo-preview {
+                flex: 0 0 84px;
+                width: 84px;
+                height: 84px;
+                border-radius: 10px;
+                border: 2px dashed var(--sc-border);
+                background: var(--sc-bg-body);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+            .sc-photo-preview-img {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover;
+            }
+            .sc-photo-placeholder-icon {
+                font-size: 1.8rem;
+                color: #9ca3af;
+            }
+            .sc-hidden {
+                display: none !important;
+            }
+            .sc-photo-upload-control {
+                flex: 1 1 auto;
+                min-width: 0;
+                display: flex;
+                justify-content: flex-end;
+            }
+            .sc-photo-upload-control .ui-fileupload {
+                width: 100%;
+                border: none;
+                background: transparent;
+            }
+            .sc-photo-upload-control .ui-fileupload-choose {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+
+            /* ============================================================
+               FOOTER
+               ============================================================ */
             .sc-dialog-footer {
                 display: flex;
                 justify-content: flex-end;
-                gap: .6rem;
-                padding: 1rem 1.5rem;
-                border-top: 1px solid #e5e7eb;
+                gap: 0.6rem;
+                padding: 1rem 1.25rem;
+                background: #fff;
+                border-top: 1px solid var(--sc-border);
                 flex-wrap: wrap;
-                background: #fafafa;
-                border-radius: 0 0 12px 12px;
             }
             .sc-dialog-footer .ui-button {
                 min-width: 120px;
@@ -238,33 +481,140 @@
             .sc-dialog-body::-webkit-scrollbar-track { background: transparent; }
             .sc-dialog-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
 
-            @media (max-width: 768px) {
-                .sc-dialog-edit-student {
-                    width: 95vw !important;
-                    max-width: 95vw !important;
-                }
-                .sc-dialog-edit-student .ui-dialog-content {
-                    padding: 0 !important;
+            /* ============================================================
+               RESPONSIVO – DESKTOP (min 1024 px) – margens topo/direita/esquerda/baixo
+               ============================================================ */
+            @media (min-width: 1024px) {
+                .sc-dialog-edit-student .ui-dialog {
+                    top: 1.5rem !important;
+                    left: 1.5rem !important;
+                    right: 1.5rem !important;
+                    bottom: 1.5rem !important;
+                    width: auto !important;
+                    height: auto !important;
+                    max-width: 960px !important;
+                    max-height: calc(100vh - 3rem) !important;
                 }
                 .sc-dialog-body {
-                    padding: 1rem;
-                    max-height: calc(85vh - 100px);
+                    max-height: calc(100vh - 200px) !important;
+                }
+            }
+
+            /* ============================================================
+               RESPONSIVO – TABLET (768 a 1023 px) – margens topo/direita/esquerda/baixo
+               ============================================================ */
+            @media (min-width: 768px) and (max-width: 1023px) {
+                .sc-dialog-edit-student .ui-dialog {
+                    top: 1rem !important;
+                    left: 1rem !important;
+                    right: 1rem !important;
+                    bottom: 1rem !important;
+                    width: auto !important;
+                    height: auto !important;
+                    max-width: 900px !important;
+                    max-height: calc(100vh - 2rem) !important;
+                }
+                .sc-dialog-body {
+                    max-height: calc(100vh - 180px) !important;
+                }
+                .sc-label-col {
+                    flex-basis: 130px;
+                    max-width: 130px;
+                }
+            }
+
+            /* ============================================================
+               RESPONSIVO – MOBILE (max 767 px) – margens topo/direita/esquerda/baixo
+               ============================================================ */
+            @media (max-width: 767px) {
+                .sc-dialog-edit-student .ui-dialog {
+                    top: 0.5rem !important;
+                    left: 0.5rem !important;
+                    right: 0.5rem !important;
+                    bottom: 0.5rem !important;
+                    width: auto !important;
+                    height: auto !important;
+                    max-width: none !important;
+                    max-height: calc(100vh - 1rem) !important;
+                    margin: 0 !important;
+                    border-radius: 6px !important;
+                }
+                .sc-dialog-body {
+                    padding: 0.75rem !important;
+                    max-height: calc(100vh - 150px) !important;
+                }
+                .sc-section {
+                    padding: 0.75rem;
+                }
+                .sc-label-col {
+                    flex-basis: 110px;
+                    max-width: 110px;
+                    padding-top: 0.5rem;
+                }
+                .sc-field-row {
+                    gap: 0.6rem;
                 }
                 .sc-dialog-footer {
-                    padding: .8rem 1rem;
-                    flex-direction: column;
-                    gap: .5rem;
+                    padding: 0.75rem;
+                    gap: 0.5rem;
+                }
+                .sc-dialog-footer .ui-button {
+                    flex: 1 1 auto;
+                    min-width: 0;
+                }
+                .sc-section-title { font-size: 0.9rem; }
+                .sc-label { font-size: 0.8rem; }
+                .sc-bi-growl.ui-growl {
+                    top: 10px !important;
+                    right: 10px !important;
+                    left: 10px !important;
+                    width: auto !important;
+                }
+            }
+
+            /* ============================================================
+               RESPONSIVO – MOBILE PEQUENO (max 576 px) – margens topo/direita/esquerda/baixo
+               ============================================================ */
+            @media (max-width: 576px) {
+                .sc-dialog-edit-student .ui-dialog {
+                    top: 0.25rem !important;
+                    left: 0.25rem !important;
+                    right: 0.25rem !important;
+                    bottom: 0.25rem !important;
+                    max-height: calc(100vh - 0.5rem) !important;
+                    border-radius: 4px !important;
+                }
+                .sc-dialog-body {
+                    padding: 0.5rem !important;
+                    max-height: calc(100vh - 140px) !important;
+                }
+                .sc-section {
+                    padding: 0.6rem;
+                    margin-bottom: 0.6rem;
+                }
+                .sc-section-title {
+                    font-size: 0.9rem;
+                    margin-bottom: 0.75rem;
+                }
+                .sc-label-col {
+                    flex-basis: 92px;
+                    max-width: 92px;
+                }
+                .sc-photo-row {
+                    gap: 0.75rem;
+                }
+                .sc-photo-preview {
+                    flex-basis: 64px;
+                    width: 64px;
+                    height: 64px;
+                }
+                .sc-dialog-footer {
+                    flex-direction: column-reverse;
+                    padding: 0.6rem;
                 }
                 .sc-dialog-footer .ui-button {
                     width: 100%;
-                    min-width: unset;
                 }
-                .sc-section-title { font-size: .95rem; }
-                .sc-label { font-size: .85rem; }
-            }
-            @media (max-width: 576px) {
-                .sc-dialog-body { padding: .8rem; }
-                .sc-fullwidth-field { margin-top: 1rem; }
             }
             /* ]]> */
         </style>

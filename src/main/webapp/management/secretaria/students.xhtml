@@ -1,9 +1,6 @@
-<ui:composition template="/components/dashboard/dashboard-layout.xhtml"
-    xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:p="http://primefaces.org/ui"
-    xmlns:f="http://xmlns.jcp.org/jsf/core">
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="titulo">#{msg.studentList}</ui:define>
 
@@ -284,14 +281,19 @@
                 background: var(--stu-surface-2) !important;
             }
 
+            /* ============================================================
+               AVATAR DO ALUNO – mostra a foto real vinda da base de dados;
+               quando nao existe foto, mostra um icone estilizado (nao mais
+               a letra inicial do nome).
+               ============================================================ */
             .stu-avatar {
                 width: 36px;
                 height: 36px;
                 border-radius: 50%;
-                background: var(--stu-black);
-                color: var(--stu-yellow);
-                font-size: .8rem;
-                font-weight: 700;
+                background: var(--stu-surface-2);
+                border: 1px solid var(--stu-border);
+                color: var(--stu-muted);
+                font-size: 1rem;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -303,6 +305,13 @@
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
+            }
+
+            .stu-avatar-lg {
+                width: 64px;
+                height: 64px;
+                font-size: 1.6rem;
+                margin: 0 auto .6rem;
             }
 
             .stu-badge {
@@ -506,18 +515,37 @@
             }
 
             @keyframes scSpin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+                0% {
+                    transform: rotate(0deg);
+                }
+
+                100% {
+                    transform: rotate(360deg);
+                }
             }
 
             @keyframes scSpinReverse {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(-360deg); }
+                0% {
+                    transform: rotate(0deg);
+                }
+
+                100% {
+                    transform: rotate(-360deg);
+                }
             }
 
             @keyframes scPulse {
-                0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-                50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.7; }
+
+                0%,
+                100% {
+                    transform: translate(-50%, -50%) scale(1);
+                    opacity: 1;
+                }
+
+                50% {
+                    transform: translate(-50%, -50%) scale(1.4);
+                    opacity: 0.7;
+                }
             }
 
             .sc-loading-text {
@@ -541,11 +569,25 @@
             }
 
             @keyframes scDots {
-                0% { content: ''; }
-                25% { content: '.'; }
-                50% { content: '..'; }
-                75% { content: '...'; }
-                100% { content: ''; }
+                0% {
+                    content: '';
+                }
+
+                25% {
+                    content: '.';
+                }
+
+                50% {
+                    content: '..';
+                }
+
+                75% {
+                    content: '...';
+                }
+
+                100% {
+                    content: '';
+                }
             }
 
             .sc-loading-progress {
@@ -566,9 +608,20 @@
             }
 
             @keyframes scProgress {
-                0% { width: 0%; margin-left: 0%; }
-                50% { width: 60%; margin-left: 20%; }
-                100% { width: 0%; margin-left: 100%; }
+                0% {
+                    width: 0%;
+                    margin-left: 0%;
+                }
+
+                50% {
+                    width: 60%;
+                    margin-left: 20%;
+                }
+
+                100% {
+                    width: 0%;
+                    margin-left: 100%;
+                }
             }
 
             /* ===== RESPONSIVIDADE MOBILE ===== */
@@ -763,10 +816,8 @@
                                     onclick="window.print(); return false;" />
                             </p:menuButton>
 
-                            <p:commandButton value="#{msg.newStudent}" icon="pi pi-plus"
-                                styleClass="ui-button-success"
-                                actionListener="#{studentController.prepararNovo}"
-                                onstart="showScLoading()"
+                            <p:commandButton value="#{msg.newStudent}" icon="pi pi-plus" styleClass="ui-button-success"
+                                actionListener="#{studentController.prepararNovo}" onstart="showScLoading()"
                                 oncomplete="hideScLoading(); PF('createStudentDialog').show()"
                                 update=":studentCreateForm" process="@this" />
                         </div>
@@ -777,7 +828,8 @@
                         <p:selectOneMenu value="#{studentController.filterStatus}" placeholder="#{msg.status}"
                             style="min-width:160px;">
                             <f:selectItem itemLabel="#{msg.allStatuses}" itemValue="" />
-                            <f:selectItems value="#{studentController.statusList}" var="st" itemLabel="#{st}" itemValue="#{st}" />
+                            <f:selectItems value="#{studentController.statusList}" var="st"
+                                itemLabel="#{msg['studentStatus.'.concat(st.name())]}" itemValue="#{st}" />
                             <p:ajax event="change" listener="#{studentController.applyFilters}"
                                 update="dtAlunos messages" process="@this" />
                         </p:selectOneMenu>
@@ -785,13 +837,14 @@
                         <p:selectOneMenu value="#{studentController.filterGender}" placeholder="#{msg.gender}"
                             style="min-width:140px;">
                             <f:selectItem itemLabel="#{msg.allGenders}" itemValue="" />
-                            <f:selectItems value="#{studentController.genderList}" var="g" itemLabel="#{g}" itemValue="#{g}" />
+                            <f:selectItems value="#{studentController.genderList}" var="g"
+                                itemLabel="#{msg['gender.'.concat(g.name())]}" itemValue="#{g}" />
                             <p:ajax event="change" listener="#{studentController.applyFilters}"
                                 update="dtAlunos messages" process="@this" />
                         </p:selectOneMenu>
 
-                        <p:datePicker value="#{studentController.filterBirthDateFrom}" placeholder="#{msg.birthDateFrom}"
-                            pattern="dd/MM/yyyy" showIcon="true">
+                        <p:datePicker value="#{studentController.filterBirthDateFrom}"
+                            placeholder="#{msg.birthDateFrom}" pattern="dd/MM/yyyy" showIcon="true">
                             <p:ajax event="dateSelect" listener="#{studentController.applyFilters}"
                                 update="dtAlunos messages" process="@this" />
                         </p:datePicker>
@@ -801,12 +854,6 @@
                             <p:ajax event="dateSelect" listener="#{studentController.applyFilters}"
                                 update="dtAlunos messages" process="@this" />
                         </p:datePicker>
-
-                        <p:inputText value="#{studentController.filterStudentName}" placeholder="#{msg.searchStudent}"
-                            style="min-width:200px;">
-                            <p:ajax event="keyup" delay="400" listener="#{studentController.applyFilters}"
-                                update="dtAlunos messages" process="@this" />
-                        </p:inputText>
 
                         <p:commandButton icon="pi pi-filter" value="#{msg.apply}"
                             action="#{studentController.applyFilters}" update="dtAlunos messages"
@@ -826,11 +873,15 @@
 
                         <p:column headerText="#{msg.student}" sortBy="#{aluno.fullName}">
                             <div style="display:flex; align-items:center; gap:.7rem;">
+                                <!--
+                                    Avatar do aluno: traz sempre a foto real gravada na base de
+                                    dados (uploadPhoto). So quando o aluno nao tem foto e que
+                                    aparece o icone generico no lugar da letra inicial.
+                                -->
                                 <div class="stu-avatar">
                                     <h:graphicImage value="#{resource['uploads/alunosFotos']}/#{aluno.uploadPhoto}"
-                                        rendered="#{not empty aluno.uploadPhoto}" />
-                                    <h:outputText value="#{aluno.fullName.charAt(0)}"
-                                        rendered="#{empty aluno.uploadPhoto}" />
+                                        rendered="#{not empty aluno.uploadPhoto}" alt="#{aluno.fullName}" />
+                                    <i class="pi pi-user" rendered="#{empty aluno.uploadPhoto}"></i>
                                 </div>
                                 <div>
                                     <div style="font-weight:700; color:var(--stu-text);">#{aluno.fullName}</div>
@@ -847,7 +898,7 @@
                         <p:column headerText="#{msg.gender}" sortBy="#{aluno.gender}"
                             style="width:110px; text-align:center">
                             <span class="stu-badge gender-#{aluno.gender.toString().toLowerCase().charAt(0)}">
-                                <h:outputText value="#{aluno.gender}" />
+                                <h:outputText value="#{msg['gender.'.concat(aluno.gender.name())]}" />
                             </span>
                         </p:column>
 
@@ -872,28 +923,25 @@
                         <p:column headerText="#{msg.status}" sortBy="#{aluno.status}"
                             style="width:120px; text-align:center">
                             <span class="stu-badge status-#{aluno.status.toString().toLowerCase()}">
-                                <h:outputText value="#{aluno.status}" />
+                                <h:outputText value="#{msg['studentStatus.'.concat(aluno.status.name())]}" />
                             </span>
                         </p:column>
 
                         <p:column headerText="#{msg.actions}" style="width:160px; text-align:center" exportable="false">
                             <div class="stu-actions">
                                 <p:commandButton styleClass="stu-act view" icon="pi pi-eye" title="#{msg.view}"
-                                    action="#{studentController.prepararEdicao(aluno)}"
-                                    onstart="showScLoading()"
+                                    action="#{studentController.prepararEdicao(aluno)}" onstart="showScLoading()"
                                     oncomplete="hideScLoading(); PF('viewStudentDialog').show()"
                                     update=":viewStudentForm" process="@this" />
 
                                 <p:commandButton styleClass="stu-act edit" icon="pi pi-pencil" title="#{msg.edit}"
-                                    action="#{studentController.prepararEdicao(aluno)}"
-                                    onstart="showScLoading()"
+                                    action="#{studentController.prepararEdicao(aluno)}" onstart="showScLoading()"
                                     oncomplete="hideScLoading(); PF('editStudentDialog').show()"
                                     update=":studentEditForm" process="@this" />
 
                                 <p:menuButton icon="pi pi-print" styleClass="stu-act print" title="#{msg.print}">
                                     <p:menuitem value="#{msg.studentCard}" icon="pi pi-id-card"
-                                        action="#{studentController.printStudentCard(aluno.phStudent)}"
-                                        ajax="false" />
+                                        action="#{studentController.printStudentCard(aluno.phStudent)}" ajax="false" />
                                     <p:menuitem value="#{msg.detailsPdf}" icon="pi pi-file-pdf"
                                         action="#{studentController.printStudentDetailsPdf(aluno.phStudent)}"
                                         ajax="false" />
@@ -938,8 +986,8 @@
                         <p:commandButton value="#{msg.cancel}" type="button" onclick="PF('deleteStudentDialog').hide()"
                             styleClass="ui-button-outlined ui-button-secondary" />
                         <p:commandButton value="#{msg.yesDelete}" icon="pi pi-trash" styleClass="ui-button-danger"
-                            action="#{studentController.eliminar(studentController.alunoSelecionado)}"
-                            process="@this" oncomplete="PF('deleteStudentDialog').hide()"
+                            action="#{studentController.eliminar(studentController.alunoSelecionado)}" process="@this"
+                            oncomplete="PF('deleteStudentDialog').hide()"
                             update=":formAlunos:dtAlunos :formAlunos:messages" />
                     </div>
                 </p:dialog>
@@ -947,19 +995,21 @@
 
             <!-- VIEW DIALOG (fora do form principal) -->
             <h:form id="viewStudentForm">
-                <p:dialog widgetVar="viewStudentDialog" modal="true" resizable="false"
-                    header="#{msg.studentDetails}" style="width: 90vw; max-width: 500px;" closable="true"
-                    responsive="true" fitViewport="true">
+                <p:dialog widgetVar="viewStudentDialog" modal="true" resizable="false" header="#{msg.studentDetails}"
+                    style="width: 90vw; max-width: 500px;" closable="true" responsive="true" fitViewport="true">
                     <div style="padding: .5rem 0;">
                         <div style="text-align:center; margin-bottom:1.2rem;">
-                            <div class="stu-avatar"
-                                style="width:64px; height:64px; font-size:1.5rem; margin:0 auto .6rem;">
+                            <!--
+                                Avatar grande: mesma logica de fallback (icone em vez de letra)
+                                usada na tabela.
+                            -->
+                            <div class="stu-avatar stu-avatar-lg">
                                 <h:graphicImage
                                     value="#{resource['uploads/alunosFotos']}/#{studentController.alunoSelecionado.uploadPhoto}"
-                                    rendered="#{not empty studentController.alunoSelecionado.uploadPhoto}" />
-                                <h:outputText
-                                    value="#{studentController.alunoSelecionado.fullName.charAt(0)}"
-                                    rendered="#{empty studentController.alunoSelecionado.uploadPhoto}" />
+                                    rendered="#{not empty studentController.alunoSelecionado.uploadPhoto}"
+                                    alt="#{studentController.alunoSelecionado.fullName}" />
+                                <i class="pi pi-user"
+                                    rendered="#{empty studentController.alunoSelecionado.uploadPhoto}"></i>
                             </div>
                             <div style="font-size:1.15rem; font-weight:700;">
                                 #{studentController.alunoSelecionado.fullName}</div>
@@ -968,46 +1018,60 @@
                         </div>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; font-size:.9rem;">
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
-                                <div style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
                                     #{msg.biNumber}</div>
                                 <div style="font-weight:700;">
                                     <h:outputText value="#{studentController.alunoSelecionado.biNumber}" />
                                 </div>
                             </div>
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
-                                <div style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
                                     #{msg.gender}</div>
-                                <div style="font-weight:700;">#{studentController.alunoSelecionado.gender}</div>
+                                <div style="font-weight:700;">
+                                    #{msg['gender.'.concat(studentController.alunoSelecionado.gender.name())]}
+                                </div>
                             </div>
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
-                                <div style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
                                     #{msg.birthDate}</div>
                                 <div style="font-weight:700;">
                                     <h:outputText value="#{studentController.alunoSelecionado.nascDate}">
-                                        <f:convertDateTime type="localDate" pattern="dd 'de' MMMM 'de' yyyy" locale="pt" />
+                                        <f:convertDateTime type="localDate" pattern="dd 'de' MMMM 'de' yyyy"
+                                            locale="pt" />
                                     </h:outputText>
                                 </div>
                             </div>
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
-                                <div style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
                                     #{msg.status}</div>
+                                <div style="font-weight:700;">
+                                    #{msg['studentStatus.'.concat(studentController.alunoSelecionado.status.name())]}
+                                </div>
                                 <div style="font-weight:700;">#{studentController.alunoSelecionado.status}</div>
                             </div>
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;">
-                                <div style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
                                     #{msg.contact}</div>
                                 <div>
-                                    <i class="pi pi-phone" style="font-size:.7rem" /> #{studentController.alunoSelecionado.phone_1}
+                                    <i class="pi pi-phone" style="font-size:.7rem" />
+                                    #{studentController.alunoSelecionado.phone_1}
                                     <h:outputText value=" / #{studentController.alunoSelecionado.phone_2}"
                                         rendered="#{not empty studentController.alunoSelecionado.phone_2}" />
                                 </div>
                                 <div style="font-size:.8rem; color:var(--stu-muted); margin-top:.2rem;">
-                                    <i class="pi pi-envelope" style="font-size:.7rem" /> #{studentController.alunoSelecionado.email}
+                                    <i class="pi pi-envelope" style="font-size:.7rem" />
+                                    #{studentController.alunoSelecionado.email}
                                 </div>
                             </div>
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;"
                                 rendered="#{not empty studentController.alunoSelecionado.obs}">
-                                <div style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
                                     #{msg.observations}</div>
                                 <div>#{studentController.alunoSelecionado.obs}</div>
                             </div>

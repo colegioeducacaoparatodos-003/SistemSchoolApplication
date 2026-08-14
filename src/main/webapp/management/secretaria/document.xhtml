@@ -351,10 +351,6 @@
                             <p:ajax event="dateSelect" listener="#{documentController.applyFilters}" update="dtDocuments messages" process="@this" onstart="showScLoading()" oncomplete="hideScLoading()" />
                         </p:datePicker>
 
-                        <p:inputText value="#{documentController.filterStudentName}" placeholder="#{msg.searchStudent}..." style="min-width:200px;">
-                            <p:ajax event="keyup" delay="400" listener="#{documentController.applyFilters}" update="dtDocuments messages" process="@this" onstart="showScLoading()" oncomplete="hideScLoading()" />
-                        </p:inputText>
-
                         <p:commandButton icon="pi pi-filter" value="#{msg.apply}"
                             action="#{documentController.applyFilters}" update="dtDocuments messages"
                             onstart="showScLoading()" oncomplete="hideScLoading()"

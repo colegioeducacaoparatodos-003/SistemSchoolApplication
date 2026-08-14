@@ -3,11 +3,18 @@
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <p:dialog id="createStudentDialog" widgetVar="createStudentDialog" header="#{msg.newStudent}" modal="true"
-        showEffect="fade" hideEffect="fade" closeOnEscape="true" styleClass="st-dialog-create"
-        dynamic="true" resizable="false" appendTo="@(body)" responsive="true" fitViewport="true">
+        showEffect="fade" hideEffect="fade" closeOnEscape="true" styleClass="st-dialog-create" dynamic="true"
+        resizable="false" appendTo="@(body)" responsive="true" fitViewport="true">
 
         <h:form id="studentCreateForm" styleClass="ui-fluid">
             <p:messages id="msgsCreate" showDetail="true" closable="true" globalOnly="true" />
+
+            <!--
+                Alerta tipo "toast" para a confirmacao de validacao do BI.
+                Nao fica vinculado ao layout da view (nao ocupa espaco fixo,
+                aparece sobreposto e desaparece sozinho ao fim de "life" ms).
+            -->
+            <p:growl id="biGrowlCreate" showDetail="true" life="3500" styleClass="st-bi-growl" />
 
             <div class="st-dialog-body">
 
@@ -16,64 +23,94 @@
                      ==================================================== -->
                 <div class="st-section">
                     <div class="st-section-title"><i class="pi pi-id-card"></i> #{msg.identification}</div>
-                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
-                        columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
 
-                        <p:outputLabel for="sudentNumber" value="#{msg.studentNumber}" styleClass="st-label" />
-                        <!--
-                            p:inputGroup foi removido a partir do PrimeFaces 10+.
-                            O agrupamento de inputs passa a fazer-se com uma div/span
-                            com a classe CSS "p-inputgroup" — nao e um componente.
-                        -->
-                        <div class="p-inputgroup">
+                    <div class="st-field-row">
+                        <p:outputLabel for="sudentNumber" value="#{msg.studentNumber}"
+                            styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <!--
+                                Preenchimento totalmente automatico -> campo desabilitado,
+                                sem botao manual de geracao.
+                            -->
                             <p:inputText id="sudentNumber" value="#{studentController.novoAluno.sudentNumber}"
-                                placeholder="ALU-00001" style="width:100%;" />
-                            <p:commandButton icon="pi pi-refresh" title="#{msg.generateAutomatically}"
-                                actionListener="#{studentController.gerarNumeroAluno}" process="@this"
-                                update="sudentNumber" styleClass="p-inputgroup-addon" />
+                                placeholder="ALU-2026-0001" disabled="true" styleClass="st-readonly-field"
+                                style="width:100%;" />
                         </div>
+                    </div>
 
-                        <p:outputLabel for="fristName" value="#{msg.firstName}" styleClass="st-label req" />
-                        <h:panelGroup>
-                            <p:inputText id="fristName" value="#{studentController.novoAluno.fristName}" required="true" style="width:100%;" />
+                    <div class="st-field-row">
+                        <p:outputLabel for="fristName" value="#{msg.firstName}"
+                            styleClass="st-label st-label-col req" />
+                        <div class="st-field-col">
+                            <p:inputText id="fristName" value="#{studentController.novoAluno.fristName}" required="true"
+                                style="width:100%;" />
                             <p:message for="fristName" display="text" styleClass="st-field-msg" />
-                        </h:panelGroup>
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="lastName" value="#{msg.lastName}" styleClass="st-label req" />
-                        <h:panelGroup>
-                            <p:inputText id="lastName" value="#{studentController.novoAluno.lastName}" required="true" style="width:100%;" />
+                    <div class="st-field-row">
+                        <p:outputLabel for="lastName" value="#{msg.lastName}" styleClass="st-label st-label-col req" />
+                        <div class="st-field-col">
+                            <p:inputText id="lastName" value="#{studentController.novoAluno.lastName}" required="true"
+                                style="width:100%;" />
                             <p:message for="lastName" display="text" styleClass="st-field-msg" />
-                        </h:panelGroup>
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="gender" value="#{msg.gender}" styleClass="st-label" />
-                        <p:selectOneMenu id="gender" value="#{studentController.novoAluno.gender}" style="width:100%;">
-                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true" />
-                            <f:selectItems value="#{studentController.generos}" var="g" itemLabel="#{g}"
-                                itemValue="#{g}" />
-                        </p:selectOneMenu>
+                    <div class="st-field-row">
+                        <p:outputLabel for="gender" value="#{msg.gender}" styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <p:selectOneMenu id="gender" value="#{studentController.novoAluno.gender}"
+                                style="width:100%;">
+                                <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
+                                    noSelectionOption="true" />
+                                <f:selectItems value="#{studentController.generos}" var="g"
+                                    itemLabel="#{msg['gender.'.concat(g.name())]}" itemValue="#{g}" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="nascDate" value="#{msg.birthDate}" styleClass="st-label" />
-                        <p:datePicker id="nascDate" value="#{studentController.novoAluno.nascDate}" pattern="dd/MM/yyyy"
-                            showIcon="true" monthNavigator="true" yearNavigator="true" yearRange="1950:2030" locale="pt" style="width:100%;" />
+                    <div class="st-field-row">
+                        <p:outputLabel for="nascDate" value="#{msg.birthDate}" styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <p:datePicker id="nascDate" value="#{studentController.novoAluno.nascDate}"
+                                pattern="dd/MM/yyyy" showIcon="true" monthNavigator="true" yearNavigator="true"
+                                yearRange="1950:2030" locale="pt" style="width:100%;" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="biNumber" value="#{msg.biNumber}" styleClass="st-label" />
-                        <p:inputText id="biNumber" value="#{studentController.novoAluno.biNumber}"
-                            placeholder="123456789LA041" style="width:100%;">
-                            <p:ajax event="blur" listener="#{studentController.validarBI}" update="msgsCreate"
-                                process="@this" />
-                        </p:inputText>
+                    <div class="st-field-row">
+                        <p:outputLabel for="biNumber" value="#{msg.biNumber}" styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <p:inputText id="biNumber" value="#{studentController.novoAluno.biNumber}"
+                                placeholder="123456789LA041" style="width:100%;">
+                                <!-- confirmacao de validacao do BI sai apenas no toast (biGrowlCreate) -->
+                                <p:ajax event="blur" listener="#{studentController.validarBI}" update="biGrowlCreate"
+                                    process="@this" />
+                            </p:inputText>
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="biExpiryData" value="#{msg.biExpiryDate}" styleClass="st-label" />
-                        <p:datePicker id="biExpiryData" value="#{studentController.novoAluno.biExpiryData}"
-                            pattern="dd/MM/yyyy" showIcon="true" monthNavigator="true" yearNavigator="true" yearRange="2020:2050" locale="pt" style="width:100%;" />
+                    <div class="st-field-row">
+                        <p:outputLabel for="biExpiryData" value="#{msg.biExpiryDate}"
+                            styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <p:datePicker id="biExpiryData" value="#{studentController.novoAluno.biExpiryData}"
+                                pattern="dd/MM/yyyy" showIcon="true" monthNavigator="true" yearNavigator="true"
+                                yearRange="2020:2050" locale="pt" style="width:100%;" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="status" value="#{msg.status}" styleClass="st-label" />
-                        <p:selectOneMenu id="status" value="#{studentController.novoAluno.status}" style="width:100%;">
-                            <f:selectItems value="#{studentController.estados}" var="s" itemLabel="#{s}"
-                                itemValue="#{s}" />
-                        </p:selectOneMenu>
-
-                    </p:panelGrid>
+                    <div class="st-field-row">
+                        <p:outputLabel for="status" value="#{msg.status}" styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <p:selectOneMenu id="status" value="#{studentController.novoAluno.status}"
+                                style="width:100%;">
+                                <f:selectItems value="#{studentController.estados}" var="s"
+                                    itemLabel="#{msg['studentStatus.'.concat(s.name())]}" itemValue="#{s}" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ====================================================
@@ -81,16 +118,23 @@
                      ==================================================== -->
                 <div class="st-section">
                     <div class="st-section-title"><i class="pi pi-map-marker"></i> #{msg.address}</div>
-                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
-                        columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
 
-                        <p:outputLabel for="addressStreet" value="#{msg.street}" styleClass="st-label" />
-                        <p:inputText id="addressStreet" value="#{studentController.novoAluno.addressStreet}" style="width:100%;" />
+                    <div class="st-field-row">
+                        <p:outputLabel for="addressStreet" value="#{msg.street}" styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <p:inputText id="addressStreet" value="#{studentController.novoAluno.addressStreet}"
+                                style="width:100%;" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="addressProvice" value="#{msg.province}" styleClass="st-label" />
-                        <p:inputText id="addressProvice" value="#{studentController.novoAluno.addressProvice}" style="width:100%;" />
-
-                    </p:panelGrid>
+                    <div class="st-field-row">
+                        <p:outputLabel for="addressProvice" value="#{msg.province}"
+                            styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <p:inputText id="addressProvice" value="#{studentController.novoAluno.addressProvice}"
+                                style="width:100%;" />
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ====================================================
@@ -98,29 +142,46 @@
                      ==================================================== -->
                 <div class="st-section">
                     <div class="st-section-title"><i class="pi pi-users"></i> #{msg.guardians}</div>
-                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
-                        columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
 
-                        <p:outputLabel for="nameFather" value="#{msg.fatherName}" styleClass="st-label" />
-                        <p:inputText id="nameFather" value="#{studentController.novoAluno.nameFather}" style="width:100%;" />
+                    <div class="st-field-row">
+                        <p:outputLabel for="nameFather" value="#{msg.fatherName}" styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <p:inputText id="nameFather" value="#{studentController.novoAluno.nameFather}"
+                                style="width:100%;" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="nameMather" value="#{msg.motherName}" styleClass="st-label" />
-                        <p:inputText id="nameMather" value="#{studentController.novoAluno.nameMather}" style="width:100%;" />
+                    <div class="st-field-row">
+                        <p:outputLabel for="nameMather" value="#{msg.motherName}" styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <p:inputText id="nameMather" value="#{studentController.novoAluno.nameMather}"
+                                style="width:100%;" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="email" value="#{msg.email}" styleClass="st-label" />
-                        <p:inputText id="email" value="#{studentController.novoAluno.email}" style="width:100%;">
-                            <f:validateRegex pattern="^[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}$" />
-                            <p:ajax event="blur" listener="#{studentController.validarEmail}" update="msgsCreate"
-                                process="@this" />
-                        </p:inputText>
+                    <!-- validacao de email removida a pedido -->
+                    <div class="st-field-row">
+                        <p:outputLabel for="email" value="#{msg.email}" styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <p:inputText id="email" value="#{studentController.novoAluno.email}" style="width:100%;" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="phone1" value="#{msg.phone1}" styleClass="st-label" />
-                        <p:inputText id="phone1" value="#{studentController.novoAluno.phone_1}" style="width:100%;" />
+                    <div class="st-field-row">
+                        <p:outputLabel for="phone1" value="#{msg.phone1}" styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <p:inputText id="phone1" value="#{studentController.novoAluno.phone_1}"
+                                style="width:100%;" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="phone2" value="#{msg.phone2}" styleClass="st-label" />
-                        <p:inputText id="phone2" value="#{studentController.novoAluno.phone_2}" style="width:100%;" />
-
-                    </p:panelGrid>
+                    <div class="st-field-row">
+                        <p:outputLabel for="phone2" value="#{msg.phone2}" styleClass="st-label st-label-col" />
+                        <div class="st-field-col">
+                            <p:inputText id="phone2" value="#{studentController.novoAluno.phone_2}"
+                                style="width:100%;" />
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ====================================================
@@ -128,19 +189,30 @@
                      ==================================================== -->
                 <div class="st-section">
                     <div class="st-section-title"><i class="pi pi-image"></i> #{msg.photo}</div>
-                    <!--
-                        MyFaces 4.1 + PrimeFaces 15: atribuir um literal numerico diretamente a
-                        sizeLimit dispara IllegalArgumentException ("Component property sizeLimit
-                        is not writable"), porque o MyFaces tenta setSizeLimit(...) por reflexao
-                        em vez de guardar o valor no mapa de atributos do componente.
-                        Envolver o valor em #{...} forca-o a ser tratado como value expression,
-                        contornando esse caminho de reflexao.
-                    -->
-                    <p:fileUpload id="foto" mode="advanced" auto="true" dragDropSupport="true"
-                        listener="#{studentController.handleFileUpload}" update="msgsCreate"
-                        allowTypes="/(\.|\/)(gif|jpe?g|png)$/" sizeLimit="#{2097152}" label="#{msg.choose}"
-                        uploadLabel="#{msg.upload}" cancelLabel="#{msg.cancel}"
-                        invalidFileMessage="#{msg.invalidImageFile}" invalidSizeMessage="#{msg.fileTooLarge}" />
+
+                    <div class="st-photo-row">
+                        <div class="st-photo-preview">
+                            <img id="stPhotoPreviewImg" class="st-photo-preview-img" style="display:none;" alt="" />
+                            <i id="stPhotoPlaceholderIcon" class="pi pi-user st-photo-placeholder-icon"></i>
+                        </div>
+
+                        <div class="st-photo-upload-control">
+                            <!--
+                                MyFaces 4.1 + PrimeFaces 15: atribuir um literal numerico diretamente a
+                                sizeLimit dispara IllegalArgumentException ("Component property sizeLimit
+                                is not writable"), porque o MyFaces tenta setSizeLimit(...) por reflexao
+                                em vez de guardar o valor no mapa de atributos do componente.
+                                Envolver o valor em #{...} forca-o a ser tratado como value expression,
+                                contornando esse caminho de reflexao.
+                            -->
+                            <p:fileUpload id="foto" widgetVar="stFotoUpload" mode="advanced" auto="true"
+                                dragDropSupport="true" listener="#{studentController.handleFileUpload}"
+                                update="msgsCreate" allowTypes="/(\.|\/)(gif|jpe?g|png)$/" sizeLimit="#{2097152}"
+                                label="#{msg.choose}" uploadLabel="#{msg.upload}" cancelLabel="#{msg.cancel}"
+                                invalidFileMessage="#{msg.invalidImageFile}" invalidSizeMessage="#{msg.fileTooLarge}"
+                                onstart="stPreviewSelectedFile('stFotoUpload','stPhotoPreviewImg','stPhotoPlaceholderIcon')" />
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ====================================================
@@ -148,8 +220,8 @@
                      ==================================================== -->
                 <div class="st-section">
                     <div class="st-section-title"><i class="pi pi-file-edit"></i> #{msg.observations}</div>
-                    <p:inputTextarea id="obs" value="#{studentController.novoAluno.obs}" rows="3"
-                        autoResize="false" style="width:100%;" />
+                    <p:inputTextarea id="obs" value="#{studentController.novoAluno.obs}" rows="3" autoResize="false"
+                        style="width:100%;" />
                 </div>
             </div>
 
@@ -166,272 +238,427 @@
                     oncomplete="if (!args.validationFailed) { PF('createStudentDialog').hide(); }" />
             </div>
         </h:form>
-    </p:dialog>
 
-    <style type="text/css">
-        /* ============================================================
-           VARIAVEIS
-           ============================================================ */
-        :root {
-            --st-primary: #c8102e;
-            --st-text-main: #374151;
-            --st-border: #e5e7eb;
-            --st-bg-body: #f9fafb;
-        }
+        <script type="text/javascript">
+            /* <![CDATA[ */
+            // Pre-visualizacao client-side da foto escolhida no upload avancado (SECCAO 4).
+            function stPreviewSelectedFile(widgetVar, imgId, iconId) {
+                var widget = window.PF ? PF(widgetVar) : null;
+                if (widget && widget.files && widget.files.length > 0) {
+                    var file = widget.files[0];
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        var img = document.getElementById(imgId);
+                        var icon = document.getElementById(iconId);
+                        if (img) {
+                            img.src = e.target.result;
+                            img.style.display = 'block';
+                        }
+                        if (icon) {
+                            icon.style.display = 'none';
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+            /* ]]> */
+        </script>
 
-        /* ============================================================
-           DIALOG – ALTURA TOTAL DO VIEWPORT
-           ============================================================ */
-        .st-dialog-create .ui-dialog {
-            display: flex !important;
-            flex-direction: column !important;
-            margin: 0 auto !important;
-            border-radius: 8px !important;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04) !important;
-        }
+        <style type="text/css">
+            /* ============================================================
+               VARIAVEIS
+               ============================================================ */
+            :root {
+                --st-primary: #c8102e;
+                --st-text-main: #374151;
+                --st-border: #e5e7eb;
+                --st-bg-body: #f9fafb;
+            }
 
-        .st-dialog-create .ui-dialog-titlebar {
-            background: #fff !important;
-            border-bottom: 1px solid var(--st-border) !important;
-            padding: 1rem 1.25rem !important;
-            font-size: 1.1rem !important;
-            font-weight: 700 !important;
-            color: var(--st-text-main) !important;
-        }
-
-        .st-dialog-create .ui-dialog-content {
-            background: var(--st-bg-body) !important;
-            padding: 0 !important;
-            flex: 1 1 auto !important;
-            overflow: hidden !important;
-            display: flex !important;
-            flex-direction: column !important;
-        }
-
-        /* ============================================================
-           CORPO COM SCROLL INTERNO
-           ============================================================ */
-        .st-dialog-body {
-            flex: 1 1 auto !important;
-            overflow-y: auto !important;
-            padding: 1rem 1.25rem !important;
-        }
-
-        /* ============================================================
-           SECCOES
-           ============================================================ */
-        .st-section {
-            background: #fff;
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
-            margin-bottom: 1rem;
-            border: 1px solid var(--st-border);
-        }
-
-        .st-section:last-child {
-            margin-bottom: 0;
-        }
-
-        .st-section-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--st-text-main);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--st-border);
-        }
-
-        .st-section-title i {
-            color: var(--st-primary);
-            font-size: 1.1rem;
-        }
-
-        /* ============================================================
-           LABELS
-           ============================================================ */
-        .st-label {
-            font-size: 0.88rem;
-            font-weight: 600;
-            color: var(--st-text-main);
-            margin-bottom: 0.35rem;
-            display: block;
-        }
-
-        .st-label.req::after {
-            content: " *";
-            color: #dc2626;
-        }
-
-        /* ============================================================
-           MENSAGENS DE VALIDACAO
-           ============================================================ */
-        .st-field-msg {
-            display: block;
-            margin-top: 4px;
-            font-size: 0.8rem;
-        }
-
-        .st-field-msg.ui-message-error {
-            color: #dc2626;
-        }
-
-        /* ============================================================
-           INPUTS
-           ============================================================ */
-        .st-dialog-create .ui-inputfield,
-        .st-dialog-create .ui-selectonemenu,
-        .st-dialog-create .p-inputgroup .ui-inputfield {
-            width: 100% !important;
-        }
-
-        /* ============================================================
-           FILE UPLOAD
-           ============================================================ */
-        .st-dialog-create .ui-fileupload {
-            border: 2px dashed var(--st-border);
-            border-radius: 8px;
-            background: #fff;
-        }
-
-        .st-dialog-create .ui-fileupload-content {
-            border: none;
-            background: transparent;
-        }
-
-        /* ============================================================
-           FOOTER
-           ============================================================ */
-        .st-dialog-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.6rem;
-            padding: 1rem 1.25rem;
-            background: #fff;
-            border-top: 1px solid var(--st-border);
-            flex-wrap: wrap;
-        }
-
-        /* ============================================================
-           RESPONSIVO – DESKTOP (min 1024 px)
-           ============================================================ */
-        @media (min-width: 1024px) {
+            /* ============================================================
+               DIALOG – ALTURA TOTAL DO VIEWPORT
+               ============================================================ */
             .st-dialog-create .ui-dialog {
-                top: 1.5rem !important;
-                left: 1.5rem !important;
-                right: 1.5rem !important;
-                bottom: 1.5rem !important;
-                width: auto !important;
-                height: auto !important;
-                max-width: 960px !important;
-                max-height: calc(100vh - 3rem) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                margin: 0 auto !important;
+                border-radius: 8px !important;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
             }
 
+            .st-dialog-create .ui-dialog-titlebar {
+                background: #fff !important;
+                border-bottom: 1px solid var(--st-border) !important;
+                padding: 1rem 1.25rem !important;
+                font-size: 1.1rem !important;
+                font-weight: 700 !important;
+                color: var(--st-text-main) !important;
+            }
+
+            .st-dialog-create .ui-dialog-content {
+                background: var(--st-bg-body) !important;
+                padding: 0 !important;
+                flex: 1 1 auto !important;
+                overflow: hidden !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            /* ============================================================
+               CORPO COM SCROLL INTERNO
+               ============================================================ */
             .st-dialog-body {
-                max-height: calc(100vh - 200px) !important;
-            }
-        }
-
-        /* ============================================================
-           RESPONSIVO – TABLET (768 a 1023 px)
-           ============================================================ */
-        @media (min-width: 768px) and (max-width: 1023px) {
-            .st-dialog-create .ui-dialog {
-                top: 1rem !important;
-                left: 1rem !important;
-                right: 1rem !important;
-                bottom: 1rem !important;
-                width: auto !important;
-                height: auto !important;
-                max-width: 900px !important;
-                max-height: calc(100vh - 2rem) !important;
+                flex: 1 1 auto !important;
+                overflow-y: auto !important;
+                padding: 1rem 1.25rem !important;
             }
 
-            .st-dialog-body {
-                max-height: calc(100vh - 180px) !important;
-            }
-        }
-
-        /* ============================================================
-           RESPONSIVO – MOBILE (max 767 px)
-           ============================================================ */
-        @media (max-width: 767px) {
-            .st-dialog-create .ui-dialog {
-                top: 0.5rem !important;
-                left: 0.5rem !important;
-                right: 0.5rem !important;
-                bottom: 0.5rem !important;
-                width: auto !important;
-                height: auto !important;
-                max-width: none !important;
-                max-height: calc(100vh - 1rem) !important;
-                margin: 0 !important;
-                border-radius: 6px !important;
-            }
-
-            .st-dialog-body {
-                padding: 0.75rem !important;
-                max-height: calc(100vh - 150px) !important;
-            }
-
+            /* ============================================================
+               SECCOES
+               ============================================================ */
             .st-section {
-                padding: 0.75rem;
+                background: #fff;
+                border-radius: 8px;
+                padding: 1rem 1.25rem;
+                margin-bottom: 1rem;
+                border: 1px solid var(--st-border);
             }
 
-            .st-dialog-footer {
-                padding: 0.75rem;
-                gap: 0.5rem;
-            }
-
-            .st-dialog-footer .ui-button {
-                flex: 1 1 auto;
-                min-width: 0;
-            }
-        }
-
-        /* ============================================================
-           RESPONSIVO – MOBILE PEQUENO (max 576 px)
-           ============================================================ */
-        @media (max-width: 576px) {
-            .st-dialog-create .ui-dialog {
-                top: 0.25rem !important;
-                left: 0.25rem !important;
-                right: 0.25rem !important;
-                bottom: 0.25rem !important;
-                max-height: calc(100vh - 0.5rem) !important;
-                border-radius: 4px !important;
-            }
-
-            .st-dialog-body {
-                padding: 0.5rem !important;
-                max-height: calc(100vh - 140px) !important;
-            }
-
-            .st-section {
-                padding: 0.6rem;
-                margin-bottom: 0.6rem;
+            .st-section:last-child {
+                margin-bottom: 0;
             }
 
             .st-section-title {
-                font-size: 0.9rem;
-                margin-bottom: 0.75rem;
+                font-size: 0.95rem;
+                font-weight: 700;
+                color: var(--st-text-main);
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 1px solid var(--st-border);
             }
 
+            .st-section-title i {
+                color: var(--st-primary);
+                font-size: 1.1rem;
+            }
+
+            /* ============================================================
+               LINHAS DE CAMPO – TITULO A ESQUERDA, CAMPO A DIREITA
+               ============================================================ */
+            .st-field-row {
+                display: flex;
+                align-items: flex-start;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .st-field-row:last-child {
+                margin-bottom: 0;
+            }
+
+            .st-label-col {
+                flex: 0 0 150px;
+                max-width: 150px;
+                padding-top: 0.6rem;
+                margin-bottom: 0 !important;
+            }
+
+            .st-field-col {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
+            /* ============================================================
+               LABELS
+               ============================================================ */
             .st-label {
-                font-size: 0.85rem;
+                font-size: 0.88rem;
+                font-weight: 600;
+                color: var(--st-text-main);
+                display: block;
             }
 
-            .st-dialog-footer {
-                flex-direction: column-reverse;
-                padding: 0.6rem;
+            .st-label.req::after {
+                content: " *";
+                color: #dc2626;
             }
 
-            .st-dialog-footer .ui-button {
+            /* ============================================================
+               CAMPO DESABILITADO (numero de aluno automatico)
+               ============================================================ */
+            .st-readonly-field.ui-state-disabled {
+                background: #f3f4f6 !important;
+                opacity: 0.85 !important;
+                color: #6b7280 !important;
+            }
+
+            /* ============================================================
+               MENSAGENS DE VALIDACAO
+               ============================================================ */
+            .st-field-msg {
+                display: block;
+                margin-top: 4px;
+                font-size: 0.8rem;
+            }
+
+            .st-field-msg.ui-message-error {
+                color: #dc2626;
+            }
+
+            /* ============================================================
+               TOAST DE VALIDACAO DO BI
+               ============================================================ */
+            .st-bi-growl.ui-growl {
+                position: fixed !important;
+                top: 20px !important;
+                right: 20px !important;
+                left: auto !important;
+                z-index: 100000 !important;
+                width: 320px !important;
+            }
+
+            /* ============================================================
+               INPUTS
+               ============================================================ */
+            .st-dialog-create .ui-inputfield,
+            .st-dialog-create .ui-selectonemenu {
+                width: 100% !important;
+            }
+
+            /* ============================================================
+               FOTO – CARTAO DE PRE-VISUALIZACAO + BOTAO A DIREITA
+               ============================================================ */
+            .st-photo-row {
+                display: flex;
+                align-items: center;
+                gap: 1.25rem;
+            }
+
+            .st-photo-preview {
+                flex: 0 0 84px;
+                width: 84px;
+                height: 84px;
+                border-radius: 10px;
+                border: 2px dashed var(--st-border);
+                background: var(--st-bg-body);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+            .st-photo-preview-img {
                 width: 100%;
+                height: 100%;
+                object-fit: cover;
             }
-        }
-    </style>
+
+            .st-photo-placeholder-icon {
+                font-size: 1.8rem;
+                color: #9ca3af;
+            }
+
+            .st-photo-upload-control {
+                flex: 1 1 auto;
+                min-width: 0;
+                display: flex;
+                justify-content: flex-end;
+            }
+
+            .st-photo-upload-control .ui-fileupload {
+                width: 100%;
+                border: none;
+                background: transparent;
+            }
+
+            .st-photo-upload-control .ui-fileupload-buttonbar {
+                display: flex;
+                justify-content: flex-end;
+                gap: 0.5rem;
+                border: none;
+                background: transparent;
+                padding: 0;
+            }
+
+            .st-photo-upload-control .ui-fileupload-content {
+                border: 2px dashed var(--st-border);
+                border-radius: 8px;
+                background: #fff;
+                margin-top: 0.5rem;
+            }
+
+            /* ============================================================
+               FOOTER
+               ============================================================ */
+            .st-dialog-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: 0.6rem;
+                padding: 1rem 1.25rem;
+                background: #fff;
+                border-top: 1px solid var(--st-border);
+                flex-wrap: wrap;
+            }
+
+            /* ============================================================
+               RESPONSIVO – DESKTOP (min 1024 px) – margens topo/direita/esquerda/baixo
+               ============================================================ */
+            @media (min-width: 1024px) {
+                .st-dialog-create .ui-dialog {
+                    top: 1.5rem !important;
+                    left: 1.5rem !important;
+                    right: 1.5rem !important;
+                    bottom: 1.5rem !important;
+                    width: auto !important;
+                    height: auto !important;
+                    max-width: 960px !important;
+                    max-height: calc(100vh - 3rem) !important;
+                }
+
+                .st-dialog-body {
+                    max-height: calc(100vh - 200px) !important;
+                }
+            }
+
+            /* ============================================================
+               RESPONSIVO – TABLET (768 a 1023 px) – margens topo/direita/esquerda/baixo
+               ============================================================ */
+            @media (min-width: 768px) and (max-width: 1023px) {
+                .st-dialog-create .ui-dialog {
+                    top: 1rem !important;
+                    left: 1rem !important;
+                    right: 1rem !important;
+                    bottom: 1rem !important;
+                    width: auto !important;
+                    height: auto !important;
+                    max-width: 900px !important;
+                    max-height: calc(100vh - 2rem) !important;
+                }
+
+                .st-dialog-body {
+                    max-height: calc(100vh - 180px) !important;
+                }
+
+                .st-label-col {
+                    flex-basis: 130px;
+                    max-width: 130px;
+                }
+            }
+
+            /* ============================================================
+               RESPONSIVO – MOBILE (max 767 px) – margens topo/direita/esquerda/baixo
+               ============================================================ */
+            @media (max-width: 767px) {
+                .st-dialog-create .ui-dialog {
+                    top: 0.5rem !important;
+                    left: 0.5rem !important;
+                    right: 0.5rem !important;
+                    bottom: 0.5rem !important;
+                    width: auto !important;
+                    height: auto !important;
+                    max-width: none !important;
+                    max-height: calc(100vh - 1rem) !important;
+                    margin: 0 !important;
+                    border-radius: 6px !important;
+                }
+
+                .st-dialog-body {
+                    padding: 0.75rem !important;
+                    max-height: calc(100vh - 150px) !important;
+                }
+
+                .st-section {
+                    padding: 0.75rem;
+                }
+
+                .st-label-col {
+                    flex-basis: 110px;
+                    max-width: 110px;
+                    padding-top: 0.5rem;
+                }
+
+                .st-field-row {
+                    gap: 0.6rem;
+                }
+
+                .st-dialog-footer {
+                    padding: 0.75rem;
+                    gap: 0.5rem;
+                }
+
+                .st-dialog-footer .ui-button {
+                    flex: 1 1 auto;
+                    min-width: 0;
+                }
+
+                .st-bi-growl.ui-growl {
+                    top: 10px !important;
+                    right: 10px !important;
+                    left: 10px !important;
+                    width: auto !important;
+                }
+            }
+
+            /* ============================================================
+               RESPONSIVO – MOBILE PEQUENO (max 576 px) – margens topo/direita/esquerda/baixo
+               ============================================================ */
+            @media (max-width: 576px) {
+                .st-dialog-create .ui-dialog {
+                    top: 0.25rem !important;
+                    left: 0.25rem !important;
+                    right: 0.25rem !important;
+                    bottom: 0.25rem !important;
+                    max-height: calc(100vh - 0.5rem) !important;
+                    border-radius: 4px !important;
+                }
+
+                .st-dialog-body {
+                    padding: 0.5rem !important;
+                    max-height: calc(100vh - 140px) !important;
+                }
+
+                .st-section {
+                    padding: 0.6rem;
+                    margin-bottom: 0.6rem;
+                }
+
+                .st-section-title {
+                    font-size: 0.9rem;
+                    margin-bottom: 0.75rem;
+                }
+
+                .st-label-col {
+                    flex-basis: 92px;
+                    max-width: 92px;
+                }
+
+                .st-label {
+                    font-size: 0.8rem;
+                }
+
+                .st-photo-row {
+                    gap: 0.75rem;
+                }
+
+                .st-photo-preview {
+                    flex-basis: 64px;
+                    width: 64px;
+                    height: 64px;
+                }
+
+                .st-dialog-footer {
+                    flex-direction: column-reverse;
+                    padding: 0.6rem;
+                }
+
+                .st-dialog-footer .ui-button {
+                    width: 100%;
+                }
+            }
+        </style>
+    </p:dialog>
 
 </ui:composition>

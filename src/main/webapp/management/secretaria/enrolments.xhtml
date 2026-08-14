@@ -444,18 +444,37 @@
             }
 
             @keyframes scSpin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+                0% {
+                    transform: rotate(0deg);
+                }
+
+                100% {
+                    transform: rotate(360deg);
+                }
             }
 
             @keyframes scSpinReverse {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(-360deg); }
+                0% {
+                    transform: rotate(0deg);
+                }
+
+                100% {
+                    transform: rotate(-360deg);
+                }
             }
 
             @keyframes scPulse {
-                0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-                50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.7; }
+
+                0%,
+                100% {
+                    transform: translate(-50%, -50%) scale(1);
+                    opacity: 1;
+                }
+
+                50% {
+                    transform: translate(-50%, -50%) scale(1.4);
+                    opacity: 0.7;
+                }
             }
 
             .sc-loading-text {
@@ -479,11 +498,25 @@
             }
 
             @keyframes scDots {
-                0% { content: ''; }
-                25% { content: '.'; }
-                50% { content: '..'; }
-                75% { content: '...'; }
-                100% { content: ''; }
+                0% {
+                    content: '';
+                }
+
+                25% {
+                    content: '.';
+                }
+
+                50% {
+                    content: '..';
+                }
+
+                75% {
+                    content: '...';
+                }
+
+                100% {
+                    content: '';
+                }
             }
 
             .sc-loading-progress {
@@ -504,9 +537,20 @@
             }
 
             @keyframes scProgress {
-                0% { width: 0%; margin-left: 0%; }
-                50% { width: 60%; margin-left: 20%; }
-                100% { width: 0%; margin-left: 100%; }
+                0% {
+                    width: 0%;
+                    margin-left: 0%;
+                }
+
+                50% {
+                    width: 60%;
+                    margin-left: 20%;
+                }
+
+                100% {
+                    width: 0%;
+                    margin-left: 100%;
+                }
             }
 
             /* ===== RESPONSIVIDADE MOBILE ===== */
@@ -709,8 +753,8 @@
 
                     <!-- Filtros Avançados -->
                     <div class="enr-filters">
-                        <p:selectOneMenu value="#{enrolmentController.filterSchoolClassId}" placeholder="#{msg.schoolClass}"
-                            style="min-width:180px;">
+                        <p:selectOneMenu value="#{enrolmentController.filterSchoolClassId}"
+                            placeholder="#{msg.schoolClass}" style="min-width:180px;">
                             <f:selectItem itemLabel="#{msg.allClasses}" itemValue="" />
                             <f:selectItems value="#{enrolmentController.schoolClasses}" var="sc"
                                 itemLabel="#{sc.classCode} - #{sc.className}" itemValue="#{sc.pkSchoolClass}" />
@@ -721,7 +765,7 @@
                         <p:selectOneMenu value="#{enrolmentController.filterShift}" placeholder="#{msg.shift}"
                             style="min-width:140px;">
                             <f:selectItem itemLabel="#{msg.allShifts}" itemValue="" />
-                            <f:selectItems value="#{enrolmentController.shifts}" var="sh" itemLabel="#{sh}"
+                            <f:selectItems value="#{enrolmentController.shifts}" var="sh" itemLabel="#{msg[sh]}"
                                 itemValue="#{sh}" />
                             <p:ajax event="change" listener="#{enrolmentController.applyFilters}"
                                 update="dtEnrollments messages" process="@this" />
@@ -730,7 +774,7 @@
                         <p:selectOneMenu value="#{enrolmentController.filterEnrolmentType}" placeholder="#{msg.type}"
                             style="min-width:160px;">
                             <f:selectItem itemLabel="#{msg.allTypes}" itemValue="" />
-                            <f:selectItems value="#{enrolmentController.enrolmentTypes}" var="et" itemLabel="#{et}"
+                            <f:selectItems value="#{enrolmentController.enrolmentTypes}" var="et" itemLabel="#{msg[et]}"
                                 itemValue="#{et}" />
                             <p:ajax event="change" listener="#{enrolmentController.applyFilters}"
                                 update="dtEnrollments messages" process="@this" />
@@ -748,11 +792,6 @@
                                 update="dtEnrollments messages" process="@this" />
                         </p:datePicker>
 
-                        <p:inputText value="#{enrolmentController.filterStudentName}" placeholder="#{msg.searchStudent}"
-                            style="min-width:200px;">
-                            <p:ajax event="keyup" delay="400" listener="#{enrolmentController.applyFilters}"
-                                update="dtEnrollments messages" process="@this" />
-                        </p:inputText>
 
                         <p:commandButton icon="pi pi-filter" value="#{msg.apply}"
                             action="#{enrolmentController.applyFilters}" update="dtEnrollments messages"
@@ -776,8 +815,8 @@
                             </span>
                         </p:column>
 
-                        <p:column headerText="#{msg.student}" sortBy="#{enr.studentFullName}" filterBy="#{enr.studentFullName}"
-                            filterMatchMode="contains">
+                        <p:column headerText="#{msg.student}" sortBy="#{enr.studentFullName}"
+                            filterBy="#{enr.studentFullName}" filterMatchMode="contains">
                             <div style="display:flex; align-items:center; gap:.7rem;">
                                 <div class="enr-avatar">
                                     <h:outputText value="#{enr.studentFullName.charAt(0)}"
@@ -786,13 +825,14 @@
                                 </div>
                                 <div>
                                     <div style="font-weight:700; color:var(--enr-text);">#{enr.studentFullName}</div>
-                                    <div style="font-size:.75rem; color:var(--enr-muted);">#{msg.number} #{enr.studentNumber}</div>
+                                    <div style="font-size:.75rem; color:var(--enr-muted);">#{msg.number}
+                                        #{enr.studentNumber}</div>
                                 </div>
                             </div>
                         </p:column>
 
-                        <p:column headerText="#{msg.schoolClass}" sortBy="#{enr.schoolclasscode}" filterBy="#{enr.schoolclasscode}"
-                            style="width:130px; text-align:center">
+                        <p:column headerText="#{msg.schoolClass}" sortBy="#{enr.schoolclasscode}"
+                            filterBy="#{enr.schoolclasscode}" style="width:130px; text-align:center">
                             <span class="enr-badge class">
                                 <i class="pi pi-sitemap" style="font-size:.65rem" />
                                 #{enr.schoolclasscode}
@@ -886,8 +926,9 @@
 
             <!-- VIEW DIALOG -->
             <h:form id="viewForm">
-                <p:dialog widgetVar="viewEnrollmentDialog" modal="true" resizable="false" header="#{msg.enrollmentDetails}"
-                    style="width: 90vw; max-width: 500px;" closable="true" responsive="true" fitViewport="true">
+                <p:dialog widgetVar="viewEnrollmentDialog" modal="true" resizable="false"
+                    header="#{msg.enrollmentDetails}" style="width: 90vw; max-width: 500px;" closable="true"
+                    responsive="true" fitViewport="true">
                     <div style="padding: .5rem 0;">
                         <div style="text-align:center; margin-bottom:1.2rem;">
                             <div class="enr-avatar"
