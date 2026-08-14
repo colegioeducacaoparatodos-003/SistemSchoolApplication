@@ -40,7 +40,7 @@ public class Enrolment {
     @JoinColumn(name =  "schoolClass_pk", nullable = false, foreignKey = @ForeignKey(name = "fk_enrolment_schoolClass"))
     private SchoolClass schoolClass;
 
-        /** Relacionamentos */
+    /** Relacionamentos */
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name =  "student_pk", nullable = false, foreignKey = @ForeignKey(name = "fk_enrolment_student"))
     private Student student;

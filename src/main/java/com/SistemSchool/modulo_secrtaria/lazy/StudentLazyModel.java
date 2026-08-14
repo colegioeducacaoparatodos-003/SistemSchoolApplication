@@ -1,91 +1,101 @@
 package com.SistemSchool.modulo_secrtaria.lazy;
 
 import com.SistemSchool.modulo_secrtaria.dto.StudentDTO;
+import com.SistemSchool.io.Gender;
+import com.SistemSchool.modulo_secrtaria.io.StudentStatus;
 import com.SistemSchool.modulo_secrtaria.service.StudentService;
+
+import org.primefaces.model.FilterMeta;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortMeta;
-import org.primefaces.model.FilterMeta;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 
-import java.util.HashMap;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class StudentLazyModel extends LazyDataModel<StudentDTO> {
 
-    private static final long serialVersionUID = 1L;
+    private final StudentService service;
 
-    private final StudentService studentService;
+    private String searchText;
+    private StudentStatus filterStatus;
+    private Gender filterGender;
+    private LocalDate filterBirthDateFrom;
+    private LocalDate filterBirthDateTo;
+    private String filterStudentName;
 
-    public StudentLazyModel(StudentService studentService) {
-        this.studentService = studentService;
+    public StudentLazyModel(StudentService service) {
+        this.service = service;
     }
 
-    @Override
-    public List<StudentDTO> load(int first, int pageSize, Map<String, SortMeta> sortBy,
-            Map<String, FilterMeta> filterBy) {
-        int page = first / pageSize;
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
+    }
 
-        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+    public void setFilterStatus(StudentStatus filterStatus) {
+        this.filterStatus = filterStatus;
+    }
 
-        if (sortBy != null && !sortBy.isEmpty()) {
-            SortMeta sortMeta = sortBy.values().iterator().next();
-            Sort.Direction direction = sortMeta.getOrder().isAscending()
-                    ? Sort.Direction.ASC
-                    : Sort.Direction.DESC;
-            sort = Sort.by(direction, sortMeta.getField());
-        }
+    public void setFilterGender(Gender filterGender) {
+        this.filterGender = filterGender;
+    }
 
-        Map<String, Object> filters = convertFilters(filterBy);
-        Page<StudentDTO> result = studentService.findLazy(page, pageSize, sort, filters);
+    public void setFilterBirthDateFrom(LocalDate filterBirthDateFrom) {
+        this.filterBirthDateFrom = filterBirthDateFrom;
+    }
 
-        setRowCount((int) result.getTotalElements());
+    public void setFilterBirthDateTo(LocalDate filterBirthDateTo) {
+        this.filterBirthDateTo = filterBirthDateTo;
+    }
 
-        return result.getContent();
+    public void setFilterStudentName(String filterStudentName) {
+        this.filterStudentName = filterStudentName;
+    }
+
+    public void clearFilters() {
+        this.searchText = null;
+        this.filterStatus = null;
+        this.filterGender = null;
+        this.filterBirthDateFrom = null;
+        this.filterBirthDateTo = null;
+        this.filterStudentName = null;
     }
 
     @Override
     public int count(Map<String, FilterMeta> filterBy) {
-        Map<String, Object> filters = convertFilters(filterBy);
-        Page<StudentDTO> page = studentService.findLazy(0, 1, Sort.unsorted(), filters);
-        return (int) page.getTotalElements();
+        return (int) service.countWithFilters(
+                searchText, filterStatus, filterGender,
+                filterBirthDateFrom, filterBirthDateTo, filterStudentName);
     }
 
     @Override
-    public StudentDTO getRowData(String rowKey) {
-        return studentService.getAllStudents()
-                .stream()
-                .filter(s -> s.getPkStudent().toString().equals(rowKey))
-                .findFirst()
-                .orElse(null);
-    }
+    public List<StudentDTO> load(int first, int pageSize, Map<String, SortMeta> sortBy,
+                                 Map<String, FilterMeta> filterBy) {
 
-    @Override
-    public String getRowKey(StudentDTO studentDTO) {
-        return studentDTO.getPkStudent() != null
-                ? studentDTO.getPkStudent().toString()
-                : null;
-    }
-
-    /**
-     * Limpa filtros internos (compatibilidade com EnrolmentLazyModel).
-     */
-    public void clearFilters() {
-        // O LazyDataModel do PrimeFaces recebe filtros via load/count;
-        // este método existe apenas para compatibilidade com o controller.
-    }
-
-    private Map<String, Object> convertFilters(Map<String, FilterMeta> filterBy) {
-        Map<String, Object> filters = new HashMap<>();
-        if (filterBy != null) {
-            for (FilterMeta meta : filterBy.values()) {
-                Object value = meta.getFilterValue();
-                if (value != null && !value.toString().isBlank()) {
-                    filters.put(meta.getField(), value);
-                }
+        List<Order> orders = new ArrayList<>();
+        if (sortBy != null && !sortBy.isEmpty()) {
+            for (SortMeta meta : sortBy.values()) {
+                String field = meta.getField();
+                Sort.Direction direction = meta.getOrder().isAscending()
+                        ? Sort.Direction.ASC
+                        : Sort.Direction.DESC;
+                orders.add(new Order(direction, field));
             }
         }
-        return filters;
+
+        Sort sort = orders.isEmpty() ? Sort.unsorted() : Sort.by(orders);
+        int page = first / pageSize;
+
+        Page<StudentDTO> result = service.findLazyWithFilters(
+                page, pageSize, sort,
+                searchText, filterStatus, filterGender,
+                filterBirthDateFrom, filterBirthDateTo, filterStudentName);
+
+        setRowCount((int) result.getTotalElements());
+        return result.getContent();
     }
 }

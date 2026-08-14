@@ -10,23 +10,31 @@ import com.SistemSchool.modulo_secrtaria.model.Student;
 public class StudentDTO {
 
     private Long pkStudent;
+
     private String sudentNumber;
     private String fristName;
     private String lastName;
     private String fullName;
+
     private Gender gender;
+
     private String biNumber;
     private LocalDate nascDate;
     private LocalDate biExpiryData;
+
     private String addressStreet;
     private String addressProvice;
+
     private String nameFather;
     private String nameMather;
+
     private String email;
     private String phone_1;
     private String phone_2;
+
     private String uploadPhoto;
     private StudentStatus status;
+
     private String obs;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -35,10 +43,10 @@ public class StudentDTO {
     }
 
     public StudentDTO(Long pkStudent, String sudentNumber, String fristName, String lastName, String fullName,
-            Gender gender, String biNumber, LocalDate nascDate, LocalDate biExpiryData, String addressStreet,
-            String addressProvice, String nameFather, String nameMather, String email, String phone_1,
-            String phone_2, String uploadPhoto, StudentStatus status, String obs, LocalDateTime createdAt,
-            LocalDateTime updatedAt) {
+            Gender gender, String biNumber, LocalDate nascDate, LocalDate biExpiryData,
+            String addressStreet, String addressProvice, String nameFather, String nameMather,
+            String email, String phone_1, String phone_2, String uploadPhoto, StudentStatus status,
+            String obs, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.pkStudent = pkStudent;
         this.sudentNumber = sudentNumber;
         this.fristName = fristName;
@@ -67,6 +75,9 @@ public class StudentDTO {
     // ─────────────────────────────────────────────────────────────
 
     public static StudentDTO fromEntity(Student student) {
+        if (student == null) {
+            return null;
+        }
         return new StudentDTO(
                 student.getPkStudent(),
                 student.getSudentNumber(),
@@ -90,6 +101,10 @@ public class StudentDTO {
                 student.getCreatedAt(),
                 student.getUpdatedAt());
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // GETTERS / SETTERS
+    // ─────────────────────────────────────────────────────────────
 
     public Long getPkStudent() {
         return this.pkStudent;
@@ -258,6 +273,10 @@ public class StudentDTO {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // FLUENT SETTERS
+    // ─────────────────────────────────────────────────────────────
 
     public StudentDTO pkStudent(Long pkStudent) {
         setPkStudent(pkStudent);

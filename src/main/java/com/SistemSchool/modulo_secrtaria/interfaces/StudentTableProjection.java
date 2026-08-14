@@ -21,27 +21,13 @@ public interface StudentTableProjection {
 
     LocalDate getNascDate();
 
-    LocalDate getBiExpiryData();
-
-    String getAddressStreet();
-
-    String getAddressProvice();
-
-    String getNameFather();
-
-    String getNameMather();
-
     String getEmail();
 
     String getPhone_1();
 
-    String getPhone_2();
-
     String getUploadPhoto();
 
     String getStatus();
-
-    String getObs();
 
     LocalDateTime getCreatedAt();
 

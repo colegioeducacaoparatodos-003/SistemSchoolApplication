@@ -106,7 +106,7 @@
                         rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
                     <p:menuitem value="#{msg.schoolClass}" action="#{schoolClassController.load}" icon="pi pi-inbox"
                         rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.student}" action="#{studentController.loadStudents}" icon="pi pi-users"
+                    <p:menuitem value="#{msg.student}" action="#{studentController.load}" icon="pi pi-users"
                         rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
                     <p:menuitem value="#{msg.enrollments}" action="#{enrolmentController.load}" icon="pi pi-id-card"
                         rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
@@ -127,6 +127,7 @@
                         rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
                     <p:menuitem value="#{msg.evaluation}" action="#{evaluationController.load}"
                         icon="pi pi-check-square" rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
+                    
 
                     <!-- Financeiro: FINANCIAL e ADMIN -->
                     <p:menuitem styleClass="sidebar-menu-header fw-bold text-uppercase text-muted px-2 py-1 mt-3"
