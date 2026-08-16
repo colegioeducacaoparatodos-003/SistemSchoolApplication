@@ -29,11 +29,12 @@
                         <p:message for="studentCreate" display="text" styleClass="sc-field-msg" />
                     </h:panelGroup>
 
-                    <p:outputLabel for="documentNumberCreate" value="#{msg.documentNumber}" styleClass="sc-label req" />
+                    <!-- documentNumber é gerado automaticamente pelo servidor (DOC-Ano-Sequência) -->
+                    <p:outputLabel for="documentNumberCreate" value="#{msg.documentNumber}" styleClass="sc-label" />
                     <h:panelGroup>
                         <p:inputText id="documentNumberCreate" value="#{documentController.novoDocumento.documentNumber}"
-                            required="true" requiredMessage="#{msg.documentNumberRequired}" placeholder="#{msg.documentNumberPlaceholder}" styleClass="sc-input" />
-                        <p:message for="documentNumberCreate" display="text" styleClass="sc-field-msg" />
+                            disabled="true" placeholder="DOC-Ano-Sequência" styleClass="sc-input" />
+                        <span class="sc-hint">Gerado automaticamente ao gravar</span>
                     </h:panelGroup>
 
                     <p:outputLabel for="documentTypeCreate" value="#{msg.documentType}" styleClass="sc-label req" />
@@ -118,6 +119,9 @@
                 display: block; margin-top: 4px; font-size: 12px; color: #dc2626;
             }
             .sc-input { width: 100%; }
+            .sc-hint {
+                display: block; margin-top: 4px; font-size: 12px; color: #888;
+            }
             .sc-fullwidth-field { margin-top: 1.2rem; }
             .sc-counter {
                 display: block; text-align: right; font-size: 11px;

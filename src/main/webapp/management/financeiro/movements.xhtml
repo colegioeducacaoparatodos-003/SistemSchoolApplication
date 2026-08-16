@@ -290,12 +290,13 @@
                     </div>
 
                     <div class="mov-filters">
+                    
                         <p:selectOneMenu value="#{financialMovementController.filterType}" placeholder="#{msg.type}" style="min-width:160px;">
                             <f:selectItem itemLabel="#{msg.allTypes}" itemValue="" />
                             <f:selectItems value="#{financialMovementController.types}" var="t" itemValue="#{t}" itemLabel="#{msg['movementType.'.concat(t)]}" />
                             <p:ajax event="change" listener="#{financialMovementController.applyFilters}" update="dtMovements messages" process="@this" />
                         </p:selectOneMenu>
-
+                        
                         <p:selectOneMenu value="#{financialMovementController.filterStatus}" placeholder="#{msg.status}" style="min-width:160px;">
                             <f:selectItem itemLabel="#{msg.allStatuses}" itemValue="" />
                             <f:selectItems value="#{financialMovementController.statuses}" var="s" itemValue="#{s}" itemLabel="#{msg['movementStatus.'.concat(s)]}" />
@@ -316,12 +317,9 @@
                             <p:ajax event="dateSelect" listener="#{financialMovementController.applyFilters}" update="dtMovements messages" process="@this" />
                         </p:datePicker>
 
-                        <p:inputText value="#{financialMovementController.filterSearchText}" placeholder="#{msg.searchMovement}..." style="min-width:200px;">
-                            <p:ajax event="keyup" delay="400" listener="#{financialMovementController.applyFilters}" update="dtMovements messages" process="@this" />
-                        </p:inputText>
-
                         <p:commandButton icon="pi pi-filter" value="#{msg.apply}" action="#{financialMovementController.applyFilters}" update="dtMovements messages" styleClass="ui-button-primary" />
                         <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}" action="#{financialMovementController.clearFilters}" update="@form" styleClass="ui-button-outlined ui-button-secondary" />
+                    
                     </div>
 
                     <p:dataTable id="dtMovements" widgetVar="dtMovements" styleClass="mov-table" var="movement"

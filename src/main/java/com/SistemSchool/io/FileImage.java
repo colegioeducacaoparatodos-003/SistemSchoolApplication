@@ -15,7 +15,7 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.primefaces.model.file.UploadedFile;
 
-//Manage files 
+//Manage files	
 public class FileImage {
 
 	public FileImage() {

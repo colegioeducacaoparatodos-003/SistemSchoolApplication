@@ -10,14 +10,21 @@ public class DocumentDTO {
 
     private Long phDocument;
     private String documentNumber;
+
     private String fileName;
     private String filePath;
-    private Long studentId;
+
+    // Dados "achatados" do Student
+    private Long studentPk;
     private String studentName;
+
     private DocumentType documentType;
+
     private LocalDate issueDate;
     private LocalDate expiryDate;
+
     private String obs;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -25,13 +32,14 @@ public class DocumentDTO {
     }
 
     public DocumentDTO(Long phDocument, String documentNumber, String fileName, String filePath,
-            Long studentId, String studentName, DocumentType documentType, LocalDate issueDate,
-            LocalDate expiryDate, String obs, LocalDateTime createdAt, LocalDateTime updatedAt) {
+            Long studentPk, String studentName, DocumentType documentType,
+            LocalDate issueDate, LocalDate expiryDate, String obs,
+            LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.phDocument = phDocument;
         this.documentNumber = documentNumber;
         this.fileName = fileName;
         this.filePath = filePath;
-        this.studentId = studentId;
+        this.studentPk = studentPk;
         this.studentName = studentName;
         this.documentType = documentType;
         this.issueDate = issueDate;
@@ -42,23 +50,23 @@ public class DocumentDTO {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // CONVERSÃO (entity → DTO)
+    // CONVERSÃO (document → DTO)
     // ─────────────────────────────────────────────────────────────
 
-    public static DocumentDTO fromEntity(Document entity) {
+    public static DocumentDTO fromEntity(Document document) {
         return new DocumentDTO(
-                entity.getPhDocument(),
-                entity.getDocumentNumber(),
-                entity.getFileName(),
-                entity.getFilePath(),
-                entity.getStudent() != null ? entity.getStudent().getPkStudent() : null,
-                entity.getStudent() != null ? entity.getStudent().getFullName() : null,
-                entity.getDocumentType(),
-                entity.getIssueDate(),
-                entity.getExpiryDate(),
-                entity.getObs(),
-                entity.getCreatedAt(),
-                entity.getUpdatedAt());
+                document.getPhDocument(),
+                document.getDocumentNumber(),
+                document.getFileName(),
+                document.getFilePath(),
+                document.getStudent() != null ? document.getStudent().getPkStudent() : null,
+                document.getStudent() != null ? document.getStudent().getFullName() : null,
+                document.getDocumentType(),
+                document.getIssueDate(),
+                document.getExpiryDate(),
+                document.getObs(),
+                document.getCreatedAt(),
+                document.getUpdatedAt());
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -97,12 +105,12 @@ public class DocumentDTO {
         this.filePath = filePath;
     }
 
-    public Long getStudentId() {
-        return this.studentId;
+    public Long getStudentPk() {
+        return this.studentPk;
     }
 
-    public void setStudentId(Long studentId) {
-        this.studentId = studentId;
+    public void setStudentPk(Long studentPk) {
+        this.studentPk = studentPk;
     }
 
     public String getStudentName() {
@@ -159,5 +167,65 @@ public class DocumentDTO {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public DocumentDTO phDocument(Long phDocument) {
+        setPhDocument(phDocument);
+        return this;
+    }
+
+    public DocumentDTO documentNumber(String documentNumber) {
+        setDocumentNumber(documentNumber);
+        return this;
+    }
+
+    public DocumentDTO fileName(String fileName) {
+        setFileName(fileName);
+        return this;
+    }
+
+    public DocumentDTO filePath(String filePath) {
+        setFilePath(filePath);
+        return this;
+    }
+
+    public DocumentDTO studentPk(Long studentPk) {
+        setStudentPk(studentPk);
+        return this;
+    }
+
+    public DocumentDTO studentName(String studentName) {
+        setStudentName(studentName);
+        return this;
+    }
+
+    public DocumentDTO documentType(DocumentType documentType) {
+        setDocumentType(documentType);
+        return this;
+    }
+
+    public DocumentDTO issueDate(LocalDate issueDate) {
+        setIssueDate(issueDate);
+        return this;
+    }
+
+    public DocumentDTO expiryDate(LocalDate expiryDate) {
+        setExpiryDate(expiryDate);
+        return this;
+    }
+
+    public DocumentDTO obs(String obs) {
+        setObs(obs);
+        return this;
+    }
+
+    public DocumentDTO createdAt(LocalDateTime createdAt) {
+        setCreatedAt(createdAt);
+        return this;
+    }
+
+    public DocumentDTO updatedAt(LocalDateTime updatedAt) {
+        setUpdatedAt(updatedAt);
+        return this;
     }
 }

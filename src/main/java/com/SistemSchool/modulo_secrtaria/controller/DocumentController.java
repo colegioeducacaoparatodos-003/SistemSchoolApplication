@@ -1,12 +1,13 @@
 package com.SistemSchool.modulo_secrtaria.controller;
 
+import com.SistemSchool.config.SessionBean;
 import com.SistemSchool.modulo_secrtaria.dto.DocumentDTO;
+import com.SistemSchool.modulo_secrtaria.dto.DocumentFilterCriteria;
 import com.SistemSchool.modulo_secrtaria.dto.StudentDTO;
 import com.SistemSchool.modulo_secrtaria.io.DocumentType;
 import com.SistemSchool.modulo_secrtaria.lazy.DocumentLazyModel;
-import com.SistemSchool.modulo_secrtaria.model.Document;
-import com.SistemSchool.modulo_secrtaria.model.Student;
 import com.SistemSchool.modulo_secrtaria.service.DocumentService;
+import com.SistemSchool.modulo_secrtaria.service.DocumentService.DownloadedFile;
 import com.SistemSchool.modulo_secrtaria.service.StudentService;
 
 import jakarta.annotation.PostConstruct;
@@ -16,19 +17,18 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.OutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,40 +40,34 @@ public class DocumentController implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(DocumentController.class.getName());
 
-    private static final String UPLOAD_RELATIVE_PATH = "/documents_files";
-
     // ─────────────────────────────────────────────────────────────
-    // MODELOS
+    // MODELOS DOS FORMULÁRIOS (DTO-first: bate com o binding das views)
     // ─────────────────────────────────────────────────────────────
 
-    private Document novoDocumento = new Document();
+    private DocumentDTO novoDocumento = new DocumentDTO();
     private DocumentDTO editDto = new DocumentDTO();
-    private Long selectedId;
 
     private Long selectedStudentId;
-    private List<StudentDTO> students = new ArrayList<>();
+    private Long selectedId; // usado para eliminar (prepareDelete/delete)
 
-    private byte[] uploadedFileBytes;
-    private String uploadedFileName;
+    private UploadedFile uploadedFile;
 
     // ─────────────────────────────────────────────────────────────
-    // FILTROS
+    // FILTROS DA TOOLBAR (documents.xhtml)
     // ─────────────────────────────────────────────────────────────
 
     private DocumentType filterDocumentType;
     private String filterExpiryStatus;
     private LocalDate filterIssueStartDate;
     private LocalDate filterIssueEndDate;
-    private String filterStudentName;
 
     // ─────────────────────────────────────────────────────────────
-    // ESTATÍSTICAS
+    // LISTAS PARA DROPDOWNS
     // ─────────────────────────────────────────────────────────────
 
-    private long totalDocumentCount;
-    private long expiringSoonCount;
-    private long expiredCount;
-    private long distinctStudentsCount;
+    private List<StudentDTO> students = new java.util.ArrayList<>();
+
+    private transient DocumentLazyModel lazyModel;
 
     // ─────────────────────────────────────────────────────────────
     // SERVIÇOS
@@ -85,7 +79,8 @@ public class DocumentController implements Serializable {
     @Inject
     private StudentService studentService;
 
-    private transient DocumentLazyModel lazyModel;
+    @Inject
+    private SessionBean sessionBean;
 
     // ─────────────────────────────────────────────────────────────
     // INICIALIZAÇÃO E NAVEGAÇÃO
@@ -93,9 +88,8 @@ public class DocumentController implements Serializable {
 
     @PostConstruct
     public void init() {
-        lazyModel = new DocumentLazyModel(documentService);
+        lazyModel = new DocumentLazyModel(this);
         loadStudents();
-        computeStatistics();
     }
 
     private void loadStudents() {
@@ -103,23 +97,7 @@ public class DocumentController implements Serializable {
             students = studentService.getAllStudents();
         } catch (Exception e) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao carregar alunos", e.getMessage());
-            LOGGER.log(Level.SEVERE, "Erro ao carregar alunos para o formulário de documento", e);
-        }
-    }
-
-    private void computeStatistics() {
-        try {
-            totalDocumentCount = documentService.getTotalDocumentCount();
-            expiringSoonCount = documentService.getExpiringSoonCount();
-            expiredCount = documentService.getExpiredCount();
-            distinctStudentsCount = documentService.getDistinctStudentsCount();
-        } catch (Exception e) {
-            totalDocumentCount = 0;
-            expiringSoonCount = 0;
-            expiredCount = 0;
-            distinctStudentsCount = 0;
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao calcular estatísticas", e.getMessage());
-            LOGGER.log(Level.SEVERE, "Erro ao calcular estatísticas de documentos", e);
+            LOGGER.log(Level.SEVERE, "Erro ao carregar alunos para o formulário de documentos", e);
         }
     }
 
@@ -137,28 +115,27 @@ public class DocumentController implements Serializable {
         return lazyModel;
     }
 
+    public DocumentService getDocumentService() {
+        return documentService;
+    }
+
     // ─────────────────────────────────────────────────────────────
     // FILTROS
     // ─────────────────────────────────────────────────────────────
 
+    public DocumentFilterCriteria buildFilterCriteria() {
+        DocumentFilterCriteria criteria = new DocumentFilterCriteria();
+        criteria.setDocumentType(filterDocumentType);
+        criteria.setExpiryStatus(filterExpiryStatus);
+        criteria.setIssueStartDate(filterIssueStartDate);
+        criteria.setIssueEndDate(filterIssueEndDate);
+        return criteria;
+    }
+
     public void applyFilters() {
-        Map<String, Object> filters = new HashMap<>();
-        if (filterDocumentType != null) {
-            filters.put("documentType", filterDocumentType.name());
-        }
-        if (filterExpiryStatus != null && !filterExpiryStatus.isBlank()) {
-            filters.put("expiryStatus", filterExpiryStatus);
-        }
-        if (filterIssueStartDate != null) {
-            filters.put("issueStartDate", filterIssueStartDate);
-        }
-        if (filterIssueEndDate != null) {
-            filters.put("issueEndDate", filterIssueEndDate);
-        }
-        if (filterStudentName != null && !filterStudentName.isBlank()) {
-            filters.put("studentName", filterStudentName.trim().toLowerCase());
-        }
-        lazyModel.setFilters(filters);
+        // O próprio update="dtDocuments" no botão/ajax força o p:dataTable a
+        // chamar load() novamente, que por sua vez lê os filtros atuais
+        // através de buildFilterCriteria(). Nada mais é necessário aqui.
     }
 
     public void clearFilters() {
@@ -166,164 +143,191 @@ public class DocumentController implements Serializable {
         filterExpiryStatus = null;
         filterIssueStartDate = null;
         filterIssueEndDate = null;
-        filterStudentName = null;
-        lazyModel.setFilters(new HashMap<>());
     }
 
     // ─────────────────────────────────────────────────────────────
-    // UPLOAD
+    // ESTATÍSTICAS (cards do topo)
+    // ─────────────────────────────────────────────────────────────
+
+    public long getTotalDocumentCount() {
+        return documentService.countTotalDocuments();
+    }
+
+    public long getExpiringSoonCount() {
+        return documentService.countExpiringSoon();
+    }
+
+    public long getExpiredCount() {
+        return documentService.countExpired();
+    }
+
+    public long getDistinctStudentsCount() {
+        return documentService.countDistinctStudentsWithDocuments();
+    }
+
+    /** Classe CSS do badge de validade (ok | soon | expired | none) usada na view. */
+    public String expiryStatus(LocalDate expiryDate) {
+        if (expiryDate == null) {
+            return "none";
+        }
+        LocalDate today = LocalDate.now();
+        if (expiryDate.isBefore(today)) {
+            return "expired";
+        }
+        if (!expiryDate.isAfter(today.plusDays(DocumentService.EXPIRY_SOON_THRESHOLD_DAYS))) {
+            return "soon";
+        }
+        return "ok";
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // UPLOAD DE FICHEIRO
     // ─────────────────────────────────────────────────────────────
 
     public void handleFileUpload(FileUploadEvent event) {
-        try {
-            UploadedFile file = event.getFile();
-            this.uploadedFileBytes = file.getContent();
-            this.uploadedFileName = file.getFileName();
-            addMessage(FacesMessage.SEVERITY_INFO, "Ficheiro carregado",
-                    "\"" + file.getFileName() + "\" pronto para ser guardado.");
-        } catch (Exception e) {
-            this.uploadedFileBytes = null;
-            this.uploadedFileName = null;
-            LOGGER.log(Level.SEVERE, "Erro ao ler ficheiro enviado", e);
-            addMessage(FacesMessage.SEVERITY_ERROR, "Ficheiro", "Não foi possível ler o ficheiro enviado.");
-        }
+        this.uploadedFile = event.getFile();
+        addMessage(FacesMessage.SEVERITY_INFO, "Ficheiro selecionado",
+                event.getFile().getFileName() + " pronto para ser gravado");
     }
 
     // ─────────────────────────────────────────────────────────────
-    // CRUD
+    // CRIAÇÃO
     // ─────────────────────────────────────────────────────────────
 
     public void openCreateDialog() {
-        this.novoDocumento = new Document();
-        this.uploadedFileBytes = null;
-        this.uploadedFileName = null;
-        this.selectedStudentId = null;
+        novoDocumento = new DocumentDTO();
+        selectedStudentId = null;
+        uploadedFile = null;
     }
 
     public void salvarDocumento() {
         try {
-            if (uploadedFileBytes == null) {
-                addMessage(FacesMessage.SEVERITY_WARN, "Documento", "Selecione um ficheiro antes de guardar.");
-                return;
-            }
             if (selectedStudentId == null) {
-                addMessage(FacesMessage.SEVERITY_WARN, "Documento", "Selecione o aluno associado ao documento.");
+                addMessage(FacesMessage.SEVERITY_ERROR, "Documento", "Selecione um aluno antes de gravar.");
+                return;
+            }
+            if (novoDocumento.getDocumentType() == null) {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Documento", "Selecione o tipo de documento.");
                 return;
             }
 
-            Student student = studentService.findById(selectedStudentId);
-            novoDocumento.setStudent(student);
+            novoDocumento.setStudentPk(selectedStudentId);
 
-            String uploadBaseDir = resolveUploadDir();
+            documentService.save(novoDocumento, uploadedFile);
 
-            documentService.uploadDocument(
-                    novoDocumento,
-                    new ByteArrayInputStream(uploadedFileBytes),
-                    uploadedFileName,
-                    uploadBaseDir);
+            novoDocumento = new DocumentDTO();
+            selectedStudentId = null;
+            uploadedFile = null;
 
-            resetCreateForm();
-            init();
+            FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getFlash()
+                    .setKeepMessages(true);
 
-            addMessage(FacesMessage.SEVERITY_INFO, "Documento", "Documento carregado com sucesso");
+            addMessage(FacesMessage.SEVERITY_INFO, "Documento", "Documento registado com sucesso");
 
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Erro ao gravar ficheiro do documento", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Documento", "Erro ao gravar o ficheiro: " + e.getMessage());
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Erro ao guardar documento", e);
+            LOGGER.log(Level.SEVERE, "Erro ao gravar documento", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Documento", e.getMessage());
         }
     }
 
     // ─────────────────────────────────────────────────────────────
-    // VIEW / EDIT / UPDATE / DELETE
+    // VISUALIZAÇÃO / EDIÇÃO
     // ─────────────────────────────────────────────────────────────
 
     public void openViewDialog(Long id) {
-        if (id == null) {
-            addMessage(FacesMessage.SEVERITY_WARN, "Nenhum documento selecionado!", "");
-            return;
-        }
-        this.selectedId = id;
-        try {
-            this.editDto = documentService.getDocumentDTOById(id);
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Erro ao carregar documento para visualização", e);
-            addMessage(FacesMessage.SEVERITY_WARN, "Documento não encontrado", "");
-        }
+        loadIntoEditDto(id);
     }
 
     public void openEditDialog(Long id) {
+        DocumentDTO dto = loadIntoEditDto(id);
+        if (dto != null) {
+            selectedStudentId = dto.getStudentPk();
+            uploadedFile = null;
+        }
+    }
+
+    private DocumentDTO loadIntoEditDto(Long id) {
         if (id == null) {
-            addMessage(FacesMessage.SEVERITY_WARN, "Nenhum documento selecionado!", "");
-            return;
+            addMessage(FacesMessage.SEVERITY_ERROR, "Nenhum documento selecionado!", "");
+            return null;
         }
-        this.selectedId = id;
         try {
-            this.editDto = documentService.getDocumentDTOById(id);
-            this.selectedStudentId = editDto.getStudentId();
-            this.uploadedFileBytes = null;
-            this.uploadedFileName = null;
+            DocumentDTO dto = documentService.findDtoById(id);
+            mapDtoFields(dto, editDto = new DocumentDTO());
+            return dto;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Erro ao carregar documento para edição", e);
             addMessage(FacesMessage.SEVERITY_WARN, "Documento não encontrado", "");
+            return null;
         }
+    }
+
+    private void mapDtoFields(DocumentDTO source, DocumentDTO target) {
+        target.setPhDocument(source.getPhDocument());
+        target.setDocumentNumber(source.getDocumentNumber());
+        target.setFileName(source.getFileName());
+        target.setFilePath(source.getFilePath());
+        target.setStudentPk(source.getStudentPk());
+        target.setStudentName(source.getStudentName());
+        target.setDocumentType(source.getDocumentType());
+        target.setIssueDate(source.getIssueDate());
+        target.setExpiryDate(source.getExpiryDate());
+        target.setObs(source.getObs());
+        target.setCreatedAt(source.getCreatedAt());
+        target.setUpdatedAt(source.getUpdatedAt());
     }
 
     public void saveUpdate() {
         try {
-            if (uploadedFileBytes != null) {
-                String uploadBaseDir = resolveUploadDir();
-                documentService.replaceDocumentFile(
-                        editDto.getPhDocument(),
-                        new ByteArrayInputStream(uploadedFileBytes),
-                        uploadedFileName,
-                        uploadBaseDir);
-            }
-
             if (selectedStudentId != null) {
-                editDto.setStudentId(selectedStudentId);
+                editDto.setStudentPk(selectedStudentId);
             }
-
-            documentService.update(editDto);
-
-            uploadedFileBytes = null;
-            uploadedFileName = null;
+            documentService.update(editDto, uploadedFile);
             editDto = new DocumentDTO();
-            selectedId = null;
             selectedStudentId = null;
-            init();
-
+            uploadedFile = null;
             addMessage(FacesMessage.SEVERITY_INFO, "Documento", "Documento atualizado com sucesso");
-
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Erro ao atualizar ficheiro do documento", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Documento", "Erro ao atualizar o ficheiro: " + e.getMessage());
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erro ao atualizar documento", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Documento", e.getMessage());
         }
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // ELIMINAÇÃO — visível e permitida apenas para ADMIN
+    // ─────────────────────────────────────────────────────────────
+
     public void prepareDelete(Long id) {
-        if (id == null) {
-            addMessage(FacesMessage.SEVERITY_WARN, "Nenhum documento selecionado!", "");
+        if (!sessionBean.isAdmin()) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Acesso negado",
+                    "Apenas o utilizador ADMIN pode eliminar documentos.");
             return;
         }
         this.selectedId = id;
-        try {
-            Document document = documentService.getById(id);
-            this.editDto = DocumentDTO.fromEntity(document);
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Erro ao carregar documento para eliminação", e);
-            addMessage(FacesMessage.SEVERITY_WARN, "Documento não encontrado", "");
-        }
     }
 
     public void delete() {
+        if (!sessionBean.isAdmin()) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Acesso negado",
+                    "Apenas o utilizador ADMIN pode eliminar documentos.");
+            return;
+        }
         if (selectedId == null) {
             addMessage(FacesMessage.SEVERITY_WARN, "Nenhum documento selecionado!", "");
             return;
         }
         try {
-            documentService.delete(selectedId, resolveUploadDir());
+            // ADMIN pode forçar a eliminação mesmo que o documento esteja
+            // relacionado com outros registos (ver DocumentService#delete).
+            documentService.delete(selectedId, true);
             selectedId = null;
-            init();
             addMessage(FacesMessage.SEVERITY_INFO, "Documento", "Documento eliminado com sucesso");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erro ao eliminar documento", e);
@@ -332,80 +336,54 @@ public class DocumentController implements Serializable {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // DOWNLOAD
+    // DOWNLOAD (acionado via commandButton ajax="false" + f:param documentId)
     // ─────────────────────────────────────────────────────────────
 
     public void downloadDocumento() {
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        ExternalContext externalContext = facesContext.getExternalContext();
+        String idParam = FacesContext.getCurrentInstance()
+                .getExternalContext()
+                .getRequestParameterMap()
+                .get("documentId");
+
+        if (idParam == null || idParam.isBlank()) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Documento", "Nenhum documento indicado para download.");
+            return;
+        }
 
         try {
-            String idParam = externalContext.getRequestParameterMap().get("documentId");
-            if (idParam == null || idParam.isBlank()) {
-                addMessage(FacesMessage.SEVERITY_ERROR, "Documento", "Documento não especificado.");
-                return;
-            }
-            Long documentId = Long.valueOf(idParam);
+            Long id = Long.valueOf(idParam);
+            DownloadedFile file = documentService.downloadDocument(id);
 
-            Document document = documentService.getById(documentId);
-            String uploadBaseDir = resolveUploadDir();
-
-            byte[] fileBytes = documentService.downloadDocumentFile(documentId, uploadBaseDir);
-
-            String encodedFileName = URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8)
-                    .replace("+", "%20");
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
 
             externalContext.responseReset();
-            externalContext.setResponseContentType(guessContentType(document.getFileName()));
-            externalContext.setResponseContentLength(fileBytes.length);
-            externalContext.setResponseHeader(
-                    "Content-Disposition",
-                    "attachment; filename=\"" + document.getFileName() + "\"; filename*=UTF-8''" + encodedFileName);
+            externalContext.setResponseContentType(file.getContentType());
+            externalContext.setResponseContentLength(file.getContent().length);
 
-            try (OutputStream output = externalContext.getResponseOutputStream()) {
-                output.write(fileBytes);
-                output.flush();
+            String encodedFileName = URLEncoder.encode(file.getFileName(), StandardCharsets.UTF_8)
+                    .replace("+", "%20");
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"" + file.getFileName() + "\"; filename*=UTF-8''" + encodedFileName);
+
+            HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+            try (ServletOutputStream out = response.getOutputStream()) {
+                out.write(file.getContent());
+                out.flush();
             }
 
             facesContext.responseComplete();
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Erro ao descarregar documento", e);
-            addMessage(FacesMessage.SEVERITY_ERROR, "Documento", "Erro ao descarregar: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Erro ao efetuar download do documento", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Documento",
+                    "Não foi possível efetuar o download: " + e.getMessage());
         }
     }
 
     // ─────────────────────────────────────────────────────────────
     // UTIL
     // ─────────────────────────────────────────────────────────────
-
-    private String resolveUploadDir() {
-        String realPath = FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getRealPath(UPLOAD_RELATIVE_PATH);
-
-        if (realPath == null) {
-            realPath = System.getProperty("java.io.tmpdir") + UPLOAD_RELATIVE_PATH;
-        }
-        return realPath;
-    }
-
-    private String guessContentType(String fileName) {
-        String lower = fileName.toLowerCase();
-        if (lower.endsWith(".pdf")) return "application/pdf";
-        if (lower.endsWith(".png")) return "image/png";
-        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
-        if (lower.endsWith(".doc")) return "application/msword";
-        if (lower.endsWith(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        return "application/octet-stream";
-    }
-
-    private void resetCreateForm() {
-        this.novoDocumento = new Document();
-        this.uploadedFileBytes = null;
-        this.uploadedFileName = null;
-        this.selectedStudentId = null;
-    }
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
@@ -415,54 +393,99 @@ public class DocumentController implements Serializable {
     // GETTERS E SETTERS
     // ─────────────────────────────────────────────────────────────
 
-    public Document getNovoDocumento() { return novoDocumento; }
-    public void setNovoDocumento(Document novoDocumento) { this.novoDocumento = novoDocumento; }
-
-    public DocumentDTO getEditDto() { return editDto; }
-    public void setEditDto(DocumentDTO editDto) { this.editDto = editDto; }
-
-    public Long getSelectedId() { return selectedId; }
-    public void setSelectedId(Long selectedId) { this.selectedId = selectedId; }
-
-    public Long getSelectedStudentId() { return selectedStudentId; }
-    public void setSelectedStudentId(Long selectedStudentId) { this.selectedStudentId = selectedStudentId; }
-
-    public void setLazyModel(DocumentLazyModel lazyModel) { this.lazyModel = lazyModel; }
-
-    public long getTotalDocumentCount() { return totalDocumentCount; }
-    public long getExpiringSoonCount() { return expiringSoonCount; }
-    public long getExpiredCount() { return expiredCount; }
-    public long getDistinctStudentsCount() { return distinctStudentsCount; }
-
-    public String expiryStatus(LocalDate expiryDate) {
-        if (expiryDate == null) return "none";
-        LocalDate today = LocalDate.now();
-        if (expiryDate.isBefore(today)) return "expired";
-        if (!expiryDate.isAfter(today.plusDays(30))) return "soon";
-        return "ok";
+    public DocumentDTO getNovoDocumento() {
+        return novoDocumento;
     }
 
-    public DocumentType[] getTiposDocumento() { return DocumentType.values(); }
-    public List<StudentDTO> getStudents() { return students; }
+    public void setNovoDocumento(DocumentDTO novoDocumento) {
+        this.novoDocumento = novoDocumento;
+    }
 
-    public void refreshStudents() { loadStudents(); }
+    public DocumentDTO getEditDto() {
+        return editDto;
+    }
 
-    public List<DocumentDTO> getDocuments() { return documentService.getAllDocuments(); }
+    public void setEditDto(DocumentDTO editDto) {
+        this.editDto = editDto;
+    }
 
-    // ─── FILTROS GETTERS / SETTERS ───
+    public Long getSelectedId() {
+        return selectedId;
+    }
 
-    public DocumentType getFilterDocumentType() { return filterDocumentType; }
-    public void setFilterDocumentType(DocumentType filterDocumentType) { this.filterDocumentType = filterDocumentType; }
+    public void setSelectedId(Long selectedId) {
+        this.selectedId = selectedId;
+    }
 
-    public String getFilterExpiryStatus() { return filterExpiryStatus; }
-    public void setFilterExpiryStatus(String filterExpiryStatus) { this.filterExpiryStatus = filterExpiryStatus; }
+    public Long getSelectedStudentId() {
+        return selectedStudentId;
+    }
 
-    public LocalDate getFilterIssueStartDate() { return filterIssueStartDate; }
-    public void setFilterIssueStartDate(LocalDate filterIssueStartDate) { this.filterIssueStartDate = filterIssueStartDate; }
+    public void setSelectedStudentId(Long selectedStudentId) {
+        this.selectedStudentId = selectedStudentId;
+    }
 
-    public LocalDate getFilterIssueEndDate() { return filterIssueEndDate; }
-    public void setFilterIssueEndDate(LocalDate filterIssueEndDate) { this.filterIssueEndDate = filterIssueEndDate; }
+    public UploadedFile getUploadedFile() {
+        return uploadedFile;
+    }
 
-    public String getFilterStudentName() { return filterStudentName; }
-    public void setFilterStudentName(String filterStudentName) { this.filterStudentName = filterStudentName; }
+    public void setUploadedFile(UploadedFile uploadedFile) {
+        this.uploadedFile = uploadedFile;
+    }
+
+    public void setLazyModel(DocumentLazyModel lazyModel) {
+        this.lazyModel = lazyModel;
+    }
+
+    public DocumentType getFilterDocumentType() {
+        return filterDocumentType;
+    }
+
+    public void setFilterDocumentType(DocumentType filterDocumentType) {
+        this.filterDocumentType = filterDocumentType;
+    }
+
+    public String getFilterExpiryStatus() {
+        return filterExpiryStatus;
+    }
+
+    public void setFilterExpiryStatus(String filterExpiryStatus) {
+        this.filterExpiryStatus = filterExpiryStatus;
+    }
+
+    public LocalDate getFilterIssueStartDate() {
+        return filterIssueStartDate;
+    }
+
+    public void setFilterIssueStartDate(LocalDate filterIssueStartDate) {
+        this.filterIssueStartDate = filterIssueStartDate;
+    }
+
+    public LocalDate getFilterIssueEndDate() {
+        return filterIssueEndDate;
+    }
+
+    public void setFilterIssueEndDate(LocalDate filterIssueEndDate) {
+        this.filterIssueEndDate = filterIssueEndDate;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // ENUMS E LISTAS PARA DROPDOWNS
+    // ─────────────────────────────────────────────────────────────
+
+    public DocumentType[] getTiposDocumento() {
+        return DocumentType.values();
+    }
+
+    public List<StudentDTO> getStudents() {
+        return students;
+    }
+
+    public void refreshStudents() {
+        loadStudents();
+    }
+
+    public List<DocumentDTO> getDocuments() {
+        return documentService.getAllDocuments();
+    }
 }

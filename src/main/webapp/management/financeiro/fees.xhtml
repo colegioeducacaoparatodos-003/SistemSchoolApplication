@@ -324,11 +324,7 @@
                         <p:datePicker value="#{feeController.filterEndDate}" placeholder="#{msg.endDate}" pattern="dd/MM/yyyy" showIcon="true" locale="pt">
                             <p:ajax event="dateSelect" listener="#{feeController.applyFilters}" update="dtFees messages" process="@this" />
                         </p:datePicker>
-
-                        <p:inputText value="#{feeController.filterSearchText}" placeholder="#{msg.searchFee}..." style="min-width:200px;">
-                            <p:ajax event="keyup" delay="400" listener="#{feeController.applyFilters}" update="dtFees messages" process="@this" />
-                        </p:inputText>
-
+                        
                         <p:commandButton icon="pi pi-filter" value="#{msg.apply}" action="#{feeController.applyFilters}" update="dtFees messages" styleClass="ui-button-primary" />
                         <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}" action="#{feeController.clearFilters}" update="@form" styleClass="ui-button-outlined ui-button-secondary" />
                     </div>

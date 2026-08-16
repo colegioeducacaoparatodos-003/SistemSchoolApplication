@@ -440,7 +440,9 @@
                                     onstart="showScLoading()"
                                     oncomplete="hideScLoading(); PF('editDocumentDialog').show()" />
 
+                                <!-- Eliminar: visível apenas para o utilizador ADMIN -->
                                 <p:commandButton styleClass="doc-act delete" icon="pi pi-trash" title="#{msg.delete}"
+                                    rendered="#{sessionBean.admin}"
                                     action="#{documentController.prepareDelete(document.phDocument)}"
                                     process="@this"
                                     update=":deleteForm"
@@ -540,7 +542,9 @@
                     <div class="doc-dialog-footer">
                         <p:commandButton value="#{msg.cancel}" type="button" onclick="hideScLoading(); PF('deleteDocumentDialog').hide()"
                             styleClass="ui-button-outlined ui-button-secondary" />
+                        <!-- Confirmação de eliminação: também restrita ao ADMIN por defesa em profundidade -->
                         <p:commandButton value="#{msg.yesDelete}" icon="pi pi-trash" styleClass="ui-button-danger"
+                            rendered="#{sessionBean.admin}"
                             action="#{documentController.delete}" process="@this"
                             onstart="showScLoading()"
                             oncomplete="hideScLoading(); PF('deleteDocumentDialog').hide()"

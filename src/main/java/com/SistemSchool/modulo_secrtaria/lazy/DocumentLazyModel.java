@@ -1,30 +1,29 @@
 package com.SistemSchool.modulo_secrtaria.lazy;
 
+import com.SistemSchool.modulo_secrtaria.controller.DocumentController;
 import com.SistemSchool.modulo_secrtaria.dto.DocumentDTO;
-import com.SistemSchool.modulo_secrtaria.service.DocumentService;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortMeta;
 import org.primefaces.model.FilterMeta;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Lê o critério de filtro ativo diretamente do {@link DocumentController}
+ * (toolbar de filtros da view) a cada chamada de load()/count(), em vez de
+ * depender dos filtros nativos de coluna do p:dataTable.
+ */
 public class DocumentLazyModel extends LazyDataModel<DocumentDTO> {
 
     private static final long serialVersionUID = 1L;
 
-    private final DocumentService documentService;
-    private Map<String, Object> externalFilters = new HashMap<>();
+    private final DocumentController controller;
 
-    public DocumentLazyModel(DocumentService documentService) {
-        this.documentService = documentService;
-    }
-
-    public void setFilters(Map<String, Object> filters) {
-        this.externalFilters = filters != null ? filters : new HashMap<>();
+    public DocumentLazyModel(DocumentController controller) {
+        this.controller = controller;
     }
 
     @Override
@@ -42,17 +41,8 @@ public class DocumentLazyModel extends LazyDataModel<DocumentDTO> {
             sort = Sort.by(direction, sortMeta.getField());
         }
 
-        Map<String, Object> mergedFilters = new HashMap<>(externalFilters);
-        if (filterBy != null) {
-            for (FilterMeta meta : filterBy.values()) {
-                Object value = meta.getFilterValue();
-                if (value != null && !value.toString().isBlank()) {
-                    mergedFilters.put(meta.getField(), value);
-                }
-            }
-        }
-
-        Page<DocumentDTO> result = documentService.findLazy(page, pageSize, sort, mergedFilters);
+        Page<DocumentDTO> result = controller.getDocumentService()
+                .findLazy(page, pageSize, sort, controller.buildFilterCriteria());
 
         setRowCount((int) result.getTotalElements());
 
@@ -61,22 +51,14 @@ public class DocumentLazyModel extends LazyDataModel<DocumentDTO> {
 
     @Override
     public int count(Map<String, FilterMeta> filterBy) {
-        Map<String, Object> mergedFilters = new HashMap<>(externalFilters);
-        if (filterBy != null) {
-            for (FilterMeta meta : filterBy.values()) {
-                Object value = meta.getFilterValue();
-                if (value != null && !value.toString().isBlank()) {
-                    mergedFilters.put(meta.getField(), value);
-                }
-            }
-        }
-        Page<DocumentDTO> page = documentService.findLazy(0, 1, Sort.unsorted(), mergedFilters);
+        Page<DocumentDTO> page = controller.getDocumentService()
+                .findLazy(0, 1, Sort.unsorted(), controller.buildFilterCriteria());
         return (int) page.getTotalElements();
     }
 
     @Override
     public DocumentDTO getRowData(String rowKey) {
-        return documentService.getAllDocuments()
+        return controller.getDocumentService().getAllDocuments()
                 .stream()
                 .filter(d -> d.getPhDocument().toString().equals(rowKey))
                 .findFirst()

@@ -22,11 +22,12 @@
                     <p:inputText id="studentEdit" value="#{documentController.editDto.studentName}" readonly="true"
                         styleClass="sc-readonly-field sc-input" style="background:#f3f4f6;" />
 
-                    <p:outputLabel for="documentNumberEdit" value="#{msg.documentNumber}" styleClass="sc-label req" />
+                    <!-- documentNumber não é editável — gerado uma única vez na criação -->
+                    <p:outputLabel for="documentNumberEdit" value="#{msg.documentNumber}" styleClass="sc-label" />
                     <h:panelGroup>
                         <p:inputText id="documentNumberEdit" value="#{documentController.editDto.documentNumber}"
-                            required="true" requiredMessage="#{msg.documentNumberRequired}" placeholder="#{msg.documentNumberPlaceholder}" styleClass="sc-input" />
-                        <p:message for="documentNumberEdit" display="text" styleClass="sc-field-msg" />
+                            disabled="true" placeholder="DOC-Ano-Sequência" styleClass="sc-input" />
+                        <span class="sc-hint">Número gerado automaticamente na criação</span>
                     </h:panelGroup>
 
                     <p:outputLabel for="documentTypeEdit" value="#{msg.documentType}" styleClass="sc-label req" />
@@ -121,6 +122,9 @@
                 display: block; margin-top: 4px; font-size: 12px; color: #dc2626;
             }
             .sc-input { width: 100%; }
+            .sc-hint {
+                display: block; margin-top: 4px; font-size: 12px; color: #888;
+            }
             .sc-readonly-field { opacity: .8; cursor: not-allowed; }
             .sc-fullwidth-field { margin-top: 1.2rem; }
             .sc-counter {

@@ -13,9 +13,9 @@ public interface DocumentTableProjection {
 
     String getFilePath();
 
-    Long getStudentId();
+    Long getStudentPk();
 
-    String getStudentName();
+    String getStudentFullName();
 
     String getDocumentType();
 
