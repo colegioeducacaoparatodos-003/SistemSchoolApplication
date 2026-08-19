@@ -40,21 +40,28 @@ public class PdfGeneratorService {
     private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     // ─────────────────────────────────────────────────────────────
-    // IDENTIDADE DO COLÉGIO / LAYOUT DA FATURA
+    // IDENTIDADE DO COLÉGIO / LAYOUT DO RECIBO
     // ─────────────────────────────────────────────────────────────
 
-    private static final String SCHOOL_NAME = "EDUCAÇÃO PARA TODOS";
+    private static final String SCHOOL_NAME = "COMPLEXO ESCOLAR PRIVADO EDUCAÇÃO PARA TODOS";
     private static final String SCHOOL_PHONES = "924 259 557 / 953 087 821";
-    private static final String LOGO_PATH = "/resources/imgs/logo.png";
+    private static final String LOGO_PATH = "/resources/imgs/logo.jpg";
 
     private static final float HEADER_HEIGHT = 120f;
     private static final float FOOTER_HEIGHT = 46f;
 
-    private static final Color HEADER_NAVY = new Color(18, 28, 58);
+    // Paleta do cabeçalho: vinho -> vermelho -> dourado -> preto (gradiente)
+    private static final Color GRAD_WINE = new Color(78, 17, 32);
+    private static final Color GRAD_RED = new Color(150, 30, 34);
+    private static final Color GRAD_GOLD = new Color(198, 140, 40);
+    private static final Color GRAD_BLACK = new Color(24, 20, 18);
+
+    // Cor escura usada nos textos/acentos do corpo do documento
+    private static final Color HEADER_NAVY = new Color(58, 22, 26);
     private static final Color ACCENT_GOLD = new Color(214, 153, 45);
 
-    private static final Font FATURA_TITLE_FONT = new Font(Font.HELVETICA, 24, Font.BOLD, Color.WHITE);
-    private static final Font FATURA_NUMBER_FONT = new Font(Font.HELVETICA, 11, Font.BOLD, ACCENT_GOLD);
+    private static final Font FATURA_TITLE_FONT = new Font(Font.HELVETICA, 17, Font.BOLD, Color.WHITE);
+    private static final Font FATURA_NUMBER_FONT = new Font(Font.HELVETICA, 11, Font.BOLD, new Color(255, 232, 200));
     private static final Font FATURA_CLIENT_FONT = new Font(Font.HELVETICA, 12, Font.BOLD, HEADER_NAVY);
     private static final Font FATURA_CLIENT_SUB_FONT = new Font(Font.HELVETICA, 9, Font.NORMAL, Color.DARK_GRAY);
     private static final Font FATURA_TABLE_HEADER_FONT = new Font(Font.HELVETICA, 9, Font.BOLD, HEADER_NAVY);
@@ -63,7 +70,7 @@ public class PdfGeneratorService {
     private static final Font FATURA_TOTAL_VALUE_FONT = new Font(Font.HELVETICA, 13, Font.BOLD, HEADER_NAVY);
     private static final Font FATURA_DETAIL_LABEL_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, Color.DARK_GRAY);
     private static final Font FATURA_DETAIL_VALUE_FONT = new Font(Font.HELVETICA, 8, Font.NORMAL, Color.BLACK);
-    private static final Font FATURA_FOOTER_TITLE_FONT = new Font(Font.HELVETICA, 10, Font.BOLD, Color.WHITE);
+    private static final Font FATURA_FOOTER_TITLE_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, Color.WHITE);
     private static final Font FATURA_FOOTER_SUB_FONT = new Font(Font.HELVETICA, 8, Font.NORMAL, Color.WHITE);
 
     // Fontes usadas apenas no relatório de lista
@@ -77,7 +84,7 @@ public class PdfGeneratorService {
     private static final Color ROW_ALT_BG = new Color(245, 245, 245);
 
     // ─────────────────────────────────────────────────────────────
-    // PAGAMENTO — comprovativo individual (estilo "fatura")
+    // PAGAMENTO — comprovativo individual (estilo "recibo")
     // ─────────────────────────────────────────────────────────────
 
     public byte[] generatePagamentoPdf(Pagamento pagamento) {
@@ -130,19 +137,16 @@ public class PdfGeneratorService {
     private void drawFaturaHeader(PdfContentByte cb, Rectangle pageSize, String numeroDocumento) {
         float pageWidth = pageSize.getWidth();
         float pageHeight = pageSize.getHeight();
+        float headerY = pageHeight - HEADER_HEIGHT;
 
-        cb.saveState();
-        cb.setColorFill(HEADER_NAVY);
-        cb.rectangle(0, pageHeight - HEADER_HEIGHT, pageWidth, HEADER_HEIGHT);
-        cb.fill();
-        cb.restoreState();
+        drawHeaderGradient(cb, 0, headerY, pageWidth, HEADER_HEIGHT);
 
         ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
-                new Phrase("FATURA", FATURA_TITLE_FONT), 36, pageHeight - 50, 0);
+                new Phrase("RECIBO DE PAGAMENTO", FATURA_TITLE_FONT), 36, pageHeight - 48, 0);
 
         ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
                 new Phrase(numeroDocumento != null ? numeroDocumento : "-", FATURA_NUMBER_FONT),
-                36, pageHeight - 72, 0);
+                36, pageHeight - 68, 0);
 
         try {
             Image logo = loadLogo();
@@ -156,8 +160,46 @@ public class PdfGeneratorService {
                 cb.addImage(logo);
             }
         } catch (Exception e) {
-            // Se o logotipo não puder ser carregado, a fatura é gerada sem ele
+            // Se o logotipo não puder ser carregado, o recibo é gerado sem ele
         }
+    }
+
+    /**
+     * Preenche a área do cabeçalho com um gradiente horizontal composto por
+     * vinho -> vermelho -> dourado -> preto, criado através de faixas
+     * verticais com cor interpolada (o OpenPDF não oferece um gradiente
+     * multi-stop nativo simples de configurar).
+     */
+    private void drawHeaderGradient(PdfContentByte cb, float x, float y, float width, float height) {
+        Color[] stops = { GRAD_WINE, GRAD_RED, GRAD_GOLD, GRAD_BLACK };
+        int steps = 90;
+        float stepWidth = width / steps;
+
+        cb.saveState();
+        for (int i = 0; i < steps; i++) {
+            float t = (float) i / (steps - 1);
+            Color color = multiColorLerp(stops, t);
+            cb.setColorFill(color);
+            cb.rectangle(x + (i * stepWidth), y, stepWidth + 1f, height);
+            cb.fill();
+        }
+        cb.restoreState();
+    }
+
+    private Color multiColorLerp(Color[] colors, float t) {
+        int n = colors.length - 1;
+        float scaled = Math.max(0f, Math.min(1f, t)) * n;
+        int idx = (int) Math.floor(scaled);
+        if (idx >= n) {
+            idx = n - 1;
+        }
+        float localT = scaled - idx;
+        Color c1 = colors[idx];
+        Color c2 = colors[idx + 1];
+        int r = Math.round(c1.getRed() + (c2.getRed() - c1.getRed()) * localT);
+        int g = Math.round(c1.getGreen() + (c2.getGreen() - c1.getGreen()) * localT);
+        int b = Math.round(c1.getBlue() + (c2.getBlue() - c1.getBlue()) * localT);
+        return new Color(r, g, b);
     }
 
     private void drawFaturaFooter(PdfContentByte cb, Rectangle pageSize) {
@@ -169,11 +211,29 @@ public class PdfGeneratorService {
         cb.fill();
         cb.restoreState();
 
-        ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
-                new Phrase(SCHOOL_NAME, FATURA_FOOTER_TITLE_FONT), pageWidth / 2, 27, 0);
+        float logoX = 10f;
+        float logoMaxSize = FOOTER_HEIGHT - 12f;
+        float textStartX = logoX;
 
-        ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
-                new Phrase(SCHOOL_PHONES, FATURA_FOOTER_SUB_FONT), pageWidth / 2, 14, 0);
+        try {
+            Image logo = loadLogo();
+            if (logo != null) {
+                logo.scaleToFit(logoMaxSize, logoMaxSize);
+                float y = (FOOTER_HEIGHT - logo.getScaledHeight()) / 2f;
+                logo.setAbsolutePosition(logoX, y);
+                cb.addImage(logo);
+                textStartX = logoX + logo.getScaledWidth() + 8f;
+            }
+        } catch (Exception e) {
+            // Se o logotipo não puder ser carregado, o texto ocupa o espaço todo
+        }
+
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
+                new Phrase(SCHOOL_NAME, FATURA_FOOTER_TITLE_FONT), textStartX, FOOTER_HEIGHT / 2f + 2, 0);
+
+        ColumnText.showTextAligned(cb, Element.ALIGN_RIGHT,
+                new Phrase("Contacto: " + SCHOOL_PHONES, FATURA_FOOTER_SUB_FONT),
+                pageWidth - 10, FOOTER_HEIGHT / 2f - 8, 0);
     }
 
     private Image loadLogo() {
@@ -218,15 +278,20 @@ public class PdfGeneratorService {
                 formatMoeda(pagamento.getValor()), formatMoeda(pagamento.getValor()));
 
         if (pagamento.getMulta() != null && pagamento.getMulta().signum() > 0) {
-            addFaturaRow(table, "Multa por atraso", "01",
+            addFaturaRow(table, "Multa Por Atraso", "01",
                     formatMoeda(pagamento.getMulta()), formatMoeda(pagamento.getMulta()));
         }
 
         return table;
     }
 
+    /**
+     * Mostra apenas o tipo digitado (ex.: "Propina" ou "Matrícula"), sem
+     * prefixo fixo — deixa de forçar "Propina - X" para os casos em que X
+     * já é o próprio tipo de pagamento.
+     */
     private String describeMesReferencia(MesReferencia mes) {
-        return mes != null ? "Propina - " + mes.toString() : "Propina";
+        return mes != null ? mes.toString() : "Pagamento";
     }
 
     private void addFaturaRow(PdfPTable table, String descricao, String qtd, String preco, String taxa) {
