@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -63,6 +64,35 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
                      FROM Grade g
                      """)
        List<GradeDTO> findAllGradesDTO();
+
+       // -------------------------------
+       // Cálculo de médias (Boletim / Pauta)
+       // -------------------------------
+
+       @Query("""
+                     SELECT SUM(g.value * g.evaluation.weight) / SUM(g.evaluation.weight)
+                     FROM Grade g
+                     WHERE g.student.pkStudent = :studentPk
+                       AND g.evaluation.discipline.pkDiscipline = :disciplinePk
+                       AND g.evaluation.trimester = :trimester
+                       AND g.value IS NOT NULL
+                     """)
+       Double calcularMediaFinal(@Param("studentPk") Long studentPk,
+                     @Param("disciplinePk") Long disciplinePk,
+                     @Param("trimester") Integer trimester);
+
+       @Query("""
+                     SELECT g.student.pkStudent, SUM(g.value * g.evaluation.weight) / SUM(g.evaluation.weight)
+                     FROM Grade g
+                     WHERE g.evaluation.discipline.pkDiscipline = :disciplinePk
+                       AND g.evaluation.trimester = :trimester
+                       AND g.enrolment.schoolClass.pkSchoolClass = :schoolClassPk
+                       AND g.value IS NOT NULL
+                     GROUP BY g.student.pkStudent
+                     """)
+       List<Object[]> calcularMediasDaTurma(@Param("schoolClassPk") Long schoolClassPk,
+                     @Param("disciplinePk") Long disciplinePk,
+                     @Param("trimester") Integer trimester);
 
        // -------------------------------
        // Queries utilitárias

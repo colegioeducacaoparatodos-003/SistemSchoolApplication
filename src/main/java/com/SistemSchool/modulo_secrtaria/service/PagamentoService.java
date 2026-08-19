@@ -55,12 +55,12 @@ public class PagamentoService {
     private final PdfGeneratorService pdfGeneratorService;
 
     public PagamentoService(PagamentoRepository repository,
-                            EnrolmentRepository enrolmentRepository,
-                            FeeRepository feeRepository,
-                            CashBoxRepository cashBoxRepository,
-                            CashBoxService cashBoxService,
-                            FinancialMovementService financialMovementService,
-                            PdfGeneratorService pdfGeneratorService) {
+            EnrolmentRepository enrolmentRepository,
+            FeeRepository feeRepository,
+            CashBoxRepository cashBoxRepository,
+            CashBoxService cashBoxService,
+            FinancialMovementService financialMovementService,
+            PdfGeneratorService pdfGeneratorService) {
         this.repository = repository;
         this.enrolmentRepository = enrolmentRepository;
         this.feeRepository = feeRepository;
@@ -102,11 +102,13 @@ public class PagamentoService {
         }
 
         if (pagamento.getEstado() == EstadoPagamento.PAGO) {
-            validarPagamentoDuplicado(enrolment.getPhEnrolment(), pagamento.getMesReferencia(), pagamento.getPkPagamento());
+            validarPagamentoDuplicado(enrolment.getPhEnrolment(), pagamento.getMesReferencia(),
+                    pagamento.getPkPagamento());
         }
 
         LocalDateTime dataPagamento = pagamento.getDataPagamento() != null
-                ? pagamento.getDataPagamento() : LocalDateTime.now();
+                ? pagamento.getDataPagamento()
+                : LocalDateTime.now();
         pagamento.setDataPagamento(dataPagamento);
         BigDecimal multa = calcularMulta(pagamento.getMesReferencia(), dataPagamento);
         pagamento.setMulta(multa);
@@ -155,7 +157,8 @@ public class PagamentoService {
         }
 
         if (dto.getEstado() == EstadoPagamento.PAGO) {
-            validarPagamentoDuplicado(pagamento.getEnrolment().getPhEnrolment(), dto.getMesReferencia(), pagamento.getPkPagamento());
+            validarPagamentoDuplicado(pagamento.getEnrolment().getPhEnrolment(), dto.getMesReferencia(),
+                    pagamento.getPkPagamento());
         }
 
         pagamento.setValor(dto.getValor());
@@ -167,7 +170,8 @@ public class PagamentoService {
         pagamento.setObservacao(dto.getObservacao());
 
         LocalDateTime dataPagamento = pagamento.getDataPagamento() != null
-                ? pagamento.getDataPagamento() : LocalDateTime.now();
+                ? pagamento.getDataPagamento()
+                : LocalDateTime.now();
         pagamento.setDataPagamento(dataPagamento);
         BigDecimal multa = calcularMulta(pagamento.getMesReferencia(), dataPagamento);
         pagamento.setMulta(multa);
@@ -182,7 +186,8 @@ public class PagamentoService {
                 .orElseThrow(() -> new RuntimeException("Pagamento não encontrado com id: " + id));
         repository.deleteById(id);
 
-        if (pagamento.getEstado() == EstadoPagamento.PAGO && pagamento.getCashBox() != null && pagamento.getTotal() != null) {
+        if (pagamento.getEstado() == EstadoPagamento.PAGO && pagamento.getCashBox() != null
+                && pagamento.getTotal() != null) {
             try {
                 cashBoxService.debitarValor(pagamento.getCashBox().getPhCashBox(), pagamento.getTotal());
             } catch (Exception e) {
@@ -196,10 +201,12 @@ public class PagamentoService {
     // ─────────────────────────────────────────────────────────────
 
     private void validarPagamentoDuplicado(Long enrolmentPk, MesReferencia mesReferencia, Long excludeId) {
-        if (mesReferencia == null) return;
+        if (mesReferencia == null)
+            return;
         boolean existePorMes = repository.existsPagamentoPagoByEnrolmentAndMes(enrolmentPk, mesReferencia, excludeId);
         if (existePorMes) {
-            throw new RuntimeException("Já existe um pagamento confirmado para " + mesReferencia + " referente a esta matrícula.");
+            throw new RuntimeException(
+                    "Já existe um pagamento confirmado para " + mesReferencia + " referente a esta matrícula.");
         }
     }
 
@@ -212,7 +219,7 @@ public class PagamentoService {
     }
 
     private BigDecimal calcularMulta(MesReferencia mesReferencia, LocalDateTime dataPagamento) {
-        if (mesReferencia == null || dataPagamento == null) {
+        if (mesReferencia == null || dataPagamento == null || !mesReferencia.isMensalidade()) {
             return BigDecimal.ZERO;
         }
         LocalDateTime dataLimite = calcularDataLimite(mesReferencia, dataPagamento);
@@ -232,19 +239,33 @@ public class PagamentoService {
 
     private int mesNumero(MesReferencia mes) {
         switch (mes.name()) {
-            case "JANEIRO": return 1;
-            case "FEVEREIRO": return 2;
-            case "MARCO": case "MARÇO": return 3;
-            case "ABRIL": return 4;
-            case "MAIO": return 5;
-            case "JUNHO": return 6;
-            case "JULHO": return 7;
-            case "AGOSTO": return 8;
-            case "SETEMBRO": return 9;
-            case "OUTUBRO": return 10;
-            case "NOVEMBRO": return 11;
-            case "DEZEMBRO": return 12;
-            default: return mes.ordinal() + 1;
+            case "JANEIRO":
+                return 1;
+            case "FEVEREIRO":
+                return 2;
+            case "MARCO":
+            case "MARÇO":
+                return 3;
+            case "ABRIL":
+                return 4;
+            case "MAIO":
+                return 5;
+            case "JUNHO":
+                return 6;
+            case "JULHO":
+                return 7;
+            case "AGOSTO":
+                return 8;
+            case "SETEMBRO":
+                return 9;
+            case "OUTUBRO":
+                return 10;
+            case "NOVEMBRO":
+                return 11;
+            case "DEZEMBRO":
+                return 12;
+            default:
+                return mes.ordinal() + 1;
         }
     }
 
@@ -263,7 +284,8 @@ public class PagamentoService {
             cashBoxService.creditarValor(pagamento.getCashBox().getPhCashBox(), pagamento.getTotal());
             registrarMovimentoFinanceiro(pagamento, operador);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Erro ao atualizar o saldo do caixa para o pagamento " + pagamento.getPkPagamento(), e);
+            LOGGER.log(Level.SEVERE,
+                    "Erro ao atualizar o saldo do caixa para o pagamento " + pagamento.getPkPagamento(), e);
             throw new RuntimeException("Erro ao atualizar o saldo do caixa: " + e.getMessage(), e);
         }
     }
@@ -272,7 +294,8 @@ public class PagamentoService {
         FinancialMovement movement = new FinancialMovement();
         movement.setMovementNumber(generateMovementNumber());
         movement.setCashBox(pagamento.getCashBox());
-        movement.setDescription("Pagamento " + pagamento.getNumeroDocumento() + " - matrícula " + pagamento.getEnrolment().getEnrolmentNumer());
+        movement.setDescription("Pagamento " + pagamento.getNumeroDocumento() + " - matrícula "
+                + pagamento.getEnrolment().getEnrolmentNumer());
         movement.setAmount(pagamento.getTotal());
         movement.setType(MovementType.INCOME);
         movement.setStatus(MovementStatus.ACTIVE);
@@ -283,7 +306,7 @@ public class PagamentoService {
     }
 
     private void reconciliarSaldoCaixa(EstadoPagamento estadoAnterior, BigDecimal totalAnterior,
-                                       CashBox cashBoxAnterior, Pagamento pagamentoAtual) {
+            CashBox cashBoxAnterior, Pagamento pagamentoAtual) {
         boolean eraPago = estadoAnterior == EstadoPagamento.PAGO;
         boolean ePago = pagamentoAtual.getEstado() == EstadoPagamento.PAGO;
 
@@ -300,11 +323,14 @@ public class PagamentoService {
             }
             if (eraPago && ePago) {
                 Long caixaAntigoId = cashBoxAnterior != null ? cashBoxAnterior.getPhCashBox() : null;
-                Long caixaNovoId = pagamentoAtual.getCashBox() != null ? pagamentoAtual.getCashBox().getPhCashBox() : null;
+                Long caixaNovoId = pagamentoAtual.getCashBox() != null ? pagamentoAtual.getCashBox().getPhCashBox()
+                        : null;
 
                 if (caixaAntigoId != null && !caixaAntigoId.equals(caixaNovoId)) {
-                    if (totalAnterior != null) cashBoxService.debitarValor(caixaAntigoId, totalAnterior);
-                    if (caixaNovoId != null && pagamentoAtual.getTotal() != null) cashBoxService.creditarValor(caixaNovoId, pagamentoAtual.getTotal());
+                    if (totalAnterior != null)
+                        cashBoxService.debitarValor(caixaAntigoId, totalAnterior);
+                    if (caixaNovoId != null && pagamentoAtual.getTotal() != null)
+                        cashBoxService.creditarValor(caixaNovoId, pagamentoAtual.getTotal());
                     return;
                 }
                 if (caixaNovoId != null) {
@@ -333,13 +359,18 @@ public class PagamentoService {
     // ─────────────────────────────────────────────────────────────
 
     public Pagamento confirmarPagamento(Long enrolmentPk, Long feePk, BigDecimal valor,
-                                        FormaPagamento formaPagamento, MesReferencia mesReferencia,
-                                        String referencia, String observacao, String operador) {
-        if (enrolmentPk == null) throw new RuntimeException("É necessário indicar a matrícula.");
-        if (feePk == null) throw new RuntimeException("É necessário indicar a propina.");
-        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) throw new RuntimeException("O valor pago deve ser maior que zero.");
-        if (formaPagamento == null) throw new RuntimeException("É necessário indicar a forma de pagamento.");
-        if (mesReferencia == null) throw new RuntimeException("É necessário indicar o mês de referência.");
+            FormaPagamento formaPagamento, MesReferencia mesReferencia,
+            String referencia, String observacao, String operador) {
+        if (enrolmentPk == null)
+            throw new RuntimeException("É necessário indicar a matrícula.");
+        if (feePk == null)
+            throw new RuntimeException("É necessário indicar a propina.");
+        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0)
+            throw new RuntimeException("O valor pago deve ser maior que zero.");
+        if (formaPagamento == null)
+            throw new RuntimeException("É necessário indicar a forma de pagamento.");
+        if (mesReferencia == null)
+            throw new RuntimeException("É necessário indicar o mês de referência.");
 
         Enrolment enrolment = enrolmentRepository.findById(enrolmentPk)
                 .orElseThrow(() -> new RuntimeException("Matrícula não encontrada com id: " + enrolmentPk));
@@ -387,9 +418,9 @@ public class PagamentoService {
     }
 
     public Page<PagamentoDTO> findLazy(int page, int size, Sort sort,
-                                       String numeroDocumento, String studentName,
-                                       FormaPagamento formaPagamento, EstadoPagamento estado,
-                                       LocalDateTime dataInicio, LocalDateTime dataFim) {
+            String numeroDocumento, String studentName,
+            FormaPagamento formaPagamento, EstadoPagamento estado,
+            LocalDateTime dataInicio, LocalDateTime dataFim) {
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<Pagamento> result = repository.findComFiltros(
                 blankToNull(numeroDocumento), blankToNull(studentName),
@@ -398,12 +429,12 @@ public class PagamentoService {
     }
 
     public List<PagamentoDTO> buscarComFiltros(String numeroDocumento, String studentName,
-                                               FormaPagamento formaPagamento, EstadoPagamento estado,
-                                               LocalDateTime dataInicio, LocalDateTime dataFim) {
+            FormaPagamento formaPagamento, EstadoPagamento estado,
+            LocalDateTime dataInicio, LocalDateTime dataFim) {
         try {
             return repository.findComFiltros(
-                            blankToNull(numeroDocumento), blankToNull(studentName),
-                            formaPagamento, estado, dataInicio, dataFim, Pageable.unpaged())
+                    blankToNull(numeroDocumento), blankToNull(studentName),
+                    formaPagamento, estado, dataInicio, dataFim, Pageable.unpaged())
                     .getContent()
                     .stream()
                     .map(this::toDto)
@@ -471,8 +502,10 @@ public class PagamentoService {
         if (pagamento.getEnrolment() != null && pagamento.getEnrolment().getStudent() != null) {
             pagamento.getEnrolment().getStudent().getFullName();
         }
-        if (pagamento.getFee() != null) pagamento.getFee().getPhFee();
-        if (pagamento.getCashBox() != null) pagamento.getCashBox().getCashBoxNumber();
+        if (pagamento.getFee() != null)
+            pagamento.getFee().getPhFee();
+        if (pagamento.getCashBox() != null)
+            pagamento.getCashBox().getCashBoxNumber();
         return pdfGeneratorService.generatePagamentoPdf(pagamento);
     }
 
@@ -480,17 +513,52 @@ public class PagamentoService {
     // QUERIES UTILITÁRIAS
     // ─────────────────────────────────────────────────────────────
 
-    public List<Pagamento> getByEnrolment(Long enrolmentPk) { return repository.findByEnrolment_PhEnrolment(enrolmentPk); }
-    public List<Pagamento> getByStudent(Long studentPk) { return repository.findByEnrolment_Student_PkStudent(studentPk); }
-    public List<Pagamento> getByFee(Long feePk) { return repository.findByFee_PhFee(feePk); }
-    public List<Pagamento> getByCashBox(Long cashBoxPk) { return repository.findByCashBox_PhCashBox(cashBoxPk); }
-    public List<Pagamento> getByEstado(EstadoPagamento estado) { return repository.findByEstado(estado); }
-    public List<Pagamento> getByFormaPagamento(FormaPagamento formaPagamento) { return repository.findByFormaPagamento(formaPagamento); }
-    public List<Pagamento> getByDataPagamentoBetween(LocalDateTime start, LocalDateTime end) { return repository.findByDataPagamentoBetween(start, end); }
-    public boolean existsByNumeroDocumento(String numeroDocumento) { return repository.existsByNumeroDocumento(numeroDocumento); }
-    public BigDecimal getTotalConfirmado() { BigDecimal total = repository.getTotalConfirmado(); return total != null ? total : BigDecimal.ZERO; }
-    public Pagamento getById(Long id) { return repository.findById(id).orElseThrow(() -> new RuntimeException("Pagamento não encontrado com id: " + id)); }
-    public Pagamento findById(Long id) { return repository.findById(id).orElseThrow(() -> new RuntimeException("Pagamento não encontrado com id: " + id)); }
+    public List<Pagamento> getByEnrolment(Long enrolmentPk) {
+        return repository.findByEnrolment_PhEnrolment(enrolmentPk);
+    }
+
+    public List<Pagamento> getByStudent(Long studentPk) {
+        return repository.findByEnrolment_Student_PkStudent(studentPk);
+    }
+
+    public List<Pagamento> getByFee(Long feePk) {
+        return repository.findByFee_PhFee(feePk);
+    }
+
+    public List<Pagamento> getByCashBox(Long cashBoxPk) {
+        return repository.findByCashBox_PhCashBox(cashBoxPk);
+    }
+
+    public List<Pagamento> getByEstado(EstadoPagamento estado) {
+        return repository.findByEstado(estado);
+    }
+
+    public List<Pagamento> getByFormaPagamento(FormaPagamento formaPagamento) {
+        return repository.findByFormaPagamento(formaPagamento);
+    }
+
+    public List<Pagamento> getByDataPagamentoBetween(LocalDateTime start, LocalDateTime end) {
+        return repository.findByDataPagamentoBetween(start, end);
+    }
+
+    public boolean existsByNumeroDocumento(String numeroDocumento) {
+        return repository.existsByNumeroDocumento(numeroDocumento);
+    }
+
+    public BigDecimal getTotalConfirmado() {
+        BigDecimal total = repository.getTotalConfirmado();
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    public Pagamento getById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pagamento não encontrado com id: " + id));
+    }
+
+    public Pagamento findById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pagamento não encontrado com id: " + id));
+    }
 
     // ─────────────────────────────────────────────────────────────
     // GERAÇÃO DE NÚMEROS SEQUENCIAIS

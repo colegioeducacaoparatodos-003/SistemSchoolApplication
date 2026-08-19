@@ -20,9 +20,9 @@
                 <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
                     columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
 
-                    <p:outputLabel for="feeCodeCreate" value="#{msg.feeCode}" styleClass="sc-label req" />
-                    <p:inputText id="feeCodeCreate" value="#{feeController.fee.feeCode}" required="true"
-                        placeholder="Ex: PROP-2026-001" styleClass="sc-input" />
+                    <p:outputLabel for="feeCodeCreate" value="#{msg.feeCode}" styleClass="sc-label" />
+                    <p:inputText id="feeCodeCreate" value="#{feeController.fee.feeCode}" readonly="true"
+                        styleClass="sc-input sc-input-readonly" />
 
                     <p:outputLabel for="feeTypeCreate" value="#{msg.feeType}" styleClass="sc-label req" />
                     <h:panelGroup>
@@ -61,12 +61,15 @@
 
                     <p:outputLabel for="schoolYearCreate" value="#{msg.schoolYear}" styleClass="sc-label" />
                     <p:inputNumber id="schoolYearCreate" value="#{feeController.fee.schoolYear}" decimalPlaces="0"
-                        thousandSeparator="" placeholder="Ex: 2026" styleClass="sc-input" />
+                        thousandSeparator="" placeholder="Ex: 2026" styleClass="sc-input">
+                        <p:ajax event="blur" listener="#{feeController.regenerateFeeCode}"
+                            update="feeCodeCreate" process="@this" />
+                    </p:inputNumber>
 
                     <p:outputLabel for="startDateCreate" value="#{msg.startDate}" styleClass="sc-label" />
-                    <p:datePicker id="startDateCreate" value="#{feeController.fee.startDate}" pattern="dd/MM/yyyy"
-                        showIcon="true" locale="pt" style="width:100%;" yearNavigator="true" monthNavigator="true"
-                        yearRange="2020:2035" />
+                    <p:datePicker id="startDateCreate" value="#{feeController.fee.startDate}"
+                        pattern="dd/MM/yyyy HH:mm" showTime="true" disabled="true"
+                        locale="pt" style="width:100%;" styleClass="sc-input-readonly" />
 
                     <p:outputLabel for="endDateCreate" value="#{msg.endDate}" styleClass="sc-label" />
                     <p:datePicker id="endDateCreate" value="#{feeController.fee.endDate}" pattern="dd/MM/yyyy"
@@ -142,6 +145,11 @@
             }
             .sc-input {
                 width: 100%;
+            }
+            .sc-input-readonly {
+                background-color: #f3f4f6 !important;
+                color: #6b7280 !important;
+                cursor: not-allowed;
             }
             .sc-fullwidth-field {
                 margin-top: 1.2rem;

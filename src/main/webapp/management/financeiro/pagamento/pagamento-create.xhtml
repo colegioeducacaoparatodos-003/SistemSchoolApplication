@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ui:composition xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:p="http://primefaces.org/ui"
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <p:dialog id="createPagamentoDialog" widgetVar="createPagamentoDialog" header="#{msg.newPayment}" modal="true"
@@ -26,16 +24,22 @@
 
                     <p:outputLabel for="estado" value="#{msg.status}" styleClass="sc-label" />
                     <p:selectOneMenu id="estado" value="#{pagamentoController.pagamento.estado}" style="width:100%;">
-                        <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}"
+                            noSelectionOption="true" />
                         <f:selectItems value="#{pagamentoController.estados}" var="e" itemLabel="#{e.descricao}"
                             itemValue="#{e}" />
                     </p:selectOneMenu>
 
                     <p:outputLabel for="mesReferencia" value="#{msg.referenceMonth}" styleClass="sc-label" />
-                    <p:selectOneMenu id="mesReferencia" value="#{pagamentoController.pagamento.mesReferencia}" style="width:100%;">
-                        <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
-                        <f:selectItems value="#{pagamentoController.mesesReferencia}" var="m"
-                            itemLabel="#{m.descricao}" itemValue="#{m}" />
+                    <p:selectOneMenu id="mesReferencia" value="#{pagamentoController.pagamento.mesReferencia}"
+                        style="width:100%;">
+                        <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}"
+                            noSelectionOption="true" />
+                        <f:selectItems value="#{pagamentoController.mesesReferencia}" var="m" itemLabel="#{m.descricao}"
+                            itemValue="#{m}" />
+                        <p:ajax event="change" listener="#{pagamentoController.onMesReferenciaChange}"
+                            update="multa totalDisplay totalHidden multaHint"
+                            oncomplete="calcularTotalPagamento('Create', 'pagamentoCreateForm')" />
                     </p:selectOneMenu>
                 </p:panelGrid>
 
@@ -49,7 +53,8 @@
                     <h:panelGroup>
                         <p:selectOneMenu id="enrolment" value="#{pagamentoController.selectedEnrolmentId}"
                             required="true" requiredMessage="#{msg.enrolment} #{msg.isRequired}" style="width:100%;">
-                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}"
+                                noSelectionOption="true" />
                             <f:selectItems value="#{pagamentoController.enrolments}" var="enr"
                                 itemLabel="#{enr.enrolmentNumer} &#8212; #{enr.student.fullName}"
                                 itemValue="#{enr.phEnrolment}" />
@@ -61,7 +66,8 @@
                     <h:panelGroup>
                         <p:selectOneMenu id="fee" value="#{pagamentoController.selectedFeeId}" required="true"
                             requiredMessage="#{msg.fee} #{msg.isRequired}" style="width:100%;">
-                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}"
+                                noSelectionOption="true" />
                             <f:selectItems value="#{pagamentoController.fees}" var="fee" itemLabel="#{fee.displayLabel}"
                                 itemValue="#{fee.phFee}" />
                             <p:ajax event="change" listener="#{pagamentoController.onFeeChange}"
@@ -75,7 +81,8 @@
                     <h:panelGroup>
                         <p:selectOneMenu id="cashBox" value="#{pagamentoController.selectedCashBoxId}" required="true"
                             requiredMessage="#{msg.cashBox} #{msg.isRequired}" style="width:100%;">
-                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}"
+                                noSelectionOption="true" />
                             <f:selectItems value="#{pagamentoController.cashBoxes}" var="cb"
                                 itemLabel="#{cb.cashBoxNumber}" itemValue="#{cb.phCashBox}" />
                         </p:selectOneMenu>
@@ -98,11 +105,20 @@
                             onchange="calcularTotalPagamento('Create', 'pagamentoCreateForm')" />
                         <p:message for="valor" display="text" styleClass="sc-field-msg" />
                     </h:panelGroup>
-
                     <p:outputLabel for="multa" value="#{msg.fine}" styleClass="sc-label" />
-                    <p:inputNumber id="multa" widgetVar="multaWidgetCreate"
-                        value="#{pagamentoController.pagamento.multa}" symbol="Kz " symbolPosition="p"
-                        decimalPlaces="2" readonly="true" styleClass="sc-input" />
+                    <h:panelGroup>
+                        <p:inputNumber id="multa" widgetVar="multaWidgetCreate"
+                            value="#{pagamentoController.pagamento.multa}" symbol="Kz " symbolPosition="p"
+                            decimalPlaces="2" readonly="true" styleClass="sc-input" />
+                        <h:panelGroup id="multaHint">
+                            <span class="sc-helper-text" rendered="#{!pagamentoController.isMensalidadeSelecionada()}">
+                                Isento de multa &#8212; este item não é uma mensalidade.
+                            </span>
+                            <span class="sc-helper-text" rendered="#{pagamentoController.isMensalidadeSelecionada()}">
+                                Multa aplicada automaticamente em caso de atraso.
+                            </span>
+                        </h:panelGroup>
+                    </h:panelGroup>
 
                     <p:outputLabel for="totalDisplay" value="#{msg.total}" styleClass="sc-label" />
                     <h:panelGroup>
@@ -117,8 +133,10 @@
                     <p:outputLabel for="formaPagamento" value="#{msg.paymentMethod}" styleClass="sc-label req" />
                     <h:panelGroup>
                         <p:selectOneMenu id="formaPagamento" value="#{pagamentoController.pagamento.formaPagamento}"
-                            required="true" requiredMessage="#{msg.paymentMethod} #{msg.isRequired}" style="width:100%;">
-                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
+                            required="true" requiredMessage="#{msg.paymentMethod} #{msg.isRequired}"
+                            style="width:100%;">
+                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}"
+                                noSelectionOption="true" />
                             <f:selectItems value="#{pagamentoController.formasPagamento}" var="fp"
                                 itemLabel="#{fp.descricao}" itemValue="#{fp}" />
                         </p:selectOneMenu>
@@ -126,9 +144,17 @@
                     </h:panelGroup>
 
                     <p:outputLabel for="dataPagamento" value="#{msg.paymentDate}" styleClass="sc-label" />
-                    <p:datePicker id="dataPagamento" value="#{pagamentoController.pagamento.dataPagamento}"
-                        pattern="dd/MM/yyyy HH:mm" showIcon="true" style="width:100%;"
-                        yearNavigator="true" monthNavigator="true" yearRange="2020:2035" />
+                    <h:panelGroup>
+                        <p:datePicker id="dataPagamento" value="#{pagamentoController.dataPagamentoData}"
+                            pattern="dd/MM/yyyy" showIcon="true" style="width:100%;" yearNavigator="true"
+                            monthNavigator="true" yearRange="2020:2035">
+                            <p:ajax event="dateSelect" listener="#{pagamentoController.onDataPagamentoChange}"
+                                update="multa totalDisplay totalHidden multaHint"
+                                oncomplete="calcularTotalPagamento('Create', 'pagamentoCreateForm')" />
+                        </p:datePicker>
+                        <span class="sc-helper-text">A hora é registada automaticamente pelo sistema no momento da
+                            gravação.</span>
+                    </h:panelGroup>
 
                     <p:outputLabel for="referencia" value="#{msg.reference}" styleClass="sc-label" />
                     <p:inputText id="referencia" value="#{pagamentoController.pagamento.referencia}"
@@ -147,8 +173,7 @@
                     onclick="PF('createPagamentoDialog').hide()" styleClass="ui-button-outlined ui-button-secondary" />
                 <p:commandButton value="#{msg.save}" icon="pi pi-save" styleClass="ui-button-success"
                     action="#{pagamentoController.savePagamento}" process="@form"
-                    update=":formPagamentos:dtPagamentos msgsCreate :formPagamentos:messages"
-                    onstart="showScLoading()"
+                    update=":formPagamentos:dtPagamentos msgsCreate :formPagamentos:messages" onstart="showScLoading()"
                     oncomplete="if (!args.validationFailed) { hideScLoading(); PF('createPagamentoDialog').hide(); } else { hideScLoading(); }" />
             </div>
         </h:form>
@@ -157,11 +182,13 @@
             .sc-dialog-create .ui-dialog-content {
                 padding: 0 !important;
             }
+
             .sc-dialog-body {
                 padding: 1.2rem 1.5rem 1rem;
                 max-height: calc(90vh - 120px);
                 overflow-y: auto;
             }
+
             .sc-section-title {
                 font-size: 1rem;
                 font-weight: 700;
@@ -171,9 +198,11 @@
                 gap: .5rem;
                 color: var(--enr-text, #141414);
             }
+
             .sc-section-title i {
                 color: var(--enr-red, #c8102e);
             }
+
             .sc-label {
                 font-size: .88rem;
                 font-weight: 600;
@@ -181,24 +210,29 @@
                 margin-bottom: .35rem;
                 display: block;
             }
+
             .sc-label.req::after {
                 content: " *";
                 color: #dc2626;
             }
+
             .sc-field-msg {
                 display: block;
                 margin-top: 4px;
                 font-size: 12px;
                 color: #dc2626;
             }
+
             .sc-input {
                 width: 100%;
             }
+
             .sc-readonly-field {
                 opacity: .8;
                 cursor: not-allowed;
                 background: #f3f4f6 !important;
             }
+
             .sc-total-field {
                 background: var(--enr-black, #141414) !important;
                 color: var(--enr-yellow, #f5b400) !important;
@@ -209,18 +243,22 @@
                 border-radius: 8px !important;
                 text-align: right !important;
             }
+
             .sc-total-field.ui-state-disabled {
                 opacity: 1 !important;
             }
+
             .sc-helper-text {
                 font-size: .75rem;
                 color: var(--enr-muted, #666a70);
                 margin-top: 2px;
                 display: block;
             }
+
             .sc-fullwidth-field {
                 margin-top: 1.2rem;
             }
+
             .sc-counter {
                 display: block;
                 text-align: right;
@@ -228,6 +266,7 @@
                 color: #888;
                 margin-top: 2px;
             }
+
             .sc-dialog-footer {
                 display: flex;
                 justify-content: flex-end;
@@ -238,6 +277,7 @@
                 background: #fafafa;
                 border-radius: 0 0 12px 12px;
             }
+
             .sc-dialog-footer .ui-button {
                 min-width: 120px;
             }
@@ -245,9 +285,11 @@
             .sc-dialog-body::-webkit-scrollbar {
                 width: 5px;
             }
+
             .sc-dialog-body::-webkit-scrollbar-track {
                 background: transparent;
             }
+
             .sc-dialog-body::-webkit-scrollbar-thumb {
                 background: #d1d5db;
                 border-radius: 99px;
@@ -258,33 +300,41 @@
                     width: 95vw !important;
                     max-width: 95vw !important;
                 }
+
                 .sc-dialog-create .ui-dialog-content {
                     padding: 0 !important;
                 }
+
                 .sc-dialog-body {
                     padding: 1rem;
                     max-height: calc(85vh - 100px);
                 }
+
                 .sc-dialog-footer {
                     padding: .8rem 1rem;
                     flex-direction: column;
                     gap: .5rem;
                 }
+
                 .sc-dialog-footer .ui-button {
                     width: 100%;
                     min-width: unset;
                 }
+
                 .sc-section-title {
                     font-size: .95rem;
                 }
+
                 .sc-label {
                     font-size: .85rem;
                 }
             }
+
             @media (max-width: 576px) {
                 .sc-dialog-body {
                     padding: .8rem;
                 }
+
                 .sc-fullwidth-field {
                     margin-top: 1rem;
                 }

@@ -19,6 +19,8 @@ import jakarta.inject.Named;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -137,6 +139,20 @@ public class FeeController implements Serializable {
     public void prepareNewFee() {
         fee = new Fee();
         selectedSchoolClassId = null;
+
+        int currentYear = Year.now().getValue();
+        fee.setSchoolYear(currentYear);
+        fee.setFeeCode(feeService.generateNextFeeCode(currentYear));
+        // captura automaticamente a data/hora exata no momento da criação
+        fee.setStartDate(LocalDateTime.now());
+    }
+
+    /**
+     * Regera o código da propina sempre que o ano letivo é alterado no
+     * formulário de criação, mantendo o padrão PRO-{ano}-{sequência}.
+     */
+    public void regenerateFeeCode() {
+        fee.setFeeCode(feeService.generateNextFeeCode(fee.getSchoolYear()));
     }
 
     public void viewFeeDetails(Long id) {

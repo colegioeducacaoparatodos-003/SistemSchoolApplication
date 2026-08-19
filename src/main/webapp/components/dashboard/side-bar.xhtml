@@ -127,6 +127,8 @@
                         rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
                     <p:menuitem value="#{msg.evaluation}" action="#{evaluationController.load}"
                         icon="pi pi-check-square" rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
+                    <p:menuitem value="#{msg.impress}" action="#{impressaoPedagogicaController.load}"
+                        icon="pi pi-check-square" rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
                     
 
                     <!-- Financeiro: FINANCIAL e ADMIN -->

@@ -75,6 +75,7 @@ public class Pagamento {
     private EstadoPagamento estado;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "mes_referencia", length = 20)
     private MesReferencia mesReferencia;
 
     private String referencia;
@@ -113,15 +114,14 @@ public class Pagamento {
 
     }
 
-
     public Pagamento() {
     }
 
-    public Pagamento(Long pkPagamento, String numeroDocumento, Enrolment enrolment, 
-        Fee fee, CashBox cashBox, BigDecimal valor, 
-        BigDecimal multa, BigDecimal total, LocalDateTime dataEmissao, LocalDateTime dataPagamento, 
-        FormaPagamento formaPagamento, EstadoPagamento estado, MesReferencia mesReferencia, 
-        String referencia, String observacao, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Pagamento(Long pkPagamento, String numeroDocumento, Enrolment enrolment,
+            Fee fee, CashBox cashBox, BigDecimal valor,
+            BigDecimal multa, BigDecimal total, LocalDateTime dataEmissao, LocalDateTime dataPagamento,
+            FormaPagamento formaPagamento, EstadoPagamento estado, MesReferencia mesReferencia,
+            String referencia, String observacao, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.pkPagamento = pkPagamento;
         this.numeroDocumento = numeroDocumento;
         this.enrolment = enrolment;
@@ -212,7 +212,6 @@ public class Pagamento {
     public void setDataEmissao(LocalDateTime dataEmissao) {
         this.dataEmissao = dataEmissao;
     }
-
 
     public LocalDateTime getDataPagamento() {
         return this.dataPagamento;
@@ -371,38 +370,48 @@ public class Pagamento {
             return false;
         }
         Pagamento pagamento = (Pagamento) o;
-        return Objects.equals(pkPagamento, pagamento.pkPagamento) && Objects.equals(numeroDocumento, pagamento.numeroDocumento) && Objects.equals(enrolment, pagamento.enrolment) && Objects.equals(fee, pagamento.fee) && Objects.equals(cashBox, pagamento.cashBox) && Objects.equals(valor, pagamento.valor) && Objects.equals(multa, pagamento.multa) && Objects.equals(total, pagamento.total) && Objects.equals(dataEmissao, pagamento.dataEmissao) && Objects.equals(dataPagamento, pagamento.dataPagamento) && Objects.equals(formaPagamento, pagamento.formaPagamento) && Objects.equals(estado, pagamento.estado) && Objects.equals(mesReferencia, pagamento.mesReferencia) && Objects.equals(referencia, pagamento.referencia) && Objects.equals(observacao, pagamento.observacao) && Objects.equals(createdAt, pagamento.createdAt) && Objects.equals(updatedAt, pagamento.updatedAt);
+        return Objects.equals(pkPagamento, pagamento.pkPagamento)
+                && Objects.equals(numeroDocumento, pagamento.numeroDocumento)
+                && Objects.equals(enrolment, pagamento.enrolment) && Objects.equals(fee, pagamento.fee)
+                && Objects.equals(cashBox, pagamento.cashBox) && Objects.equals(valor, pagamento.valor)
+                && Objects.equals(multa, pagamento.multa) && Objects.equals(total, pagamento.total)
+                && Objects.equals(dataEmissao, pagamento.dataEmissao)
+                && Objects.equals(dataPagamento, pagamento.dataPagamento)
+                && Objects.equals(formaPagamento, pagamento.formaPagamento) && Objects.equals(estado, pagamento.estado)
+                && Objects.equals(mesReferencia, pagamento.mesReferencia)
+                && Objects.equals(referencia, pagamento.referencia) && Objects.equals(observacao, pagamento.observacao)
+                && Objects.equals(createdAt, pagamento.createdAt) && Objects.equals(updatedAt, pagamento.updatedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pkPagamento, numeroDocumento, enrolment, 
-            fee, cashBox, valor, multa, total, dataEmissao,
-            dataPagamento, formaPagamento, estado, 
-            mesReferencia, referencia, observacao, createdAt, updatedAt);
+        return Objects.hash(pkPagamento, numeroDocumento, enrolment,
+                fee, cashBox, valor, multa, total, dataEmissao,
+                dataPagamento, formaPagamento, estado,
+                mesReferencia, referencia, observacao, createdAt, updatedAt);
     }
 
     @Override
     public String toString() {
         return "{" +
-            " pkPagamento='" + getPkPagamento() + "'" +
-            ", numeroDocumento='" + getNumeroDocumento() + "'" +
-            ", enrolment='" + getEnrolment() + "'" +
-            ", fee='" + getFee() + "'" +
-            ", cashBox='" + getCashBox() + "'" +
-            ", valor='" + getValor() + "'" +
-            ", multa='" + getMulta() + "'" +
-            ", total='" + getTotal() + "'" +
-            ", dataEmissao='" + getDataEmissao() + "'" +
-            ", dataPagamento='" + getDataPagamento() + "'" +
-            ", formaPagamento='" + getFormaPagamento() + "'" +
-            ", estado='" + getEstado() + "'" +
-            ", mesReferencia='" + getMesReferencia() + "'" +
-            ", referencia='" + getReferencia() + "'" +
-            ", observacao='" + getObservacao() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", updatedAt='" + getUpdatedAt() + "'" +
-            "}";
+                " pkPagamento='" + getPkPagamento() + "'" +
+                ", numeroDocumento='" + getNumeroDocumento() + "'" +
+                ", enrolment='" + getEnrolment() + "'" +
+                ", fee='" + getFee() + "'" +
+                ", cashBox='" + getCashBox() + "'" +
+                ", valor='" + getValor() + "'" +
+                ", multa='" + getMulta() + "'" +
+                ", total='" + getTotal() + "'" +
+                ", dataEmissao='" + getDataEmissao() + "'" +
+                ", dataPagamento='" + getDataPagamento() + "'" +
+                ", formaPagamento='" + getFormaPagamento() + "'" +
+                ", estado='" + getEstado() + "'" +
+                ", mesReferencia='" + getMesReferencia() + "'" +
+                ", referencia='" + getReferencia() + "'" +
+                ", observacao='" + getObservacao() + "'" +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", updatedAt='" + getUpdatedAt() + "'" +
+                "}";
     }
 
 }

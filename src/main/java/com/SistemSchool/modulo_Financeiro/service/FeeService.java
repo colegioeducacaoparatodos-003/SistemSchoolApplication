@@ -26,7 +26,8 @@ import java.util.Optional;
 @Transactional
 public class FeeService {
 
-    private static final String FEE_CODE_PREFIX = "PROP";
+    // Formato: PRO-{ano}-{sequência com 4 dígitos}, ex: PRO-2026-0001
+    private static final String FEE_CODE_PREFIX = "PRO";
 
     private final FeeRepository repository;
     private final SchoolClassRepository schoolClassRepository;
@@ -113,7 +114,7 @@ public class FeeService {
 
     /**
      * Gera o próximo feeCode disponível para o ano letivo informado, no
-     * formato PROP-{ano}-{sequência com 4 dígitos}, ex: PROP-2026-0001.
+     * formato PRO-{ano}-{sequência com 4 dígitos}, ex: PRO-2026-0001.
      * Se schoolYear vier nulo, usa o ano corrente como fallback.
      */
     @Transactional(readOnly = true)
@@ -155,8 +156,6 @@ public class FeeService {
         if (filters == null || filters.isEmpty()) {
             projections = repository.findAllForTable(pageable);
         } else {
-            // TODO: implementar Specification ou JPQL personalizada com os filtros
-            // recebidos
             projections = repository.findAllForTable(pageable);
         }
 

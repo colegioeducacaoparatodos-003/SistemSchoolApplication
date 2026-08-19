@@ -30,7 +30,9 @@ import jakarta.inject.Named;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.logging.Level;
@@ -50,6 +52,10 @@ public class PagamentoController implements Serializable {
     private Long selectedEnrolmentId;
     private Long selectedFeeId;
     private Long selectedCashBoxId;
+
+    // Apenas a DATA é escolhida pelo utilizador; a HORA é sempre a hora do sistema.
+    private LocalDate dataPagamentoData;
+    private LocalDate dataPagamentoDataEdit;
 
     private BigDecimal valorConfirmar;
     private FormaPagamento formaPagamentoConfirmar;
@@ -97,6 +103,7 @@ public class PagamentoController implements Serializable {
         this.mesReferenciaConfirmar = null;
         this.referenciaConfirmar = null;
         this.observacaoConfirmar = null;
+        this.dataPagamentoData = LocalDate.now();
     }
 
     private void loadEnrolments() {
@@ -130,6 +137,15 @@ public class PagamentoController implements Serializable {
         BigDecimal v = valor != null ? valor : BigDecimal.ZERO;
         BigDecimal m = multa != null ? multa : BigDecimal.ZERO;
         return v.add(m);
+    }
+
+    /**
+     * Combina a data escolhida pelo utilizador com a hora atual do sistema.
+     * Garante que ninguém consegue "escolher" a hora manualmente.
+     */
+    private LocalDateTime resolverDataHoraAtual(LocalDate data) {
+        LocalDate base = data != null ? data : LocalDate.now();
+        return LocalDateTime.of(base, LocalTime.now());
     }
 
     public String load() {
@@ -196,11 +212,15 @@ public class PagamentoController implements Serializable {
                     .orElseThrow(() -> new RuntimeException("Caixa nao encontrado."));
             pagamento.setCashBox(cashBox);
 
+            // A hora é sempre a hora atual do sistema; o utilizador só escolhe o dia.
+            pagamento.setDataPagamento(resolverDataHoraAtual(dataPagamentoData));
+
             pagamento.setTotal(calcularTotal(pagamento.getValor(), pagamento.getMulta()));
             pagamentoService.save(pagamento);
 
             pagamento = new Pagamento();
             selectedEnrolmentId = null; selectedFeeId = null; selectedCashBoxId = null;
+            dataPagamentoData = LocalDate.now();
             init();
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             addMessage(FacesMessage.SEVERITY_INFO, "Pagamento", "Pagamento registado com sucesso");
@@ -263,6 +283,7 @@ public class PagamentoController implements Serializable {
             selectedEnrolmentId = dto.getEnrolmentPk();
             selectedFeeId = dto.getFeePk();
             selectedCashBoxId = dto.getCashBoxPk();
+            dataPagamentoDataEdit = dto.getDataPagamento() != null ? dto.getDataPagamento().toLocalDate() : LocalDate.now();
         } else {
             addMessage(FacesMessage.SEVERITY_WARN, "Pagamento nao encontrado", "");
         }
@@ -304,11 +325,14 @@ public class PagamentoController implements Serializable {
             if (selectedEnrolmentId != null) editDto.setEnrolmentPk(selectedEnrolmentId);
             if (selectedFeeId != null) editDto.setFeePk(selectedFeeId);
             if (selectedCashBoxId != null) editDto.setCashBoxPk(selectedCashBoxId);
+            // A hora é sempre a hora atual do sistema; o utilizador só escolhe o dia.
+            editDto.setDataPagamento(resolverDataHoraAtual(dataPagamentoDataEdit));
             editDto.setTotal(calcularTotal(editDto.getValor(), editDto.getMulta()));
             pagamentoService.update(editDto);
             init();
             editDto = new PagamentoDTO(); selectedId = null;
             selectedEnrolmentId = null; selectedFeeId = null; selectedCashBoxId = null;
+            dataPagamentoDataEdit = null;
             addMessage(FacesMessage.SEVERITY_INFO, "Pagamento", "Pagamento atualizado com sucesso");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erro ao atualizar pagamento", e);
@@ -342,8 +366,17 @@ public class PagamentoController implements Serializable {
         if (pagamento.getValor() != null) recalcularMultaTotal(pagamento);
     }
 
+    /**
+     * Recalcula multa/total sempre com a data escolhida pelo utilizador + hora atual do sistema.
+     * A multa só é aplicada se o mês de referência selecionado for efetivamente uma mensalidade.
+     */
+    public void onDataPagamentoChange() {
+        if (pagamento.getValor() != null) recalcularMultaTotal(pagamento);
+    }
+
     private void recalcularMultaTotal(Pagamento p) {
-        BigDecimal multa = pagamentoService.calcularMultaPreview(p.getMesReferencia(), LocalDateTime.now());
+        LocalDateTime dataSimulada = resolverDataHoraAtual(dataPagamentoData);
+        BigDecimal multa = pagamentoService.calcularMultaPreview(p.getMesReferencia(), dataSimulada);
         p.setMulta(multa);
         p.setTotal(calcularTotal(p.getValor(), multa));
     }
@@ -354,18 +387,35 @@ public class PagamentoController implements Serializable {
         }
         fees.stream().filter(f -> selectedFeeId.equals(f.getPhFee())).findFirst().ifPresent(fee -> {
             editDto.setValor(fee.getAmount());
-            BigDecimal multa = pagamentoService.calcularMultaPreview(editDto.getMesReferencia(), LocalDateTime.now());
-            editDto.setMulta(multa);
-            editDto.setTotal(calcularTotal(editDto.getValor(), multa));
+            recalcularMultaTotalEdit();
         });
     }
 
     public void onMesReferenciaChangeEdit() {
-        if (editDto.getValor() != null) {
-            BigDecimal multa = pagamentoService.calcularMultaPreview(editDto.getMesReferencia(), LocalDateTime.now());
-            editDto.setMulta(multa);
-            editDto.setTotal(calcularTotal(editDto.getValor(), multa));
-        }
+        if (editDto.getValor() != null) recalcularMultaTotalEdit();
+    }
+
+    public void onDataPagamentoChangeEdit() {
+        if (editDto.getValor() != null) recalcularMultaTotalEdit();
+    }
+
+    private void recalcularMultaTotalEdit() {
+        LocalDateTime dataSimulada = resolverDataHoraAtual(dataPagamentoDataEdit);
+        BigDecimal multa = pagamentoService.calcularMultaPreview(editDto.getMesReferencia(), dataSimulada);
+        editDto.setMulta(multa);
+        editDto.setTotal(calcularTotal(editDto.getValor(), multa));
+    }
+
+    /**
+     * Usado na view para mostrar/ocultar avisos sobre multa (ex: "isento de multa"),
+     * já que apenas mensalidades (Janeiro..Dezembro) estão sujeitas a multa por atraso.
+     */
+    public boolean isMensalidadeSelecionada() {
+        return pagamento.getMesReferencia() != null && pagamento.getMesReferencia().isMensalidade();
+    }
+
+    public boolean isMensalidadeSelecionadaEdit() {
+        return editDto.getMesReferencia() != null && editDto.getMesReferencia().isMensalidade();
     }
 
     public void exportPagamentoListPdf() {
@@ -458,6 +508,11 @@ public class PagamentoController implements Serializable {
     public String getObservacaoConfirmar() { return observacaoConfirmar; }
     public void setObservacaoConfirmar(String observacaoConfirmar) { this.observacaoConfirmar = observacaoConfirmar; }
     public void setLazyModel(PagamentoLazyModel lazyModel) { this.lazyModel = lazyModel; }
+
+    public LocalDate getDataPagamentoData() { return dataPagamentoData; }
+    public void setDataPagamentoData(LocalDate dataPagamentoData) { this.dataPagamentoData = dataPagamentoData; }
+    public LocalDate getDataPagamentoDataEdit() { return dataPagamentoDataEdit; }
+    public void setDataPagamentoDataEdit(LocalDate dataPagamentoDataEdit) { this.dataPagamentoDataEdit = dataPagamentoDataEdit; }
 
     public long getTotalPagamentoCount() { return totalPagamentoCount; }
     public long getConfirmadoCount() { return confirmadoCount; }

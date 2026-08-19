@@ -20,8 +20,9 @@
                 <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
                     columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
 
-                    <p:outputLabel for="feeCodeEdit" value="#{msg.feeCode}" styleClass="sc-label req" />
-                    <p:inputText id="feeCodeEdit" value="#{feeController.editDto.feeCode}" required="true" styleClass="sc-input" />
+                    <p:outputLabel for="feeCodeEdit" value="#{msg.feeCode}" styleClass="sc-label" />
+                    <p:inputText id="feeCodeEdit" value="#{feeController.editDto.feeCode}" readonly="true"
+                        styleClass="sc-input sc-input-readonly" />
 
                     <p:outputLabel for="feeTypeEdit" value="#{msg.feeType}" styleClass="sc-label req" />
                     <h:panelGroup>
@@ -63,8 +64,8 @@
                         thousandSeparator="" placeholder="Ex: 2026" styleClass="sc-input" />
 
                     <p:outputLabel for="startDateEdit" value="#{msg.startDate}" styleClass="sc-label" />
-                    <p:datePicker id="startDateEdit" value="#{feeController.editDto.startDate}" pattern="dd/MM/yyyy"
-                        showIcon="true" locale="pt" style="width:100%;" yearNavigator="true" monthNavigator="true"
+                    <p:datePicker id="startDateEdit" value="#{feeController.editDto.startDate}" pattern="dd/MM/yyyy HH:mm"
+                        showTime="true" showIcon="true" locale="pt" style="width:100%;" yearNavigator="true" monthNavigator="true"
                         yearRange="2020:2035" />
 
                     <p:outputLabel for="endDateEdit" value="#{msg.endDate}" styleClass="sc-label" />
@@ -141,6 +142,11 @@
             }
             .sc-input {
                 width: 100%;
+            }
+            .sc-input-readonly {
+                background-color: #f3f4f6 !important;
+                color: #6b7280 !important;
+                cursor: not-allowed;
             }
             .sc-fullwidth-field {
                 margin-top: 1.2rem;

@@ -1,0 +1,316 @@
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="titulo">#{msg.printing}</ui:define>
+
+    <ui:define name="content">
+        <style>
+            :root {
+                --imp-black: #141414;
+                --imp-red: #c8102e;
+                --imp-yellow: #f5b400;
+                --imp-surface: #ffffff;
+                --imp-surface-2: #f7f7f8;
+                --imp-border: #e6e6e8;
+                --imp-text: #141414;
+                --imp-muted: #666a70;
+                --imp-radius: 12px;
+                --imp-shadow: 0 4px 20px rgba(20, 20, 20, .10);
+            }
+
+            .imp-page {
+                padding: 1.2rem;
+            }
+
+            @media(min-width:768px) {
+                .imp-page {
+                    padding: 1.6rem 2rem 2.5rem;
+                }
+            }
+
+            .imp-header {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                margin-bottom: 1.4rem;
+            }
+
+            .imp-header-icon {
+                width: 46px;
+                height: 46px;
+                border-radius: 12px;
+                background: linear-gradient(135deg, var(--imp-black) 0%, var(--imp-red) 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--imp-yellow);
+                font-size: 1.2rem;
+                flex-shrink: 0;
+            }
+
+            .imp-header-title h1 {
+                font-size: 1.35rem;
+                font-weight: 800;
+                margin: 0 0 .2rem;
+                color: var(--imp-text);
+            }
+
+            .imp-header-title p {
+                font-size: .85rem;
+                color: var(--imp-muted);
+                margin: 0;
+            }
+
+            .imp-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+
+            @media(min-width:992px) {
+                .imp-grid {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+
+            .imp-card {
+                background: var(--imp-surface);
+                border: 1px solid var(--imp-border);
+                border-radius: var(--imp-radius);
+                box-shadow: var(--imp-shadow);
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .imp-card-head {
+                display: flex;
+                align-items: center;
+                gap: .7rem;
+                padding: 1rem 1.2rem;
+                border-bottom: 1px solid var(--imp-border);
+                background: var(--imp-surface-2);
+            }
+
+            .imp-card-head .imp-card-icon {
+                width: 38px;
+                height: 38px;
+                border-radius: 9px;
+                background: var(--imp-black);
+                color: var(--imp-yellow);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1rem;
+                flex-shrink: 0;
+            }
+
+            .imp-card-head-title {
+                font-weight: 800;
+                font-size: 1rem;
+                color: var(--imp-text);
+            }
+
+            .imp-card-head-sub {
+                font-size: .78rem;
+                color: var(--imp-muted);
+            }
+
+            .imp-card-body {
+                padding: 1.2rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                flex: 1 1 auto;
+            }
+
+            .imp-field label {
+                display: block;
+                font-size: .82rem;
+                font-weight: 700;
+                color: var(--imp-text);
+                margin-bottom: .35rem;
+            }
+
+            .imp-field .ui-selectonemenu,
+            .imp-field .ui-inputfield {
+                width: 100% !important;
+            }
+
+            .imp-card-footer {
+                padding: 1rem 1.2rem;
+                border-top: 1px solid var(--imp-border);
+                background: var(--imp-surface-2);
+                display: flex;
+                justify-content: flex-end;
+            }
+
+            .imp-hint {
+                font-size: .78rem;
+                color: var(--imp-muted);
+                background: #fff8e1;
+                border: 1px solid rgba(245, 180, 0, .35);
+                border-radius: 8px;
+                padding: .55rem .8rem;
+                display: flex;
+                align-items: flex-start;
+                gap: .5rem;
+            }
+
+            .imp-hint i {
+                color: #8a6400;
+                margin-top: .1rem;
+            }
+
+            @media (max-width: 576px) {
+                .imp-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .imp-card-footer .ui-button {
+                    width: 100%;
+                }
+            }
+        </style>
+
+        <div class="imp-page">
+            <h:form id="formImpressao">
+                <p:growl id="growlImpressao" showDetail="true" life="5000" globalOnly="true">
+                    <p:autoUpdate />
+                </p:growl>
+
+                <p:ajaxExceptionHandler type="jakarta.faces.application.ViewExpiredException" update="growlImpressao"
+                    onexception="window.location.href = window.location.pathname + '?faces-redirect=true';" />
+
+                <!-- HEADER -->
+                <div class="imp-header">
+                    <div class="imp-header-icon"><i class="pi pi-print" /></div>
+                    <div class="imp-header-title">
+                        <h1>#{msg.printing}</h1>
+                        <p>#{msg.printingDescription}</p>
+                    </div>
+                </div>
+
+                <div class="imp-grid">
+
+                    <!-- ====================================================
+                         CARTAO 1 – BOLETIM DE NOTAS
+                         ==================================================== -->
+                    <div class="imp-card">
+                        <div class="imp-card-head">
+                            <div class="imp-card-icon"><i class="pi pi-file-pdf" /></div>
+                            <div>
+                                <div class="imp-card-head-title">#{msg.reportCard}</div>
+                                <div class="imp-card-head-sub">#{msg.reportCardDescription}</div>
+                            </div>
+                        </div>
+
+                        <div class="imp-card-body">
+                            <div class="imp-field">
+                                <label for="formImpressao:enrolment">#{msg.student}</label>
+                                <p:selectOneMenu id="enrolment"
+                                    value="#{impressaoPedagogicaController.selectedEnrolmentId}"
+                                    filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
+                                        noSelectionOption="true" />
+                                    <f:selectItems value="#{impressaoPedagogicaController.enrolments}" var="e"
+                                        itemLabel="#{e.studentName} — #{e.enrolmentNumer}"
+                                        itemValue="#{e.phEnrolment}" />
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="imp-field">
+                                <label for="formImpressao:trimesterBoletim">#{msg.trimester}</label>
+                                <p:selectOneMenu id="trimesterBoletim"
+                                    value="#{impressaoPedagogicaController.selectedTrimester}">
+                                    <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
+                                        noSelectionOption="true" />
+                                    <f:selectItems value="#{impressaoPedagogicaController.trimesters}" var="t"
+                                        itemLabel="#{t}º #{msg.trimester}" itemValue="#{t}" />
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="imp-hint">
+                                <i class="pi pi-info-circle" />
+                                <span>#{msg.reportCardHint}</span>
+                            </div>
+                        </div>
+
+                        <div class="imp-card-footer">
+                            <p:commandButton value="#{msg.printReportCard}" icon="pi pi-file-pdf"
+                                styleClass="ui-button-danger" ajax="false"
+                                action="#{impressaoPedagogicaController.imprimirBoletim}"
+                                process="@this enrolment trimesterBoletim" />
+                        </div>
+                    </div>
+
+                    <!-- ====================================================
+                         CARTAO 2 – PAUTA DE NOTAS
+                         ==================================================== -->
+                    <div class="imp-card">
+                        <div class="imp-card-head">
+                            <div class="imp-card-icon"><i class="pi pi-table" /></div>
+                            <div>
+                                <div class="imp-card-head-title">#{msg.gradeSheet}</div>
+                                <div class="imp-card-head-sub">#{msg.gradeSheetDescription}</div>
+                            </div>
+                        </div>
+
+                        <div class="imp-card-body">
+                            <div class="imp-field">
+                                <label for="formImpressao:schoolClass">#{msg.schoolClass}</label>
+                                <p:selectOneMenu id="schoolClass"
+                                    value="#{impressaoPedagogicaController.selectedSchoolClassId}"
+                                    filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
+                                        noSelectionOption="true" />
+                                    <f:selectItems value="#{impressaoPedagogicaController.schoolClasses}" var="sc"
+                                        itemLabel="#{sc.className} (#{sc.anoLectivo})"
+                                        itemValue="#{sc.pkSchoolClass}" />
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="imp-field">
+                                <label for="formImpressao:discipline">#{msg.discipline}</label>
+                                <p:selectOneMenu id="discipline"
+                                    value="#{impressaoPedagogicaController.selectedDisciplineId}"
+                                    filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
+                                        noSelectionOption="true" />
+                                    <f:selectItems value="#{impressaoPedagogicaController.disciplines}" var="d"
+                                        itemLabel="#{d.disciplineName}" itemValue="#{d.pkDiscipline}" />
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="imp-field">
+                                <label for="formImpressao:trimesterPauta">#{msg.trimester}</label>
+                                <p:selectOneMenu id="trimesterPauta"
+                                    value="#{impressaoPedagogicaController.selectedTrimester}">
+                                    <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
+                                        noSelectionOption="true" />
+                                    <f:selectItems value="#{impressaoPedagogicaController.trimesters}" var="t2"
+                                        itemLabel="#{t2}º #{msg.trimester}" itemValue="#{t2}" />
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="imp-hint">
+                                <i class="pi pi-info-circle" />
+                                <span>#{msg.gradeSheetHint}</span>
+                            </div>
+                        </div>
+
+                        <div class="imp-card-footer">
+                            <p:commandButton value="#{msg.printGradeSheet}" icon="pi pi-table"
+                                styleClass="ui-button-danger" ajax="false"
+                                action="#{impressaoPedagogicaController.imprimirPauta}"
+                                process="@this schoolClass discipline trimesterPauta" />
+                        </div>
+                    </div>
+
+                </div>
+            </h:form>
+        </div>
+    </ui:define>
+</ui:composition>
