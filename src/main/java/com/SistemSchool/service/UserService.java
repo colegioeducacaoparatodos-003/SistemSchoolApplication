@@ -2,6 +2,9 @@ package com.SistemSchool.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +17,7 @@ import com.SistemSchool.repository.UserRepository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 import java.util.Date;
 import java.util.List;
@@ -83,7 +87,6 @@ public class UserService {
 
         userMapper.updateFromDTO(user, updateUserDTO);
 
-        // Se veio uma nova password no DTO de update, tem de passar pelo encoder aqui
         if (updateUserDTO.getPassword() != null && !updateUserDTO.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(updateUserDTO.getPassword()));
         }
@@ -106,7 +109,6 @@ public class UserService {
         }
     }
 
-    // ========== AUTENTICAÇÃO (agora com verificação real) ==========
     public UserDTO.UserResponseDTO authenticate(UserDTO.LoginDTO loginDTO) {
         List<Object[]> results = userRepository.findUserCredentialsNative(loginDTO.getEmail());
 
@@ -169,5 +171,68 @@ public class UserService {
         String sql = "SELECT COUNT(*) FROM tb_user WHERE perfil = 'ADMIN' AND active = true";
         Number result = (Number) entityManager.createNativeQuery(sql).getSingleResult();
         return result.longValue();
+    }
+
+    // ========== LAZY MODEL — PAGINAÇÃO MANUAL VIA ENTITYMANAGER ==========
+
+    @Transactional(readOnly = true)
+    public Page<UserDTO.UserResponseDTO> findUsersPage(int first, int pageSize, String sortField,
+            org.primefaces.model.SortOrder sortOrder, String filterEmail, Perfil filterPerfil, Boolean filterActive) {
+
+        // Mapeia camelCase (entidade) → snake_case (banco)
+        String field = (sortField != null && !sortField.isBlank()) ? sortField : "pk_user";
+        field = switch (field) {
+            case "pkUser" -> "pk_user";
+            case "userCreationDate" -> "user_creation_date";
+            case "userModificationDate" -> "user_modification_date";
+            case "fkPerson" -> "fk_person";
+            case "fkCustomer" -> "fk_customer";
+            case "deviceToken" -> "device_token";
+            default -> field;
+        };
+
+        String direction = (sortOrder != null && sortOrder == org.primefaces.model.SortOrder.DESCENDING)
+                ? "DESC" : "ASC";
+
+        // --- COUNT ---
+        String countSql = "SELECT COUNT(*) FROM tb_user WHERE " +
+                "(:email IS NULL OR LOWER(email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
+                "(:perfil IS NULL OR perfil = :perfil) AND " +
+                "(:active IS NULL OR active = :active)";
+
+        Query countQuery = entityManager.createNativeQuery(countSql);
+        countQuery.setParameter("email", (filterEmail == null || filterEmail.isBlank()) ? null : filterEmail);
+        countQuery.setParameter("perfil", filterPerfil != null ? filterPerfil.name() : null);
+        countQuery.setParameter("active", filterActive);
+        long total = ((Number) countQuery.getSingleResult()).longValue();
+
+        // --- DATA ---
+        String sql = "SELECT * FROM tb_user WHERE " +
+                "(:email IS NULL OR LOWER(email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
+                "(:perfil IS NULL OR perfil = :perfil) AND " +
+                "(:active IS NULL OR active = :active) " +
+                "ORDER BY " + field + " " + direction + " " +
+                "LIMIT :limit OFFSET :offset";
+
+        Query query = entityManager.createNativeQuery(sql, User.class);
+        query.setParameter("email", (filterEmail == null || filterEmail.isBlank()) ? null : filterEmail);
+        query.setParameter("perfil", filterPerfil != null ? filterPerfil.name() : null);
+        query.setParameter("active", filterActive);
+        query.setParameter("limit", pageSize);
+        query.setParameter("offset", first);
+
+        @SuppressWarnings("unchecked")
+        List<User> resultList = query.getResultList();
+
+        List<UserDTO.UserResponseDTO> content = resultList.stream()
+                .map(userMapper::toResponseDTO)
+                .toList();
+
+        return new PageImpl<>(content, PageRequest.of(first / pageSize, pageSize), total);
+    }
+
+    @Transactional(readOnly = true)
+    public long countAllUsers() {
+        return userRepository.count();
     }
 }

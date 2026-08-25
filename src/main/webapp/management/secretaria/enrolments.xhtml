@@ -808,10 +808,10 @@
                         currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
                         rowsPerPageTemplate="5,10,20,50" emptyMessage="#{msg.noEnrollmentsFound}">
 
-                        <p:column headerText="#{msg.number}" sortBy="#{enr.enrolmentNumer}" style="width:100px">
+                        <p:column headerText="#{msg.number}" sortBy="#{enr.enrolmentNumber}" style="width:100px">
                             <span class="t-num">
                                 <i class="pi pi-hashtag" style="font-size:.65rem" />
-                                <h:outputText value="#{enr.enrolmentNumer}" />
+                                <h:outputText value="#{enr.enrolmentNumber}" />
                             </span>
                         </p:column>
 
@@ -831,11 +831,11 @@
                             </div>
                         </p:column>
 
-                        <p:column headerText="#{msg.schoolClass}" sortBy="#{enr.schoolclasscode}"
-                            filterBy="#{enr.schoolclasscode}" style="width:130px; text-align:center">
+                        <p:column headerText="#{msg.schoolClass}" sortBy="#{enr.schoolClassCode}"
+                            filterBy="#{enr.schoolClassCode}" style="width:130px; text-align:center">
                             <span class="enr-badge class">
                                 <i class="pi pi-sitemap" style="font-size:.65rem" />
-                                #{enr.schoolclasscode}
+                                #{enr.schoolClassCode}
                             </span>
                         </p:column>
 
@@ -946,14 +946,14 @@
                                 <div
                                     style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">
                                     #{msg.enrollmentNumber}</div>
-                                <div style="font-weight:700;">#{enrolmentController.selectedEnrolment.enrolmentNumer}
+                                <div style="font-weight:700;">#{enrolmentController.selectedEnrolment.enrolmentNumber}
                                 </div>
                             </div>
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
                                 <div
                                     style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">
                                     #{msg.schoolClass}</div>
-                                <div style="font-weight:700;">#{enrolmentController.selectedEnrolment.schoolclasscode}
+                                <div style="font-weight:700;">#{enrolmentController.selectedEnrolment.schoolClassCode}
                                 </div>
                             </div>
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">

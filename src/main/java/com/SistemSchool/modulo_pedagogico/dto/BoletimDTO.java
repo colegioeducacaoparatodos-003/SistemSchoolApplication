@@ -1,136 +1,57 @@
 package com.SistemSchool.modulo_pedagogico.dto;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
-public class BoletimDTO {
+public class BoletimDTO implements Serializable {
 
-    private String studentName;
-    private String studentNumber;       // enrolmentNumer da matrícula
+    private static final long serialVersionUID = 1L;
+
+    // Cabeçalho do aluno
+    private String studentFullName;
+    private String enrolmentNumber;
     private String schoolClassName;
-    private String academicYear;        // vem de SchoolClass.anoLectivo (ex.: "2025/2026")
+    private String academicYear;
     private Integer trimester;
-    private String period;
-    private List<DisciplineGradeDTO> disciplineGrades;
-    private String behavior;
-    private String observation;
+    private String period; // Manhã / Tarde
 
-    public BoletimDTO() {
-    }
+    // Disciplinas
+    private List<BoletimDisciplineRowDTO> disciplines = new ArrayList<>();
+    private Double generalAverage;
+    private String finalResult; // Aprovado / Reprovado
 
-    public String getStudentName() {
-        return this.studentName;
-    }
+    public BoletimDTO() {}
 
-    public void setStudentName(String studentName) {
-        this.studentName = studentName;
-    }
+    // Getters / Setters
+    public String getStudentFullName() { return studentFullName; }
+    public void setStudentFullName(String studentFullName) { this.studentFullName = studentFullName; }
 
-    public String getStudentNumber() {
-        return this.studentNumber;
-    }
+    public String getEnrolmentNumber() { return enrolmentNumber; }
+    public void setEnrolmentNumber(String enrolmentNumber) { this.enrolmentNumber = enrolmentNumber; }
 
-    public void setStudentNumber(String studentNumber) {
-        this.studentNumber = studentNumber;
-    }
+    public String getSchoolClassName() { return schoolClassName; }
+    public void setSchoolClassName(String schoolClassName) { this.schoolClassName = schoolClassName; }
 
-    public String getSchoolClassName() {
-        return this.schoolClassName;
-    }
+    public String getAcademicYear() { return academicYear; }
+    public void setAcademicYear(String academicYear) { this.academicYear = academicYear; }
 
-    public void setSchoolClassName(String schoolClassName) {
-        this.schoolClassName = schoolClassName;
-    }
+    public Integer getTrimester() { return trimester; }
+    public void setTrimester(Integer trimester) { this.trimester = trimester; }
 
-    public String getAcademicYear() {
-        return this.academicYear;
-    }
+    public String getPeriod() { return period; }
+    public void setPeriod(String period) { this.period = period; }
 
-    public void setAcademicYear(String academicYear) {
-        this.academicYear = academicYear;
-    }
+    public List<BoletimDisciplineRowDTO> getDisciplines() { return disciplines; }
+    public void setDisciplines(List<BoletimDisciplineRowDTO> disciplines) { this.disciplines = disciplines; }
 
-    public Integer getTrimester() {
-        return this.trimester;
-    }
+    public Double getGeneralAverage() { return generalAverage; }
+    public void setGeneralAverage(Double generalAverage) { this.generalAverage = generalAverage; }
 
-    public void setTrimester(Integer trimester) {
-        this.trimester = trimester;
-    }
+    public String getFinalResult() { return finalResult; }
+    public void setFinalResult(String finalResult) { this.finalResult = finalResult; }
 
-    public String getPeriod() {
-        return this.period;
-    }
-
-    public void setPeriod(String period) {
-        this.period = period;
-    }
-
-    public List<DisciplineGradeDTO> getDisciplineGrades() {
-        return this.disciplineGrades;
-    }
-
-    public void setDisciplineGrades(List<DisciplineGradeDTO> disciplineGrades) {
-        this.disciplineGrades = disciplineGrades;
-    }
-
-    public String getBehavior() {
-        return this.behavior;
-    }
-
-    public void setBehavior(String behavior) {
-        this.behavior = behavior;
-    }
-
-    public String getObservation() {
-        return this.observation;
-    }
-
-    public void setObservation(String observation) {
-        this.observation = observation;
-    }
-
-    public BoletimDTO studentName(String studentName) {
-        setStudentName(studentName);
-        return this;
-    }
-
-    public BoletimDTO studentNumber(String studentNumber) {
-        setStudentNumber(studentNumber);
-        return this;
-    }
-
-    public BoletimDTO schoolClassName(String schoolClassName) {
-        setSchoolClassName(schoolClassName);
-        return this;
-    }
-
-    public BoletimDTO academicYear(String academicYear) {
-        setAcademicYear(academicYear);
-        return this;
-    }
-
-    public BoletimDTO trimester(Integer trimester) {
-        setTrimester(trimester);
-        return this;
-    }
-
-    public BoletimDTO period(String period) {
-        setPeriod(period);
-        return this;
-    }
-
-    public BoletimDTO disciplineGrades(List<DisciplineGradeDTO> disciplineGrades) {
-        setDisciplineGrades(disciplineGrades);
-        return this;
-    }
-
-    public BoletimDTO behavior(String behavior) {
-        setBehavior(behavior);
-        return this;
-    }
-
-    public BoletimDTO observation(String observation) {
-        setObservation(observation);
-        return this;
+    public String getGeneralAverageFormatted() {
+        return generalAverage != null ? String.format("%.1f", generalAverage) : "-";
     }
 }

@@ -3,209 +3,538 @@
     xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <style>
-        /* Estilização geral da Sidebar e Fundo */
+        /* ============================================
+           RESET DE TOUCH — ESSENCIAL PARA MOBILE
+           ============================================ */
+        .sidebar, .sidebar * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        /* ============================================
+           SIDEBAR BASE
+           ============================================ */
         .sidebar {
             background-color: #fcfcfc !important;
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Viewport fixo, evita recálculo */
+            max-height: 100vh;
+            position: relative;
+            z-index: 100;
+            /* Impede scroll chaining (scroll passar para o body) */
+            overscroll-behavior-y: contain;
         }
 
-        /* Transições do rodapé da sidebar */
+        /* ============================================
+           ÁREA DE SCROLL — O MAIS IMPORTANTE
+           ============================================ */
+        .sidebar-scroll {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            overflow-x: hidden;
+            /* Scroll suave em iOS */
+            -webkit-overflow-scrolling: touch;
+            /* MUITO padding no fim para o último item
+               nunca ficar colado ao rodapé */
+            padding: 0.5rem 0.5rem 140px 0.5rem;
+            /* Impede que o rodapé "suba" e intercepte clicks */
+            overscroll-behavior-y: contain;
+        }
+
+        /* Scrollbar fina e discreta */
+        .sidebar-scroll::-webkit-scrollbar { width: 3px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: rgba(128, 0, 32, 0.2);
+            border-radius: 99px;
+        }
+
+        /* ============================================
+           MENU ITEMS — TOUCH TARGETS AMPLIADOS
+           ============================================ */
+        .admin-sidebar-menu {
+            border: none !important;
+            background: transparent !important;
+        }
+
+        .admin-sidebar-menu .ui-menu-list {
+            background: transparent !important;
+            border: none !important;
+        }
+
+        .admin-sidebar-menu .ui-menuitem {
+            margin: 2px 0;
+            border-radius: 10px;
+            /* Impede seleção de texto acidental */
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .admin-sidebar-menu .ui-menuitem-link {
+            padding: 0.75rem 0.875rem !important;
+            border-radius: 10px !important;
+            transition: background-color 0.15s ease, color 0.15s ease;
+            /* Touch target mínimo 48px */
+            min-height: 48px;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.65rem;
+            text-decoration: none !important;
+            /* Garante que o clique é capturado aqui */
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+        }
+
+        .admin-sidebar-menu .ui-menuitem-link:hover,
+        .admin-sidebar-menu .ui-menuitem-link:focus {
+            background-color: rgba(128, 0, 32, 0.07) !important;
+            color: #800020 !important;
+        }
+
+        .admin-sidebar-menu .ui-menuitem-link:active {
+            background-color: rgba(128, 0, 32, 0.14) !important;
+            transform: scale(0.97);
+            transition: transform 0.05s ease;
+        }
+
+        /* Ícones */
+        .admin-sidebar-menu .ui-menuitem-icon {
+            color: #FFD700 !important;
+            font-size: 1.1rem;
+            width: 1.5rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .admin-sidebar-menu .ui-menuitem-link:hover .ui-menuitem-icon {
+            color: #800020 !important;
+        }
+
+        /* Headers de seção */
+        .sidebar-menu-header {
+            font-size: 0.68rem !important;
+            letter-spacing: 0.1em;
+            color: #9ca3af !important;
+            pointer-events: none;
+            padding: 0.6rem 0.875rem 0.3rem !important;
+            margin-top: 0.25rem !important;
+            text-transform: uppercase;
+        }
+
+        .sidebar-menu-header .ui-menuitem-icon {
+            color: #9ca3af !important;
+            font-size: 0.85rem;
+        }
+
+        /* ============================================
+           CABEÇALHO
+           ============================================ */
+        .sidebar-header {
+            flex-shrink: 0;
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fcfcfc;
+        }
+
+        .sidebar-brand-badge {
+            background: linear-gradient(135deg, #800020, #a00030);
+            box-shadow: 0 4px 12px rgba(128, 0, 32, 0.2);
+            width: 38px; height: 38px;
+        }
+
+        /* ============================================
+           RODAPÉ — FIXO E ISOLADO
+           ============================================ */
+        .sidebar-footer {
+            flex-shrink: 0;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            /* Sombra para separar visualmente do conteúdo */
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+            position: relative;
+            z-index: 50;
+            /* Garante que não captura clicks acidentais */
+            pointer-events: auto;
+        }
+
         .sidebar-user-card {
-            transition: all 0.3s ease;
+            padding: 0.75rem;
         }
 
-        .sidebar-user-card .sidebar-user-trigger:hover {
-            background-color: rgba(128, 0, 32, 0.08) !important;
-            border-radius: 8px;
+        .sidebar-user-trigger {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            min-height: 48px;
+            transition: background-color 0.2s ease;
+            /* Isola o touch do scroll acima */
+            touch-action: manipulation;
         }
 
-        /* Comportamento do Dropdown quando aberto */
-        .sidebar-user-card .sidebar-user-dropdown {
+        .sidebar-user-trigger:hover,
+        .sidebar-user-trigger:focus {
+            background-color: rgba(128, 0, 32, 0.06);
+        }
+
+        .sidebar-user-avatar {
+            background: linear-gradient(135deg, #800020, #a00030) !important;
+            box-shadow: 0 2px 8px rgba(128, 0, 32, 0.2);
+            width: 36px; height: 36px;
+            font-size: 0.85rem;
+        }
+
+        /* Dropdown */
+        .sidebar-user-dropdown {
             display: none;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+            border-top: 1px solid #e9ecef;
+            /* Animação suave */
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
         .sidebar-user-card.open .sidebar-user-dropdown {
-            display: block !important;
-            animation: fadeIn 0.2s ease-in-out;
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
+        .sidebar-user-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.65rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            min-height: 44px;
+            cursor: pointer;
+            touch-action: manipulation;
         }
 
-        /* Hover cor de vinho com bordas redondas em TODOS os itens do dropdown (incluindo logout) */
-        .sidebar-user-card.open .sidebar-user-dropdown-item {
-            border-radius: 6px !important;
-            transition: background-color 0.2s ease, color 0.2s ease;
+        .sidebar-user-dropdown-item:hover,
+        .sidebar-user-dropdown-item:focus {
+            background-color: #800020 !important;
+            color: #FFFFFF !important;
+            text-decoration: none;
         }
 
-        .sidebar-user-card.open .sidebar-user-dropdown-item:hover,
-        .sidebar-user-card.open .sidebar-user-dropdown-item.text-danger:hover {
+        .sidebar-user-dropdown-item:hover i,
+        .sidebar-user-dropdown-item:focus i {
+            color: #FFD700 !important;
+        }
+
+        .sidebar-user-dropdown-item.text-danger {
+            color: #dc3545;
+        }
+
+        .sidebar-user-dropdown-item.text-danger:hover,
+        .sidebar-user-dropdown-item.text-danger:focus {
             background-color: #800020 !important;
             color: #FFFFFF !important;
         }
 
-        .sidebar-user-card.open .sidebar-user-dropdown-item:hover i,
-        .sidebar-user-card.open .sidebar-user-dropdown-item:hover span,
-        .sidebar-user-card.open .sidebar-user-dropdown-item.text-danger:hover i,
-        .sidebar-user-card.open .sidebar-user-dropdown-item.text-danger:hover span {
-            color: #FFFFFF !important;
+        .sidebar-user-trigger-icon {
+            transition: transform 0.25s ease;
+            font-size: 0.75rem;
+            color: #9ca3af;
         }
 
-        /* Ícones em amarelo dourado padrão na sidebar principal */
-        .sidebar .pi,
-        .sidebar-user-card .pi {
-            color: #FFD700 !important;
+        .sidebar-user-card.open .sidebar-user-trigger-icon {
+            transform: rotate(180deg);
         }
 
-        /* Exceção para o ícone de fechar ou setas se necessário, mantendo o padrão */
-        .sidebar-header .btn-close {
-            filter: none;
+        /* ============================================
+           MOBILE
+           ============================================ */
+        @media (max-width: 991.98px) {
+            .sidebar-scroll {
+                padding-bottom: 160px;
+            }
+        }
+
+        /* ============================================
+           REDUCED MOTION
+           ============================================ */
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
     </style>
 
+    <!-- ============================================
+         SCRIPT CRÍTICO — CORREÇÃO DO CLIQUE MOBILE
+         ============================================ -->
     <script type="text/javascript">
-        function toggleSidebar() {
-            document.querySelector('.dashbord-layout').classList.toggle('sidebar-visible');
-        }
+        (function() {
+            'use strict';
+
+            // Variáveis de controle de scroll
+            var scrollContainer = null;
+            var isScrolling = false;
+            var scrollTimeout = null;
+            var touchStartY = 0;
+            var touchStartX = 0;
+            var touchStartTime = 0;
+            var touchTarget = null;
+            var SCROLL_THRESHOLD = 10; // pixels de movimento para considerar scroll
+            var TIME_THRESHOLD = 300;  // ms máximo para considerar tap rápido
+
+            function init() {
+                scrollContainer = document.querySelector('.sidebar-scroll');
+                if (!scrollContainer) return;
+
+                // Intercepta touchstart para guardar o alvo original
+                scrollContainer.addEventListener('touchstart', function(e) {
+                    var touch = e.touches[0];
+                    touchStartX = touch.clientX;
+                    touchStartY = touch.clientY;
+                    touchStartTime = Date.now();
+                    // Guarda o elemento exato onde o dedo tocou
+                    touchTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+                    isScrolling = false;
+
+                    // Cancela qualquer timeout pendente
+                    if (scrollTimeout) clearTimeout(scrollTimeout);
+                }, { passive: true });
+
+                // Detecta movimento — se passar do threshold, é scroll, não click
+                scrollContainer.addEventListener('touchmove', function(e) {
+                    var touch = e.touches[0];
+                    var deltaY = Math.abs(touch.clientY - touchStartY);
+                    var deltaX = Math.abs(touch.clientX - touchStartX);
+
+                    if (deltaY > SCROLL_THRESHOLD || deltaX > SCROLL_THRESHOLD) {
+                        isScrolling = true;
+                    }
+                }, { passive: true });
+
+                // No touchend, se houve scroll, bloqueia o click fantasma
+                scrollContainer.addEventListener('touchend', function(e) {
+                    var touchDuration = Date.now() - touchStartTime;
+
+                    // Se foi um scroll ou um toque muito longo, marca como scrolling
+                    if (isScrolling || touchDuration > TIME_THRESHOLD) {
+                        isScrolling = true;
+                        // Bloqueia clicks por 150ms após o scroll parar
+                        scrollContainer.classList.add('scrolling-active');
+                        if (scrollTimeout) clearTimeout(scrollTimeout);
+                        scrollTimeout = setTimeout(function() {
+                            scrollContainer.classList.remove('scrolling-active');
+                            isScrolling = false;
+                        }, 150);
+                    }
+                }, { passive: true });
+
+                // Intercepta clicks na sidebar durante scroll
+                scrollContainer.addEventListener('click', function(e) {
+                    if (scrollContainer.classList.contains('scrolling-active')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                    // Verifica se o target do click é o mesmo do touchstart
+                    // Se não for, provavelmente é um click fantasma
+                    if (touchTarget &amp;&amp; !touchTarget.contains(e.target) &amp;&amp; !e.target.contains(touchTarget)) {
+                        // Permite se for dentro do mesmo menuitem
+                        var startItem = touchTarget.closest('.ui-menuitem-link');
+                        var endItem = e.target.closest('.ui-menuitem-link');
+                        if (startItem &amp;&amp; endItem &amp;&amp; startItem !== endItem) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                        }
+                    }
+                }, true);
+
+                // Fecha dropdown ao scrollar
+                scrollContainer.addEventListener('scroll', function() {
+                    var card = document.querySelector('.sidebar-user-card');
+                    if (card &amp;&amp; card.classList.contains('open')) {
+                        card.classList.remove('open');
+                        var trigger = card.querySelector('.sidebar-user-trigger');
+                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                    }
+                }, { passive: true });
+            }
+
+            // Inicializa quando o DOM estiver pronto
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+            // Expõe função global para o botão de toggle
+            window.toggleSidebar = function() {
+                var layout = document.querySelector('.dashbord-layout');
+                if (layout) layout.classList.toggle('sidebar-visible');
+            };
+        })();
     </script>
 
-    <div class="sidebar d-flex flex-column h-100 shadow-sm">
-        <div class="flex-grow-1 overflow-y-auto">
-
-            <!-- Cabeçalho da Sidebar -->
-            <div class="sidebar-header p-3 d-flex align-items-center justify-content-between border-bottom">
+    <div class="sidebar">
+        
+        <!-- Área scrollável -->
+        <div class="sidebar-scroll">
+            
+            <!-- Cabeçalho -->
+            <div class="sidebar-header d-flex align-items-center justify-content-between">
                 <h:link outcome="/components/public/dashboard.xhtml"
                     styleClass="d-flex align-items-center gap-2 text-decoration-none">
-                    <div class="sidebar-brand-badge d-flex align-items-center justify-content-center text-white rounded p-2"
-                        style="background-color: #800020; min-width: 38px; min-height: 38px;">
-                        <i class="pi pi-building fs-5"></i>
+                    <div class="sidebar-brand-badge d-flex align-items-center justify-content-center text-white rounded">
+                        <i class="pi pi-building" style="font-size: 1.1rem;"></i>
                     </div>
                     <div class="d-flex flex-column">
-                        <span class="fs-6 fw-bold text-dark lh-sm">SistemSchool</span>
-                        <small class="text-muted" style="font-size: 0.75rem;">#{msg.schoolManagement}</small>
+                        <span class="fw-bold text-dark lh-sm" style="font-size: 0.95rem;">SistemSchool</span>
+                        <small class="text-muted" style="font-size: 0.7rem;">#{msg.schoolManagement}</small>
                     </div>
                 </h:link>
-                <!-- Botão de fechar em mobile -->
                 <button type="button" class="btn btn-close d-lg-none shadow-none" aria-label="Close"
                     onclick="toggleSidebar()"></button>
             </div>
 
-            <h:form styleClass="mt-2 px-2">
+            <h:form styleClass="mt-1 px-1">
                 <p:menu styleClass="admin-sidebar-menu border-0 w-100 bg-transparent">
 
-                    <!-- Principal: visível para todos os perfis autenticados -->
-                    <p:menuitem styleClass="sidebar-menu-header fw-bold text-uppercase text-muted px-2 py-1 mt-2"
-                        value="#{msg.main}" icon="pi pi-home" disabled="true" />
+                    <!-- Principal -->
+                    <p:menuitem styleClass="sidebar-menu-header fw-bold"
+                        value="#{msg.main}" icon="pi pi-th-large" disabled="true" />
                     <p:menuitem value="#{msg.dashboard}" outcome="/components/public/dashboard.xhtml"
-                        icon="pi pi-th-large" />
+                        icon="pi pi-home" />
 
-                    <!-- Secretaria: SECRETARY e ADMIN -->
-                    <p:menuitem styleClass="sidebar-menu-header fw-bold text-uppercase text-muted px-2 py-1 mt-3"
+                    <!-- Secretaria -->
+                    <p:menuitem styleClass="sidebar-menu-header fw-bold"
                         value="#{msg.secretariat}" icon="pi pi-briefcase" disabled="true"
                         rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.schoolClass}" action="#{schoolClassController.load}" icon="pi pi-inbox"
+                    <p:menuitem value="#{msg.schoolClass}" action="#{schoolClassController.load}" 
+                        icon="pi pi-sitemap"
                         rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.student}" action="#{studentController.load}" icon="pi pi-users"
+                    <p:menuitem value="#{msg.student}" action="#{studentController.load}" 
+                        icon="pi pi-users"
                         rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.enrollments}" action="#{enrolmentController.load}" icon="pi pi-id-card"
+                    <p:menuitem value="#{msg.enrollments}" action="#{enrolmentController.load}" 
+                        icon="pi pi-id-card"
                         rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.documents}" action="#{documentController.load}" icon="pi pi-folder-open"
+                    <p:menuitem value="#{msg.documents}" action="#{documentController.load}" 
+                        icon="pi pi-folder-open"
                         rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.payment}" action="#{pagamentoController.load}" icon="pi pi-dollar"
+                    <p:menuitem value="#{msg.payment}" action="#{pagamentoController.load}" 
+                        icon="pi pi-credit-card"
                         rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
 
-                    <!-- Pedagógico: PEDAGOGICAL e ADMIN -->
-                    <p:menuitem styleClass="sidebar-menu-header fw-bold text-uppercase text-muted px-2 py-1 mt-3"
+                    <!-- Pedagógico -->
+                    <p:menuitem styleClass="sidebar-menu-header fw-bold"
                         value="#{msg.pedagogical}" icon="pi pi-book" disabled="true"
                         rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.discipline}" action="#{disciplineController.load}" icon="pi pi-bookmark"
+                    <p:menuitem value="#{msg.discipline}" action="#{disciplineController.load}" 
+                        icon="pi pi-bookmark"
                         rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.schedule}" action="#{scheduleController.load}" icon="pi pi-book"
+                    <p:menuitem value="#{msg.schedule}" action="#{scheduleController.load}" 
+                        icon="pi pi-clock"
                         rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.grades}" action="#{gradeController.load}" icon="pi pi-graduation-cap"
+                    <p:menuitem value="#{msg.grades}" action="#{gradeController.load}" 
+                        icon="pi pi-graduation-cap"
                         rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
                     <p:menuitem value="#{msg.evaluation}" action="#{evaluationController.load}"
-                        icon="pi pi-check-square" rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
+                        icon="pi pi-check-circle"
+                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
                     <p:menuitem value="#{msg.impress}" action="#{impressaoPedagogicaController.load}"
-                        icon="pi pi-check-square" rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
-                    
+                        icon="pi pi-print"
+                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
 
-                    <!-- Financeiro: FINANCIAL e ADMIN -->
-                    <p:menuitem styleClass="sidebar-menu-header fw-bold text-uppercase text-muted px-2 py-1 mt-3"
+                    <!-- Financeiro -->
+                    <p:menuitem styleClass="sidebar-menu-header fw-bold"
                         value="#{msg.financial}" icon="pi pi-wallet" disabled="true"
                         rendered="#{sessionBean.isFinancial() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.fee}" action="#{feeController.load}" icon="pi pi-tag"
+                    <p:menuitem value="#{msg.fee}" action="#{feeController.load}" 
+                        icon="pi pi-tag"
                         rendered="#{sessionBean.isFinancial() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.cashBox}" action="#{cashBoxController.load}" icon="pi pi-inbox"
+                    <p:menuitem value="#{msg.cashBox}" action="#{cashBoxController.load}" 
+                        icon="pi pi-box"
                         rendered="#{sessionBean.isFinancial() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.payment}" action="#{pagamentoController.load}" icon="pi pi-dollar"
+                    <p:menuitem value="#{msg.payment}" action="#{pagamentoController.load}" 
+                        icon="pi pi-dollar"
                         rendered="#{sessionBean.isFinancial() or sessionBean.isAdmin()}" />
                     <p:menuitem value="#{msg.financialMovement}" action="#{financialMovementController.load}"
-                        icon="pi pi-chart-line" rendered="#{sessionBean.isFinancial() or sessionBean.isAdmin()}" />
+                        icon="pi pi-chart-line"
+                        rendered="#{sessionBean.isFinancial() or sessionBean.isAdmin()}" />
 
-                    <!-- Recursos Humanos: apenas ADMIN -->
-                    <p:menuitem styleClass="sidebar-menu-header fw-bold text-uppercase text-muted px-2 py-1 mt-3"
-                        value="#{msg.humanResources}" icon="pi pi-users" disabled="true"
+                    <!-- Recursos Humanos -->
+                    <p:menuitem styleClass="sidebar-menu-header fw-bold"
+                        value="#{msg.humanResources}" icon="pi pi-user-edit" disabled="true"
                         rendered="#{sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.teachers}" action="#{teacherController.loadTeachers}" icon="pi pi-users"
+                    <p:menuitem value="#{msg.teachers}" action="#{teacherController.loadTeachers}" 
+                        icon="pi pi-user-edit"
                         rendered="#{sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.users}" outcome="/settings/users.xhtml" icon="pi pi-user-plus"
+                    <p:menuitem value="#{msg.users}" outcome="/settings/users.xhtml" 
+                        icon="pi pi-user-plus"
                         rendered="#{sessionBean.isAdmin()}" />
 
                 </p:menu>
             </h:form>
         </div>
 
-        <!-- Rodapé do Usuário na Sidebar Estilizado e Responsivo -->
-        <div class="sidebar-user-card p-3 border-top bg-light">
-            <button type="button"
-                class="sidebar-user-trigger btn w-100 d-flex align-items-center justify-content-between p-2 rounded border-0 bg-transparent shadow-none"
-                title="#{msg.toggleUserMenu}" aria-label="#{msg.toggleUserMenu}" aria-haspopup="true"
-                aria-expanded="false"
-                onclick="this.closest('.sidebar-user-card').classList.toggle('open'); this.setAttribute('aria-expanded', this.closest('.sidebar-user-card').classList.contains('open'));">
-                <div class="d-flex align-items-center gap-2 text-start" style="overflow: hidden;">
-                    <div class="sidebar-user-avatar rounded-circle text-white d-flex align-items-center justify-content-center flex-shrink-0"
-                        style="width: 35px; height: 35px; background-color: #800020;">
-                        <i class="pi pi-user"></i>
+        <!-- Rodapé fixo -->
+        <div class="sidebar-footer">
+            <div class="sidebar-user-card">
+                <button type="button"
+                    class="sidebar-user-trigger"
+                    title="#{msg.toggleUserMenu}" aria-label="#{msg.toggleUserMenu}" aria-haspopup="true"
+                    aria-expanded="false"
+                    onclick="this.closest('.sidebar-user-card').classList.toggle('open'); this.setAttribute('aria-expanded', this.closest('.sidebar-user-card').classList.contains('open'));">
+                    <div class="d-flex align-items-center gap-2 text-start" style="overflow: hidden;">
+                        <div class="sidebar-user-avatar rounded-circle text-white d-flex align-items-center justify-content-center flex-shrink-0">
+                            <i class="pi pi-user"></i>
+                        </div>
+                        <div class="d-flex flex-column" style="min-width: 0;">
+                            <span class="fw-semibold text-truncate text-dark lh-sm" style="font-size: 0.85rem;">
+                                <h:outputText value="#{sessionBean.loggedUser.email}" />
+                            </span>
+                            <small class="text-muted text-truncate" style="font-size: 0.75rem;">
+                                <h:outputText value="#{msg[sessionBean.loggedUser.perfil.toString()]}" />
+                            </small>
+                        </div>
                     </div>
-                    <div class="d-flex flex-column" style="min-width: 0;">
-                        <span class="fw-semibold text-truncate text-dark lh-sm" style="font-size: 0.85rem;">
-                            <h:outputText value="#{sessionBean.loggedUser.email}" />
-                        </span>
-                        <small class="text-muted text-truncate" style="font-size: 0.75rem;">
-                            <h:outputText value="#{msg[sessionBean.loggedUser.perfil.toString()]}" />
-                        </small>
-                    </div>
-                </div>
-                <i class="pi pi-chevron-down sidebar-user-trigger-icon text-muted flex-shrink-0 ms-2"
-                    aria-hidden="true"></i>
-            </button>
+                    <i class="pi pi-chevron-down sidebar-user-trigger-icon flex-shrink-0 ms-2"
+                        aria-hidden="true"></i>
+                </button>
 
-            <!-- Dropdown do Rodapé Bem Posicionado -->
-            <div class="sidebar-user-dropdown mt-2 pt-2 border-top">
-                <h:link outcome="/profile.xhtml"
-                    styleClass="sidebar-user-dropdown-item d-flex align-items-center gap-2 py-2 px-2 text-dark text-decoration-none">
-                    <i class="pi pi-user" aria-hidden="true"></i>
-                    <span style="font-size: 0.9rem;">#{msg.profile}</span>
-                </h:link>
-                <h:link outcome="/status.xhtml"
-                    styleClass="sidebar-user-dropdown-item d-flex align-items-center gap-2 py-2 px-2 text-dark text-decoration-none mt-1">
-                    <i class="pi pi-info-circle" aria-hidden="true"></i>
-                    <span style="font-size: 0.9rem;">#{msg.status}</span>
-                </h:link>
-                <a href="#"
-                    class="sidebar-user-dropdown-item d-flex align-items-center gap-2 py-2 px-2 text-danger text-decoration-none mt-1"
-                    onclick="document.getElementById('logoutForm:logoutButton').click(); return false;">
-                    <i class="pi pi-sign-out" aria-hidden="true"></i>
-                    <span style="font-size: 0.9rem;">#{msg.logout}</span>
-                </a>
+                <div class="sidebar-user-dropdown">
+                    <h:link outcome="/profile.xhtml"
+                        styleClass="sidebar-user-dropdown-item text-decoration-none">
+                        <i class="pi pi-user" aria-hidden="true"></i>
+                        <span>#{msg.profile}</span>
+                    </h:link>
+                    <h:link outcome="/status.xhtml"
+                        styleClass="sidebar-user-dropdown-item text-decoration-none mt-1">
+                        <i class="pi pi-info-circle" aria-hidden="true"></i>
+                        <span>#{msg.status}</span>
+                    </h:link>
+                    <a href="#"
+                        class="sidebar-user-dropdown-item text-danger text-decoration-none mt-1"
+                        onclick="document.getElementById('logoutForm:logoutButton').click(); return false;">
+                        <i class="pi pi-sign-out" aria-hidden="true"></i>
+                        <span>#{msg.logout}</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
     <h:form id="logoutForm" style="display:none;">
-        <h:commandButton id="logoutButton" value="Logout" action="#{userController.logout}" />
+        <h:commandButton id="logoutButton" value="#{msg.logout}" action="#{userController.logout}" />
     </h:form>
 
 </ui:composition>

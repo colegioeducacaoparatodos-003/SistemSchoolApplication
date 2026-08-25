@@ -45,6 +45,7 @@ public class PagamentoService {
 
     private static final int DIA_LIMITE_PAGAMENTO = 10;
     private static final BigDecimal VALOR_MULTA_ATRASO = new BigDecimal("1000");
+    private static final int MAX_TENTATIVAS_NUMERO_DOCUMENTO = 20;
 
     private final PagamentoRepository repository;
     private final EnrolmentRepository enrolmentRepository;
@@ -120,7 +121,16 @@ public class PagamentoService {
             throw new RuntimeException("Número de documento já existe: " + pagamento.getNumeroDocumento());
         }
 
-        Pagamento salvo = repository.save(pagamento);
+        Pagamento salvo;
+        try {
+            salvo = repository.save(pagamento);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // Corrida rara: outro pedido gravou o mesmo número de documento entretanto.
+            // Gera um novo número (agora já vai encontrar o conflito no findMaxSequenceForYear) e tenta novamente.
+            LOGGER.log(Level.WARNING, "Conflito de numeroDocumento ao gravar pagamento, a gerar novo número e repetir.", e);
+            pagamento.setNumeroDocumento(generateNumeroDocumento());
+            salvo = repository.save(pagamento);
+        }
 
         if (salvo.getEstado() == EstadoPagamento.PAGO) {
             aplicarEntradaNoCaixa(salvo, resolveOperatorName());
@@ -403,8 +413,15 @@ public class PagamentoService {
         pagamento.setEstado(EstadoPagamento.PAGO);
         pagamento.setNumeroDocumento(generateNumeroDocumento());
 
-        pagamento = repository.save(pagamento);
-        repository.flush();
+        try {
+            pagamento = repository.save(pagamento);
+            repository.flush();
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            LOGGER.log(Level.WARNING, "Conflito de numeroDocumento ao confirmar pagamento, a gerar novo número e repetir.", e);
+            pagamento.setNumeroDocumento(generateNumeroDocumento());
+            pagamento = repository.save(pagamento);
+            repository.flush();
+        }
         aplicarEntradaNoCaixa(pagamento, operador);
         return pagamento;
     }
@@ -564,10 +581,42 @@ public class PagamentoService {
     // GERAÇÃO DE NÚMEROS SEQUENCIAIS
     // ─────────────────────────────────────────────────────────────
 
+    /**
+     * Gera o próximo número de documento no formato PAG-<ano>-<sequência>.
+     *
+     * IMPORTANTE: usa o MAIOR número de sequência já usado no ano (via
+     * findMaxSequenceForYear), e NÃO repository.count(). Usar count() estava a
+     * causar duplicados (ex: "PAG-2026-00074" já existente) sempre que um
+     * pagamento era eliminado, porque a contagem total de linhas baixa mas a
+     * sequência de números já emitidos não retrocede.
+     *
+     * Além disso, faz uma verificação extra com existsByNumeroDocumento e
+     * incrementa em caso de colisão residual (ex: concorrência entre pedidos
+     * simultâneos), sem nunca escrever nada na base de dados aqui - é apenas
+     * cálculo em memória antes do save().
+     */
     private String generateNumeroDocumento() {
         int year = Year.now().getValue();
-        long count = repository.count() + 1;
-        return String.format("PAG-%d-%05d", year, count);
+        long nextSeq = repository.findMaxSequenceForYear(year) + 1;
+
+        String numero;
+        int tentativas = 0;
+        do {
+            numero = String.format("PAG-%d-%05d", year, nextSeq);
+            if (!repository.existsByNumeroDocumento(numero)) {
+                break;
+            }
+            nextSeq++;
+            tentativas++;
+        } while (tentativas < MAX_TENTATIVAS_NUMERO_DOCUMENTO);
+
+        if (tentativas >= MAX_TENTATIVAS_NUMERO_DOCUMENTO) {
+            throw new RuntimeException(
+                    "Não foi possível gerar um número de documento único após " + MAX_TENTATIVAS_NUMERO_DOCUMENTO
+                            + " tentativas. Verifique a sequência de pagamentos do ano " + year + ".");
+        }
+
+        return numero;
     }
 
     private String generateMovementNumber() {

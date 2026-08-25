@@ -16,6 +16,9 @@ import jakarta.inject.Inject;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Named;
 
+import com.SistemSchool.service.BIValidationService;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.validator.ValidatorException;
 import org.primefaces.model.file.UploadedFile;
 
 import java.io.IOException;
@@ -64,6 +67,9 @@ public class TeacherController implements Serializable {
 
     @Inject
     private TeacherService teacherService;
+
+    @Inject
+    private BIValidationService biValidationService;
 
     private transient TeacherLazyModel lazyModel;
 
@@ -117,6 +123,16 @@ public class TeacherController implements Serializable {
     // CRUD
     // ─────────────────────────────────────────────────────────────
 
+    // ─────────────────────────────────────────────────────────────
+    // PREPARAÇÃO DO NOVO PROFESSOR (abertura do diálogo de criação)
+    // ─────────────────────────────────────────────────────────────
+
+    public void prepareNewTeacher() {
+        teacher = new Teacher();
+        uploadedPhoto = null;
+        teacher.setTeacherNumber(teacherService.generateTeacherNumber());
+    }
+
     public String saveTeacher() {
         try {
             // 1. Upload da foto
@@ -143,6 +159,31 @@ public class TeacherController implements Serializable {
             e.printStackTrace();
             addMessage(FacesMessage.SEVERITY_ERROR, "Professor", e.getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Validador customizado para o campo BI, usado via
+     * validator="#{teacherController.validateBI}"
+     * no p:inputText. O campo é opcional: só valida o formato se algo for
+     * preenchido.
+     */
+    public void validateBI(FacesContext context, UIComponent component, Object value) {
+        if (value == null) {
+            return;
+        }
+
+        String bi = value.toString().trim();
+        if (bi.isEmpty()) {
+            return;
+        }
+
+        if (!biValidationService.validar(bi)) {
+            FacesMessage message = new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "BI inválido",
+                    "Formato inválido. Ex: 003456789LA034 (9 dígitos + 2 letras + 3 dígitos)");
+            throw new ValidatorException(message);
         }
     }
 
@@ -288,31 +329,31 @@ public class TeacherController implements Serializable {
     // PDF
     // ─────────────────────────────────────────────────────────────
     /**
-    public void printStudentPdf() {
-        if (selectedId == null) {
-            addMessage(FacesMessage.SEVERITY_WARN, "Nenhum aluno selecionado!", "");
-            return;
-        }
-        try {
-            TeacherDTO dto = teacherService.getAllTeachers().stream()
-                    .filter(s -> s.getPkTeacher().equals(selectedId))
-                    .findFirst()
-                    .orElse(null);
-
-            if (dto == null) {
-                addMessage(FacesMessage.SEVERITY_WARN, "Aluno não encontrado", "");
-                return;
-            }
-
-            byte[] pdf = PdfReportService.generateStudentReport(dto);
-            String fileName = "aluno_" + dto.getTeacherNumber() + ".pdf";
-            PdfReportService.streamToResponse(pdf, fileName);
-
-        } catch (DocumentException | IOException e) {
-            e.printStackTrace();
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao gerar PDF", e.getMessage());
-        }
-    }
+     * public void printStudentPdf() {
+     * if (selectedId == null) {
+     * addMessage(FacesMessage.SEVERITY_WARN, "Nenhum aluno selecionado!", "");
+     * return;
+     * }
+     * try {
+     * TeacherDTO dto = teacherService.getAllTeachers().stream()
+     * .filter(s -> s.getPkTeacher().equals(selectedId))
+     * .findFirst()
+     * .orElse(null);
+     * 
+     * if (dto == null) {
+     * addMessage(FacesMessage.SEVERITY_WARN, "Aluno não encontrado", "");
+     * return;
+     * }
+     * 
+     * byte[] pdf = PdfReportService.generateStudentReport(dto);
+     * String fileName = "aluno_" + dto.getTeacherNumber() + ".pdf";
+     * PdfReportService.streamToResponse(pdf, fileName);
+     * 
+     * } catch (DocumentException | IOException e) {
+     * e.printStackTrace();
+     * addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao gerar PDF", e.getMessage());
+     * }
+     * }
      */
     // ─────────────────────────────────────────────────────────────
     // UTIL
@@ -490,4 +531,29 @@ public class TeacherController implements Serializable {
     public long getNewTeacherCount() {
         return newTeacherCount;
     }
+
+    public void setTotalTeacherCount(long totalTeacherCount) {
+        this.totalTeacherCount = totalTeacherCount;
+    }
+
+    public void setActiveTeacherCount(long activeTeacherCount) {
+        this.activeTeacherCount = activeTeacherCount;
+    }
+
+    public void setOnLeaveTeacherCount(long onLeaveTeacherCount) {
+        this.onLeaveTeacherCount = onLeaveTeacherCount;
+    }
+
+    public void setNewTeacherCount(long newTeacherCount) {
+        this.newTeacherCount = newTeacherCount;
+    }
+
+    public BIValidationService getBiValidationService() {
+        return this.biValidationService;
+    }
+
+    public void setBiValidationService(BIValidationService biValidationService) {
+        this.biValidationService = biValidationService;
+    }
+
 }

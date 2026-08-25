@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.primefaces.PrimeFaces;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import com.SistemSchool.config.SessionBean;
 import com.SistemSchool.dto.PersonDTO.PersonResponseDTO;
 import com.SistemSchool.dto.UserDTO;
 import com.SistemSchool.io.Perfil;
+import com.SistemSchool.lazy.UserLazyDataModel;
 import com.SistemSchool.service.UserService;
 import com.SistemSchool.util.PerfilNotDefinedException;
 
@@ -83,9 +85,20 @@ public class UserController implements Serializable {
     private Perfil filterPerfil;
     private Boolean filterActive;
 
+    // ========== RECUPERAÇÃO DE SENHA ==========
+    private String recoveryEmail;
+    private String recoveryPassword;
+    private String recoveryConfirmPassword;
+    private int recoveryStep = 1;
+    private UserDTO.UserResponseDTO recoveryUser;
+
+    // ========== LAZY MODEL ==========
+    private UserLazyDataModel lazyUsers;
+
     @PostConstruct
     public void init() {
         logger.info("Inicializando UserController");
+        this.lazyUsers = new UserLazyDataModel(userService);
         resetLoginFields();
         resetNewUserFields();
         resetEditFields();
@@ -93,9 +106,6 @@ public class UserController implements Serializable {
 
     // ========== VERIFICAÇÕES DE SEGURANÇA ==========
 
-    /**
-     * TRUE quando não existe nenhum ADMIN no sistema (primeiro acesso).
-     */
     public boolean isFirstAdminSetup() {
         try {
             return userService.countAdmins() == 0;
@@ -105,17 +115,11 @@ public class UserController implements Serializable {
         }
     }
 
-    /**
-     * TRUE quando o usuário logado é ADMIN.
-     */
     public boolean isAdminLoggedIn() {
         UserDTO.UserResponseDTO current = sessionBean.getLoggedUser();
         return current != null && current.getPerfil() == Perfil.ADMIN;
     }
 
-    /**
-     * Perfis disponíveis para criação na tela de registo.
-     */
     public List<Perfil> getAvailablePerfisForSignup() {
         if (isFirstAdminSetup()) {
             return List.of(Perfil.ADMIN);
@@ -270,21 +274,18 @@ public class UserController implements Serializable {
             boolean firstSetup = isFirstAdminSetup();
             UserDTO.UserResponseDTO current = sessionBean.getLoggedUser();
 
-            // REGRA 1: Se já existe ADMIN e ninguém está logado, bloquear
             if (!firstSetup && (current == null || current.getPerfil() != Perfil.ADMIN)) {
                 addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
                         "Apenas o Administrador pode criar novas contas.");
                 return null;
             }
 
-            // REGRA 2: Só pode existir um ADMIN no sistema
             if (newUserPerfil == Perfil.ADMIN && !firstSetup) {
                 addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
                         "Já existe um Administrador no sistema. Apenas um é permitido.");
                 return null;
             }
 
-            // REGRA 3: No primeiro setup, só pode criar ADMIN
             if (firstSetup && newUserPerfil != Perfil.ADMIN) {
                 addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
                         "O primeiro utilizador deve ser um Administrador.");
@@ -397,6 +398,98 @@ public class UserController implements Serializable {
         return "/components/dashboard/sign_in.xhtml?faces-redirect=true";
     }
 
+    // ========== RECUPERAÇÃO DE SENHA ==========
+
+    public String verifyEmailForRecovery() {
+        if (recoveryEmail == null || recoveryEmail.trim().isEmpty()) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "Email é obrigatório");
+            return null;
+        }
+
+        Optional<UserDTO.UserResponseDTO> userOpt = userService.getUserByEmail(recoveryEmail.trim());
+        if (userOpt.isPresent()) {
+            recoveryUser = userOpt.get();
+            recoveryStep = 2;
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso",
+                    "Conta encontrada. Defina a sua nova senha.");
+        } else {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
+                    "Não existe conta associada a este email.");
+        }
+        return null;
+    }
+
+    public String recoverPassword() {
+        if (recoveryUser == null) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
+                    "Sessão de recuperação inválida. Tente novamente.");
+            recoveryStep = 1;
+            return null;
+        }
+
+        if (recoveryPassword == null || recoveryPassword.trim().isEmpty()) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "Nova senha é obrigatória");
+            return null;
+        }
+
+        if (recoveryPassword.length() < 6) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
+                    "A senha deve ter no mínimo 6 caracteres");
+            return null;
+        }
+
+        if (!recoveryPassword.equals(recoveryConfirmPassword)) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "As senhas não coincidem");
+            return null;
+        }
+
+        try {
+            UserDTO.UpdateUserDTO updateDTO = new UserDTO.UpdateUserDTO();
+            updateDTO.setPkUser(recoveryUser.getPkUser());
+            updateDTO.setEmail(recoveryUser.getEmail());
+            updateDTO.setPerfil(recoveryUser.getPerfil());
+            updateDTO.setActive(recoveryUser.isActive());
+            updateDTO.setDeviceToken(recoveryUser.getDeviceToken());
+            updateDTO.setPassword(recoveryPassword);
+
+            userService.updateUser(updateDTO);
+
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso",
+                    "Senha alterada com sucesso! Redirecionando para o login...");
+            resetRecoveryFields();
+
+            PrimeFaces.current().executeScript(
+                    "setTimeout(function(){ window.location.href = '" +
+                            FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() +
+                            "/login.xhtml'; }, 1500);");
+
+            return null;
+        } catch (RuntimeException e) {
+            logger.error("Erro ao recuperar senha para email: {}", recoveryEmail, e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
+                    "Não foi possível alterar a senha. Tente novamente.");
+        }
+        return null;
+    }
+
+    public void cancelRecovery() {
+        resetRecoveryFields();
+        try {
+            ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+            ec.redirect(ec.getRequestContextPath() + "/login.xhtml");
+        } catch (IOException e) {
+            logger.error("Erro ao redirecionar para login", e);
+        }
+    }
+
+    private void resetRecoveryFields() {
+        recoveryEmail = null;
+        recoveryPassword = null;
+        recoveryConfirmPassword = null;
+        recoveryStep = 1;
+        recoveryUser = null;
+    }
+
     // ========== RESET DE CAMPOS ==========
 
     private void resetLoginFields() {
@@ -405,7 +498,7 @@ public class UserController implements Serializable {
         rememberMe = false;
     }
 
-    private void resetNewUserFields() {
+    public void resetNewUserFields() {
         newFirstName = null;
         newMiddleName = null;
         newLastName = null;
@@ -429,33 +522,13 @@ public class UserController implements Serializable {
         editMode = false;
     }
 
-    // ========== FILTROS ==========
+    // ========== FILTROS (ATUALIZADOS PARA LAZY MODEL) ==========
 
     public void filterUsers() {
-        if (users == null) {
-            return;
-        }
-
-        filteredUsers = new ArrayList<>();
-
-        for (UserDTO.UserResponseDTO user : users) {
-            boolean matches = true;
-
-            if (filterEmail != null && !filterEmail.trim().isEmpty()) {
-                matches = user.getEmail().toLowerCase().contains(filterEmail.toLowerCase());
-            }
-
-            if (matches && filterPerfil != null) {
-                matches = user.getPerfil() == filterPerfil;
-            }
-
-            if (matches && filterActive != null) {
-                matches = user.isActive() == filterActive;
-            }
-
-            if (matches) {
-                filteredUsers.add(user);
-            }
+        if (lazyUsers != null) {
+            lazyUsers.setFilterEmail(filterEmail);
+            lazyUsers.setFilterPerfil(filterPerfil);
+            lazyUsers.setFilterActive(filterActive);
         }
     }
 
@@ -463,7 +536,11 @@ public class UserController implements Serializable {
         filterEmail = null;
         filterPerfil = null;
         filterActive = null;
-        filteredUsers = null;
+        if (lazyUsers != null) {
+            lazyUsers.setFilterEmail(null);
+            lazyUsers.setFilterPerfil(null);
+            lazyUsers.setFilterActive(null);
+        }
     }
 
     // ========== HELPERS DE APRESENTAÇÃO ==========
@@ -508,92 +585,285 @@ public class UserController implements Serializable {
 
     // ========== GETTERS E SETTERS ==========
 
-    public String getLoginEmail() { return loginEmail; }
-    public void setLoginEmail(String loginEmail) { this.loginEmail = loginEmail; }
+    public String getLoginEmail() {
+        return loginEmail;
+    }
 
-    public String getLoginPassword() { return loginPassword; }
-    public void setLoginPassword(String loginPassword) { this.loginPassword = loginPassword; }
+    public void setLoginEmail(String loginEmail) {
+        this.loginEmail = loginEmail;
+    }
 
-    public boolean isRememberMe() { return rememberMe; }
-    public void setRememberMe(boolean rememberMe) { this.rememberMe = rememberMe; }
+    public String getLoginPassword() {
+        return loginPassword;
+    }
 
-    public boolean isLoginDialogVisible() { return loginDialogVisible; }
-    public void setLoginDialogVisible(boolean loginDialogVisible) { this.loginDialogVisible = loginDialogVisible; }
+    public void setLoginPassword(String loginPassword) {
+        this.loginPassword = loginPassword;
+    }
 
-    public String getNewFirstName() { return newFirstName; }
-    public void setNewFirstName(String newFirstName) { this.newFirstName = newFirstName; }
+    public boolean isRememberMe() {
+        return rememberMe;
+    }
 
-    public String getNewMiddleName() { return newMiddleName; }
-    public void setNewMiddleName(String newMiddleName) { this.newMiddleName = newMiddleName; }
+    public void setRememberMe(boolean rememberMe) {
+        this.rememberMe = rememberMe;
+    }
 
-    public String getNewLastName() { return newLastName; }
-    public void setNewLastName(String newLastName) { this.newLastName = newLastName; }
+    public boolean isLoginDialogVisible() {
+        return loginDialogVisible;
+    }
 
-    public String getNewUserEmail() { return newUserEmail; }
-    public void setNewUserEmail(String newUserEmail) { this.newUserEmail = newUserEmail; }
+    public void setLoginDialogVisible(boolean loginDialogVisible) {
+        this.loginDialogVisible = loginDialogVisible;
+    }
 
-    public String getNewUserPassword() { return newUserPassword; }
-    public void setNewUserPassword(String newUserPassword) { this.newUserPassword = newUserPassword; }
+    public String getNewFirstName() {
+        return newFirstName;
+    }
 
-    public String getNewUserConfirmPassword() { return newUserConfirmPassword; }
-    public void setNewUserConfirmPassword(String newUserConfirmPassword) { this.newUserConfirmPassword = newUserConfirmPassword; }
+    public void setNewFirstName(String newFirstName) {
+        this.newFirstName = newFirstName;
+    }
 
-    public Integer getNewUserFkPerson() { return newUserFkPerson; }
-    public void setNewUserFkPerson(Integer newUserFkPerson) { this.newUserFkPerson = newUserFkPerson; }
+    public String getNewMiddleName() {
+        return newMiddleName;
+    }
 
-    public Perfil getNewUserPerfil() { return newUserPerfil; }
-    public void setNewUserPerfil(Perfil newUserPerfil) { this.newUserPerfil = newUserPerfil; }
+    public void setNewMiddleName(String newMiddleName) {
+        this.newMiddleName = newMiddleName;
+    }
 
-    public boolean isNewUserActive() { return newUserActive; }
-    public void setNewUserActive(boolean newUserActive) { this.newUserActive = newUserActive; }
+    public String getNewLastName() {
+        return newLastName;
+    }
 
-    public String getNewUserDeviceToken() { return newUserDeviceToken; }
-    public void setNewUserDeviceToken(String newUserDeviceToken) { this.newUserDeviceToken = newUserDeviceToken; }
+    public void setNewLastName(String newLastName) {
+        this.newLastName = newLastName;
+    }
 
-    public boolean isRegisterDialogVisible() { return registerDialogVisible; }
-    public void setRegisterDialogVisible(boolean registerDialogVisible) { this.registerDialogVisible = registerDialogVisible; }
+    public String getNewUserEmail() {
+        return newUserEmail;
+    }
 
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public void setNewUserEmail(String newUserEmail) {
+        this.newUserEmail = newUserEmail;
+    }
 
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public String getNewUserPassword() {
+        return newUserPassword;
+    }
 
-    public String getImagePerson() { return imagePerson; }
-    public void setImagePerson(String imagePerson) { this.imagePerson = imagePerson; }
+    public void setNewUserPassword(String newUserPassword) {
+        this.newUserPassword = newUserPassword;
+    }
 
-    public UserDTO.UserResponseDTO getSelectedUser() { return selectedUser; }
-    public void setSelectedUser(UserDTO.UserResponseDTO selectedUser) { this.selectedUser = selectedUser; }
+    public String getNewUserConfirmPassword() {
+        return newUserConfirmPassword;
+    }
 
-    public String getEditUserEmail() { return editUserEmail; }
-    public void setEditUserEmail(String editUserEmail) { this.editUserEmail = editUserEmail; }
+    public void setNewUserConfirmPassword(String newUserConfirmPassword) {
+        this.newUserConfirmPassword = newUserConfirmPassword;
+    }
 
-    public String getEditUserDeviceToken() { return editUserDeviceToken; }
-    public void setEditUserDeviceToken(String editUserDeviceToken) { this.editUserDeviceToken = editUserDeviceToken; }
+    public Integer getNewUserFkPerson() {
+        return newUserFkPerson;
+    }
 
-    public boolean isEditUserActive() { return editUserActive; }
-    public void setEditUserActive(boolean editUserActive) { this.editUserActive = editUserActive; }
+    public void setNewUserFkPerson(Integer newUserFkPerson) {
+        this.newUserFkPerson = newUserFkPerson;
+    }
 
-    public Perfil getEditUserPerfil() { return editUserPerfil; }
-    public void setEditUserPerfil(Perfil editUserPerfil) { this.editUserPerfil = editUserPerfil; }
+    public Perfil getNewUserPerfil() {
+        return newUserPerfil;
+    }
 
-    public boolean isEditMode() { return editMode; }
-    public void setEditMode(boolean editMode) { this.editMode = editMode; }
+    public void setNewUserPerfil(Perfil newUserPerfil) {
+        this.newUserPerfil = newUserPerfil;
+    }
 
-    public List<UserDTO.UserResponseDTO> getUsers() { return users; }
-    public void setUsers(List<UserDTO.UserResponseDTO> users) { this.users = users; }
+    public boolean isNewUserActive() {
+        return newUserActive;
+    }
 
-    public List<UserDTO.UserResponseDTO> getFilteredUsers() { return filteredUsers != null ? filteredUsers : users; }
-    public void setFilteredUsers(List<UserDTO.UserResponseDTO> filteredUsers) { this.filteredUsers = filteredUsers; }
+    public void setNewUserActive(boolean newUserActive) {
+        this.newUserActive = newUserActive;
+    }
 
-    public UserDTO.UserResponseDTO getLoggedUser() { return sessionBean.getLoggedUser(); }
+    public String getNewUserDeviceToken() {
+        return newUserDeviceToken;
+    }
 
-    public String getFilterEmail() { return filterEmail; }
-    public void setFilterEmail(String filterEmail) { this.filterEmail = filterEmail; }
+    public void setNewUserDeviceToken(String newUserDeviceToken) {
+        this.newUserDeviceToken = newUserDeviceToken;
+    }
 
-    public Perfil getFilterPerfil() { return filterPerfil; }
-    public void setFilterPerfil(Perfil filterPerfil) { this.filterPerfil = filterPerfil; }
+    public boolean isRegisterDialogVisible() {
+        return registerDialogVisible;
+    }
 
-    public Boolean getFilterActive() { return filterActive; }
-    public void setFilterActive(Boolean filterActive) { this.filterActive = filterActive; }
+    public void setRegisterDialogVisible(boolean registerDialogVisible) {
+        this.registerDialogVisible = registerDialogVisible;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getImagePerson() {
+        return imagePerson;
+    }
+
+    public void setImagePerson(String imagePerson) {
+        this.imagePerson = imagePerson;
+    }
+
+    public UserDTO.UserResponseDTO getSelectedUser() {
+        return selectedUser;
+    }
+
+    public void setSelectedUser(UserDTO.UserResponseDTO selectedUser) {
+        this.selectedUser = selectedUser;
+    }
+
+    public String getEditUserEmail() {
+        return editUserEmail;
+    }
+
+    public void setEditUserEmail(String editUserEmail) {
+        this.editUserEmail = editUserEmail;
+    }
+
+    public String getEditUserDeviceToken() {
+        return editUserDeviceToken;
+    }
+
+    public void setEditUserDeviceToken(String editUserDeviceToken) {
+        this.editUserDeviceToken = editUserDeviceToken;
+    }
+
+    public boolean isEditUserActive() {
+        return editUserActive;
+    }
+
+    public void setEditUserActive(boolean editUserActive) {
+        this.editUserActive = editUserActive;
+    }
+
+    public Perfil getEditUserPerfil() {
+        return editUserPerfil;
+    }
+
+    public void setEditUserPerfil(Perfil editUserPerfil) {
+        this.editUserPerfil = editUserPerfil;
+    }
+
+    public boolean isEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
+    }
+
+    public List<UserDTO.UserResponseDTO> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<UserDTO.UserResponseDTO> users) {
+        this.users = users;
+    }
+
+    public List<UserDTO.UserResponseDTO> getFilteredUsers() {
+        return filteredUsers != null ? filteredUsers : users;
+    }
+
+    public void setFilteredUsers(List<UserDTO.UserResponseDTO> filteredUsers) {
+        this.filteredUsers = filteredUsers;
+    }
+
+    public UserDTO.UserResponseDTO getLoggedUser() {
+        return sessionBean.getLoggedUser();
+    }
+
+    public String getFilterEmail() {
+        return filterEmail;
+    }
+
+    public void setFilterEmail(String filterEmail) {
+        this.filterEmail = filterEmail;
+    }
+
+    public Perfil getFilterPerfil() {
+        return filterPerfil;
+    }
+
+    public void setFilterPerfil(Perfil filterPerfil) {
+        this.filterPerfil = filterPerfil;
+    }
+
+    public Boolean getFilterActive() {
+        return filterActive;
+    }
+
+    public void setFilterActive(Boolean filterActive) {
+        this.filterActive = filterActive;
+    }
+
+    public String getRecoveryEmail() {
+        return recoveryEmail;
+    }
+
+    public void setRecoveryEmail(String recoveryEmail) {
+        this.recoveryEmail = recoveryEmail;
+    }
+
+    public String getRecoveryPassword() {
+        return recoveryPassword;
+    }
+
+    public void setRecoveryPassword(String recoveryPassword) {
+        this.recoveryPassword = recoveryPassword;
+    }
+
+    public String getRecoveryConfirmPassword() {
+        return recoveryConfirmPassword;
+    }
+
+    public void setRecoveryConfirmPassword(String recoveryConfirmPassword) {
+        this.recoveryConfirmPassword = recoveryConfirmPassword;
+    }
+
+    public int getRecoveryStep() {
+        return recoveryStep;
+    }
+
+    public void setRecoveryStep(int recoveryStep) {
+        this.recoveryStep = recoveryStep;
+    }
+
+    public UserDTO.UserResponseDTO getRecoveryUser() {
+        return recoveryUser;
+    }
+
+    public void setRecoveryUser(UserDTO.UserResponseDTO recoveryUser) {
+        this.recoveryUser = recoveryUser;
+    }
+
+    // ========== LAZY MODEL GETTER ==========
+
+    public UserLazyDataModel getLazyUsers() {
+        return lazyUsers;
+    }
 }

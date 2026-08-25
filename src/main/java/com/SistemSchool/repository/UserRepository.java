@@ -11,6 +11,7 @@ import com.SistemSchool.io.Perfil;
 import com.SistemSchool.model.User;
 import com.SistemSchool.modulo_dashboard_charts.dto.ProfileCountDTO;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +47,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query(value = "SELECT COUNT(*) FROM tb_user WHERE perfil = :perfil AND active = true", nativeQuery = true)
     long countActiveUsersByPerfilNative(@Param("perfil") String perfil);
 
-    // Login: já não expomos password/salt separadamente — com BCrypt basta o hash
     @Query(value = "SELECT pk_user, password FROM tb_user WHERE email = :email AND active = true", nativeQuery = true)
     List<Object[]> findUserCredentialsNative(@Param("email") String email);
 
@@ -74,6 +74,21 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query(value = "SELECT COUNT(*) FROM tb_user WHERE perfil = 'ADMIN'", nativeQuery = true)
     long countAdminUsersNative();
 
-     long countByPerfilAndActiveTrue(Perfil perfil);
+    @Query(value = "SELECT * FROM tb_user WHERE reset_token = :token", nativeQuery = true)
+    Optional<User> findByResetTokenNative(@Param("token") String token);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE tb_user SET reset_token = :token, reset_token_expiry = :expiry, user_modification_date = NOW() WHERE email = :email", nativeQuery = true)
+    int updateResetTokenNative(@Param("email") String email, @Param("token") String token,
+            @Param("expiry") LocalDateTime expiry);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE tb_user SET password = :password, reset_token = NULL, reset_token_expiry = NULL, user_modification_date = NOW() WHERE reset_token = :token", nativeQuery = true)
+    int updatePasswordByTokenNative(@Param("token") String token, @Param("password") String password);
+
+    long countByPerfilAndActiveTrue(Perfil perfil);
+
     long countByActiveTrue();
 }

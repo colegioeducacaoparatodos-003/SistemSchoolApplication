@@ -116,7 +116,7 @@
             .enr-act {
                 width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--enr-border);
                 display: inline-flex; align-items: center; justify-content: center;
-                font-size: .8rem; cursor: pointer; transition: all 0    .15s;
+                font-size: .8rem; cursor: pointer; transition: all 0.15s;
             }
             .enr-act:hover { transform: scale(1.08); }
             .enr-act.view { color: var(--enr-blue); background: #eaf1fb; }
@@ -220,7 +220,7 @@
                     <div class="enr-stat">
                         <div>
                             <div class="enr-stat-label">Total de Utilizadores</div>
-                            <div class="enr-stat-value">#{userController.users.size()}</div>
+                            <div class="enr-stat-value">#{userController.lazyUsers.rowCount}</div>
                         </div>
                         <div class="enr-stat-icon dark"><i class="pi pi-users" /></div>
                     </div>
@@ -288,11 +288,17 @@
                             update="dtUsers @form" styleClass="ui-button-outlined ui-button-secondary" />
                     </div>
 
+                    <!-- DATA TABLE COM LAZY MODEL -->
                     <p:dataTable id="dtUsers" widgetVar="dtUsers" styleClass="enr-table" var="user"
-                        value="#{userController.filteredUsers}" paginator="true" rows="10" reflow="true"
+                        value="#{userController.lazyUsers}"
+                        lazy="true"
+                        paginator="true"
+                        rows="10"
+                        reflow="true"
                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                         currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
-                        rowsPerPageTemplate="5,10,20,50" emptyMessage="#{msg.noUserFound}">
+                        rowsPerPageTemplate="5,10,20,50"
+                        emptyMessage="#{msg.noUserFound}">
 
                         <p:column headerText="#" style="width:50px; text-align:center">
                             <div class="enr-avatar">

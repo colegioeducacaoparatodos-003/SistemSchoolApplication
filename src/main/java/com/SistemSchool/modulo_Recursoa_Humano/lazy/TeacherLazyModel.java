@@ -1,13 +1,12 @@
 package com.SistemSchool.modulo_Recursoa_Humano.lazy;
 
+import com.SistemSchool.modulo_Recursoa_Humano.dto.TeacherDTO;
+import com.SistemSchool.modulo_Recursoa_Humano.service.TeacherService;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortMeta;
 import org.primefaces.model.FilterMeta;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
-
-import com.SistemSchool.modulo_Recursoa_Humano.dto.TeacherDTO;
-import com.SistemSchool.modulo_Recursoa_Humano.service.TeacherService;
 
 import java.util.HashMap;
 import java.util.List;

@@ -1,133 +1,593 @@
-<ui:composition xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:p="http://primefaces.org/ui" xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <p:dialog id="createTeacherDialog" widgetVar="createTeacherDialog" header="#{msg.newTeacher}" modal="true"
-              showEffect="fade" hideEffect="fade" closeOnEscape="true" styleClass="sc-dialog-create" width="1000" onshow="document.getElementById('teacherCreateForm').reset();"
-              dynamic="true" resizable="false" appendTo="@(body)">
+        showEffect="fade" hideEffect="fade" closeOnEscape="true" styleClass="tc-dialog-create" dynamic="true"
+        resizable="false" appendTo="@(body)" responsive="true" fitViewport="true"
+        onshow="document.getElementById('teacherCreateForm').reset();">
 
         <h:form id="teacherCreateForm" styleClass="ui-fluid" enctype="multipart/form-data">
-            <div class="sc-create-body">
-                <p:messages id="msgs" showDetail="true" closable="true"/>
+            <p:messages id="msgs" showDetail="true" closable="true" globalOnly="true" />
+
+            <div class="tc-dialog-body">
 
                 <!-- 1 · IDENTIFICAÇÃO DO PROFESSOR -->
-                <div class="sc-section">
-                    <div class="sc-section-title"><i class="pi pi-user"></i> #{msg.teacherIdentification}</div>
-                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank" columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
-                        <p:outputLabel for="teacherNumber" value="#{msg.teacherNumber}" styleClass="sc-label"/>
-                        <p:inputText id="teacherNumber" value="#{teacherController.teacher.teacherNumber}" placeholder="Ex: PROF-2024-0001"/>
+                <div class="tc-section">
+                    <div class="tc-section-title"><i class="pi pi-user"></i> #{msg.teacherIdentification}</div>
 
-                        <p:outputLabel for="firstName" value="#{msg.firstName}" styleClass="sc-label req"/>
-                        <p:inputText id="firstName" value="#{teacherController.teacher.fristName}" required="true"/>
+                    <div class="tc-field-row">
+                        <p:outputLabel for="teacherNumber" value="#{msg.teacherNumber}"
+                            styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputText id="teacherNumber" value="#{teacherController.teacher.teacherNumber}"
+                                readonly="true" styleClass="tc-readonly-field"
+                                placeholder="PROF-2026-0001" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="lastName" value="#{msg.lastName}" styleClass="sc-label req"/>
-                        <p:inputText id="lastName" value="#{teacherController.teacher.lastName}" required="true"/>
+                    <div class="tc-field-row">
+                        <p:outputLabel for="firstName" value="#{msg.firstName}"
+                            styleClass="tc-label tc-label-col req" />
+                        <div class="tc-field-col">
+                            <p:inputText id="firstName" value="#{teacherController.teacher.fristName}"
+                                required="true" />
+                            <p:message for="firstName" display="text" styleClass="tc-field-msg" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="gender" value="#{msg.gender}" styleClass="sc-label req"/>
-                        <p:selectOneMenu id="gender" value="#{teacherController.teacher.gender}" required="true">
-                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
-                            <f:selectItems value="#{teacherController.genders}" var="g"
-                                           itemLabel="#{teacherController.genderLabel(g)}" itemValue="#{g}"/>
-                        </p:selectOneMenu>
-                    </p:panelGrid>
+                    <div class="tc-field-row">
+                        <p:outputLabel for="lastName" value="#{msg.lastName}" styleClass="tc-label tc-label-col req" />
+                        <div class="tc-field-col">
+                            <p:inputText id="lastName" value="#{teacherController.teacher.lastName}" required="true" />
+                            <p:message for="lastName" display="text" styleClass="tc-field-msg" />
+                        </div>
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="gender" value="#{msg.gender}" styleClass="tc-label tc-label-col req" />
+                        <div class="tc-field-col">
+                            <p:selectOneMenu id="gender" value="#{teacherController.teacher.gender}" required="true">
+                                <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
+                                    noSelectionOption="true" />
+                                <f:selectItems value="#{teacherController.genders}" var="g"
+                                    itemLabel="#{teacherController.genderLabel(g)}" itemValue="#{g}" />
+                            </p:selectOneMenu>
+                            <p:message for="gender" display="text" styleClass="tc-field-msg" />
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 2 · QUALIFICAÇÃO E VÍNCULO -->
-                <div class="sc-section">
-                    <div class="sc-section-title"><i class="pi pi-briefcase"></i> #{msg.professionalQualification}</div>
-                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank" columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
-                        <p:outputLabel for="qualification" value="#{msg.qualificationLevel}" styleClass="sc-label req"/>
-                        <p:selectOneMenu id="qualification" value="#{teacherController.teacher.qualificationLivel}" required="true">
-                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
-                            <f:selectItems value="#{teacherController.qualificationLevels}" var="q"
-                                           itemLabel="#{teacherController.qualificationLabel(q)}" itemValue="#{q}"/>
-                        </p:selectOneMenu>
+                <div class="tc-section">
+                    <div class="tc-section-title"><i class="pi pi-briefcase"></i> #{msg.professionalQualification}</div>
 
-                        <p:outputLabel for="contractType" value="#{msg.contractType}" styleClass="sc-label req"/>
-                        <p:selectOneMenu id="contractType" value="#{teacherController.teacher.contractType}" required="true">
-                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
-                            <f:selectItems value="#{teacherController.contractTypes}" var="c"
-                                           itemLabel="#{teacherController.contractTypeLabel(c)}" itemValue="#{c}"/>
-                        </p:selectOneMenu>
+                    <div class="tc-field-row">
+                        <p:outputLabel for="qualification" value="#{msg.qualificationLevel}"
+                            styleClass="tc-label tc-label-col req" />
+                        <div class="tc-field-col">
+                            <p:selectOneMenu id="qualification" value="#{teacherController.teacher.qualificationLivel}"
+                                required="true">
+                                <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
+                                    noSelectionOption="true" />
+                                <f:selectItems value="#{teacherController.qualificationLevels}" var="q"
+                                    itemLabel="#{teacherController.qualificationLabel(q)}" itemValue="#{q}" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="baseSalary" value="#{msg.baseSalary}" styleClass="sc-label"/>
-                        <p:inputNumber id="baseSalary" value="#{teacherController.teacher.baseSalary}"
-                                       symbol=" Kz" symbolPosition="s" decimalPlaces="2"
-                                       thousandSeparator="." decimalSeparator=","/>
-                    </p:panelGrid>
+                    <div class="tc-field-row">
+                        <p:outputLabel for="contractType" value="#{msg.contractType}"
+                            styleClass="tc-label tc-label-col req" />
+                        <div class="tc-field-col">
+                            <p:selectOneMenu id="contractType" value="#{teacherController.teacher.contractType}"
+                                required="true">
+                                <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
+                                    noSelectionOption="true" />
+                                <f:selectItems value="#{teacherController.contractTypes}" var="c"
+                                    itemLabel="#{teacherController.contractTypeLabel(c)}" itemValue="#{c}" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="baseSalary" value="#{msg.baseSalary}" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputNumber id="baseSalary" value="#{teacherController.teacher.baseSalary}" symbol=" Kz"
+                                symbolPosition="s" decimalPlaces="2" thousandSeparator="." decimalSeparator="," />
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 3 · DOCUMENTOS E CONTACTO -->
-                <div class="sc-section">
-                    <div class="sc-section-title"><i class="pi pi-id-card"></i> #{msg.documentsAndContact}</div>
-                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank" columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
-                        <p:outputLabel for="biNumber" value="#{msg.idCardNumber}" styleClass="sc-label"/>
-                        <p:inputText id="biNumber" value="#{teacherController.teacher.biNumber}"/>
+                <div class="tc-section">
+                    <div class="tc-section-title"><i class="pi pi-id-card"></i> #{msg.documentsAndContact}</div>
 
-                        <p:outputLabel for="biExpiry" value="#{msg.idCardExpiryDate}" styleClass="sc-label"/>
-                        <p:datePicker id="biExpiry" value="#{teacherController.teacher.biExpiryDate}" pattern="dd/MM/yyyy" showIcon="true"/>
+                    <div class="tc-field-row">
+                        <p:outputLabel for="biNumber" value="#{msg.idCardNumber}" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputText id="biNumber" value="#{teacherController.teacher.biNumber}"
+                                validator="#{teacherController.validateBI}" />
+                            <p:message for="biNumber" display="text" styleClass="tc-field-msg" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="email" value="#{msg.email}" styleClass="sc-label"/>
-                        <p:inputText id="email" value="#{teacherController.teacher.email}" placeholder="professor@escola.ao"/>
+                    <div class="tc-field-row">
+                        <p:outputLabel for="biExpiry" value="#{msg.idCardExpiryDate}"
+                            styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:datePicker id="biExpiry" value="#{teacherController.teacher.biExpiryDate}"
+                                pattern="dd/MM/yyyy" showIcon="true" monthNavigator="true" yearNavigator="true"
+                                yearRange="2020:2050" locale="pt" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="phone" value="#{msg.phone1}" styleClass="sc-label"/>
-                        <p:inputMask id="phone" value="#{teacherController.teacher.phone}" mask="999 999 999"/>
+                    <div class="tc-field-row">
+                        <p:outputLabel for="email" value="#{msg.email}" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputText id="email" value="#{teacherController.teacher.email}"
+                                placeholder="professor@escola.ao" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel for="mobilePhone" value="#{msg.phone2}" styleClass="sc-label"/>
-                        <p:inputMask id="mobilePhone" value="#{teacherController.teacher.mobilePhone}" mask="999 999 999"/>
-                    </p:panelGrid>
+                    <div class="tc-field-row">
+                        <p:outputLabel for="phone" value="#{msg.phone1}" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputMask id="phone" value="#{teacherController.teacher.phone}" mask="999 999 999" />
+                        </div>
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="mobilePhone" value="#{msg.phone2}" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputMask id="mobilePhone" value="#{teacherController.teacher.mobilePhone}"
+                                mask="999 999 999" />
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 4 · MORADA -->
-                <div class="sc-section">
-                    <div class="sc-section-title"><i class="pi pi-map-marker"></i> #{msg.residentialAddress}</div>
-                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank" columnClasses="p-col-12 p-md-8, p-col-12 p-md-4">
-                        <p:outputLabel for="addressStreet" value="#{msg.addressStreet}" styleClass="sc-label"/>
-                        <p:inputText id="addressStreet" value="#{teacherController.teacher.addressStreet}"/>
+                <div class="tc-section">
+                    <div class="tc-section-title"><i class="pi pi-map-marker"></i> #{msg.residentialAddress}</div>
 
-                        <p:outputLabel for="province" value="#{msg.province}" styleClass="sc-label"/>
-                        <p:inputText id="province" value="#{teacherController.teacher.addressProvice}"/>
-                    </p:panelGrid>
+                    <div class="tc-field-row">
+                        <p:outputLabel for="addressStreet" value="#{msg.addressStreet}"
+                            styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputText id="addressStreet" value="#{teacherController.teacher.addressStreet}" />
+                        </div>
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="province" value="#{msg.province}" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputText id="province" value="#{teacherController.teacher.addressProvice}" />
+                        </div>
+                    </div>
                 </div>
 
-                <!-- 5 · STATUS, FOTO E NOTAS -->
-                <div class="sc-section">
-                    <div class="sc-section-title"><i class="pi pi-check-circle"></i> #{msg.registrationFinalization}</div>
-                    <p:panelGrid columns="1" layout="grid" styleClass="ui-panelgrid-blank">
-                        <p:outputLabel for="status" value="#{msg.status}" styleClass="sc-label req"/>
-                        <p:selectOneMenu id="status" value="#{teacherController.teacher.status}" required="true">
-                            <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}" noSelectionOption="true"/>
-                            <f:selectItems value="#{teacherController.teacherStatuses}" var="s"
-                                           itemLabel="#{teacherController.statusLabel(s)}" itemValue="#{s}"/>
-                        </p:selectOneMenu>
+                <!-- 5 · FOTO -->
+                <div class="tc-section">
+                    <div class="tc-section-title"><i class="pi pi-image"></i> #{msg.teacherPhoto}</div>
 
-                        <p:outputLabel for="photo" value="#{msg.teacherPhoto}" styleClass="sc-label"/>
-                        <p:fileUpload id="photo" value="#{teacherController.uploadedPhoto}" mode="simple" skinSimple="true"
-                                      label="#{msg.choose}" styleClass="p-button-sm"/>
-                        <div class="text-muted small mt-1">JPG, PNG ou WEBP (Máx 2MB)</div>
+                    <div class="tc-photo-row">
+                        <div class="tc-photo-preview">
+                            <img id="tcPhotoPreviewImg" class="tc-photo-preview-img" style="display:none;" alt="" />
+                            <i id="tcPhotoPlaceholderIcon" class="pi pi-user tc-photo-placeholder-icon"></i>
+                        </div>
+                        <div class="tc-photo-upload-control">
+                            <p:fileUpload id="photo" value="#{teacherController.uploadedPhoto}" mode="simple"
+                                skinSimple="true" label="#{msg.choose}" styleClass="p-button-sm"
+                                allowTypes="/(\.|\/)(jpe?g|png|webp)$/i"
+                                onchange="tcPreviewSimpleFile(this,'tcPhotoPreviewImg','tcPhotoPlaceholderIcon')" />
+                        </div>
+                    </div>
+                    <div class="text-muted small mt-1">JPG, PNG ou WEBP (Máx 2MB)</div>
+                </div>
 
-                        <p:outputLabel for="notes" value="#{msg.notes}" styleClass="sc-label"/>
-                        <p:inputTextarea id="notes" value="#{teacherController.teacher.obs}" rows="3"
-                                         placeholder="#{msg.additionalNotesPlaceholder}"/>
-                    </p:panelGrid>
+                <!-- 6 · STATUS E NOTAS -->
+                <div class="tc-section">
+                    <div class="tc-section-title"><i class="pi pi-check-circle"></i> #{msg.registrationFinalization}
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="status" value="#{msg.status}" styleClass="tc-label tc-label-col req" />
+                        <div class="tc-field-col">
+                            <p:selectOneMenu id="status" value="#{teacherController.teacher.status}" required="true">
+                                <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
+                                    noSelectionOption="true" />
+                                <f:selectItems value="#{teacherController.teacherStatuses}" var="s"
+                                    itemLabel="#{teacherController.statusLabel(s)}" itemValue="#{s}" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="notes" value="#{msg.notes}" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputTextarea id="notes" value="#{teacherController.teacher.obs}" rows="3"
+                                placeholder="#{msg.additionalNotesPlaceholder}" />
+                        </div>
+                    </div>
                 </div>
 
             </div>
 
-            <div class="sc-create-footer">
+            <div class="tc-dialog-footer">
                 <p:commandButton value="#{msg.cancel}" icon="pi pi-times"
-                                 styleClass="sc-btn-cancel"
-                                 type="button"
-                                 onclick="PF('createTeacherDialog').hide()"/>
+                    styleClass="ui-button-outlined ui-button-secondary" type="button"
+                    onclick="PF('createTeacherDialog').hide()" />
 
-                <p:commandButton value="#{msg.save}" icon="pi pi-save"
-                                 styleClass="sc-btn-save"
-                                 action="#{teacherController.saveTeacher}"
-                                 ajax="false"
-                                 update=":formTeachers:dtTeachers msgs"
-                                 oncomplete="if (!args.validationFailed) { PF('createTeacherDialog').hide(); }"/>
+                <p:commandButton value="#{msg.save}" icon="pi pi-save" styleClass="ui-button-success"
+                    action="#{teacherController.saveTeacher}" ajax="false" update=":formTeachers:dtTeachers msgs"
+                    oncomplete="if (!args.validationFailed) { PF('createTeacherDialog').hide(); }" />
             </div>
         </h:form>
+
+        <script type="text/javascript">
+            /* <![CDATA[ */
+            // Pré-visualização client-side da foto escolhida (upload simples).
+            function tcPreviewSimpleFile(input, imgId, iconId) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        var img = document.getElementById(imgId);
+                        var icon = document.getElementById(iconId);
+                        if (img) { img.src = e.target.result; img.style.display = 'block'; }
+                        if (icon) { icon.style.display = 'none'; }
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+            /* ]]> */
+        </script>
+
+        <style type="text/css">
+            /* ============================================================
+               VARIAVEIS
+               ============================================================ */
+            .tc-dialog-create {
+                --tc-primary: #c8102e;
+                --tc-text-main: #374151;
+                --tc-border: #e5e7eb;
+                --tc-bg-body: #f9fafb;
+            }
+
+            .tc-dialog-create .ui-dialog {
+                display: flex !important;
+                flex-direction: column !important;
+                margin: 0 auto !important;
+                border-radius: 8px !important;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, .1), 0 10px 10px -5px rgba(0, 0, 0, .04) !important;
+            }
+
+            .tc-dialog-create .ui-dialog-titlebar {
+                background: #fff !important;
+                border-bottom: 1px solid var(--tc-border) !important;
+                padding: 1rem 1.25rem !important;
+                font-size: 1.1rem !important;
+                font-weight: 700 !important;
+                color: var(--tc-text-main) !important;
+            }
+
+            .tc-dialog-create .ui-dialog-content {
+                background: var(--tc-bg-body) !important;
+                padding: 0 !important;
+                flex: 1 1 auto !important;
+                overflow: hidden !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            .tc-dialog-body {
+                flex: 1 1 auto !important;
+                overflow-y: auto !important;
+                padding: 1rem 1.25rem !important;
+            }
+
+            .tc-dialog-body::-webkit-scrollbar {
+                width: 5px;
+            }
+
+            .tc-dialog-body::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .tc-dialog-body::-webkit-scrollbar-thumb {
+                background: #d1d5db;
+                border-radius: 99px;
+            }
+
+            .tc-section {
+                background: #fff;
+                border-radius: 8px;
+                padding: 1rem 1.25rem;
+                margin-bottom: 1rem;
+                border: 1px solid var(--tc-border);
+            }
+
+            .tc-section:last-child {
+                margin-bottom: 0;
+            }
+
+            .tc-section-title {
+                font-size: .95rem;
+                font-weight: 700;
+                color: var(--tc-text-main);
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: .5rem;
+                padding-bottom: .5rem;
+                border-bottom: 1px solid var(--tc-border);
+            }
+
+            .tc-section-title i {
+                color: var(--tc-primary);
+                font-size: 1.1rem;
+            }
+
+            .tc-field-row {
+                display: flex;
+                align-items: flex-start;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .tc-field-row:last-child {
+                margin-bottom: 0;
+            }
+
+            .tc-label-col {
+                flex: 0 0 150px;
+                max-width: 150px;
+                padding-top: .6rem;
+                margin-bottom: 0 !important;
+            }
+
+            .tc-field-col {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
+            .tc-label {
+                font-size: .88rem;
+                font-weight: 600;
+                color: var(--tc-text-main);
+                display: block;
+            }
+
+            .tc-label.req::after {
+                content: " *";
+                color: #dc2626;
+            }
+
+            .tc-field-msg {
+                display: block;
+                margin-top: 4px;
+                font-size: .8rem;
+            }
+
+            .tc-field-msg.ui-message-error {
+                color: #dc2626;
+            }
+
+            .tc-dialog-create .ui-inputfield,
+            .tc-dialog-create .ui-selectonemenu {
+                width: 100% !important;
+            }
+
+            .tc-photo-row {
+                display: flex;
+                align-items: center;
+                gap: 1.25rem;
+            }
+
+            .tc-photo-preview {
+                flex: 0 0 84px;
+                width: 84px;
+                height: 84px;
+                border-radius: 10px;
+                border: 2px dashed var(--tc-border);
+                background: var(--tc-bg-body);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+            .tc-photo-preview-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .tc-photo-placeholder-icon {
+                font-size: 1.8rem;
+                color: #9ca3af;
+            }
+
+            .tc-photo-upload-control {
+                flex: 1 1 auto;
+                min-width: 0;
+                display: flex;
+                justify-content: flex-end;
+            }
+
+            .tc-photo-upload-control .ui-fileupload {
+                width: 100%;
+                border: none;
+                background: transparent;
+            }
+
+            .tc-photo-upload-control .ui-fileupload-choose {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+
+            .tc-dialog-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: .6rem;
+                padding: 1rem 1.25rem;
+                background: #fff;
+                border-top: 1px solid var(--tc-border);
+                flex-wrap: wrap;
+            }
+
+            .tc-dialog-footer .ui-button {
+                min-width: 120px;
+            }
+
+            /* ============================================================
+               RESPONSIVO
+               ============================================================ */
+            @media (min-width: 1024px) {
+                .tc-dialog-create .ui-dialog {
+                    top: 1.5rem !important;
+                    left: 1.5rem !important;
+                    right: 1.5rem !important;
+                    bottom: 1.5rem !important;
+                    width: auto !important;
+                    height: auto !important;
+                    max-width: 960px !important;
+                    max-height: calc(100vh - 3rem) !important;
+                }
+
+                .tc-dialog-body {
+                    max-height: calc(100vh - 200px) !important;
+                }
+            }
+
+            @media (min-width: 768px) and (max-width: 1023px) {
+                .tc-dialog-create .ui-dialog {
+                    top: 1rem !important;
+                    left: 1rem !important;
+                    right: 1rem !important;
+                    bottom: 1rem !important;
+                    width: auto !important;
+                    height: auto !important;
+                    max-width: 900px !important;
+                    max-height: calc(100vh - 2rem) !important;
+                }
+
+                .tc-dialog-body {
+                    max-height: calc(100vh - 180px) !important;
+                }
+
+                .tc-label-col {
+                    flex-basis: 130px;
+                    max-width: 130px;
+                }
+            }
+
+            @media (max-width: 767px) {
+                .tc-dialog-create .ui-dialog {
+                    top: .5rem !important;
+                    left: .5rem !important;
+                    right: .5rem !important;
+                    bottom: .5rem !important;
+                    width: auto !important;
+                    height: auto !important;
+                    max-width: none !important;
+                    max-height: calc(100vh - 1rem) !important;
+                    margin: 0 !important;
+                    border-radius: 6px !important;
+                }
+
+                .tc-dialog-body {
+                    padding: .75rem !important;
+                    max-height: calc(100vh - 150px) !important;
+                }
+
+                .tc-section {
+                    padding: .75rem;
+                }
+
+                .tc-label-col {
+                    flex-basis: 110px;
+                    max-width: 110px;
+                    padding-top: .5rem;
+                }
+
+                .tc-field-row {
+                    gap: .6rem;
+                }
+
+                .tc-dialog-footer {
+                    padding: .75rem;
+                    gap: .5rem;
+                }
+
+                .tc-dialog-footer .ui-button {
+                    flex: 1 1 auto;
+                    min-width: 0;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .tc-dialog-create .ui-dialog {
+                    top: .25rem !important;
+                    left: .25rem !important;
+                    right: .25rem !important;
+                    bottom: .25rem !important;
+                    max-height: calc(100vh - .5rem) !important;
+                    border-radius: 4px !important;
+                }
+
+                .tc-dialog-body {
+                    padding: .5rem !important;
+                    max-height: calc(100vh - 140px) !important;
+                }
+
+                .tc-section {
+                    padding: .6rem;
+                    margin-bottom: .6rem;
+                }
+
+                .tc-section-title {
+                    font-size: .9rem;
+                    margin-bottom: .75rem;
+                }
+
+                .tc-label-col {
+                    flex-basis: 92px;
+                    max-width: 92px;
+                }
+
+                .tc-label {
+                    font-size: .8rem;
+                }
+
+                .tc-photo-row {
+                    gap: .75rem;
+                }
+
+                .tc-readonly-field.ui-state-disabled,
+                .tc-readonly-field[readonly] {
+                    background: #f3f4f6 !important;
+                    opacity: .85 !important;
+                    color: #6b7280 !important;
+                    cursor: not-allowed;
+                }
+
+                .tc-photo-preview {
+                    flex-basis: 64px;
+                    width: 64px;
+                    height: 64px;
+                }
+
+                .tc-dialog-footer {
+                    flex-direction: column-reverse;
+                    padding: .6rem;
+                }
+
+                .tc-dialog-footer .ui-button {
+                    width: 100%;
+                }
+            }
+        </style>
     </p:dialog>
 
 </ui:composition>

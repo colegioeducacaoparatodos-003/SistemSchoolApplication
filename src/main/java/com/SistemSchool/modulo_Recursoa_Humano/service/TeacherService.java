@@ -19,15 +19,50 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.time.Year;
+import java.util.Optional;
 
 @Service
 @Transactional
 public class TeacherService {
 
     private final TeacherRepository repository;
+    private static final String TEACHER_NUMBER_PREFIX = "PROF-";
 
     public TeacherService(TeacherRepository teacherRepository) {
         this.repository = teacherRepository;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // GERAÇÃO DE NÚMERO AUTOMÁTICO
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Gera o próximo número de professor no formato PROF-<ano>-<sequencia>,
+     * ex: PROF-2026-0001, PROF-2026-0002, ...
+     * A sequência reinicia a cada ano.
+     */
+    public String generateTeacherNumber() {
+        int currentYear = Year.now().getValue();
+        String prefix = TEACHER_NUMBER_PREFIX + currentYear + "-";
+
+        Optional<Teacher> lastTeacher = repository
+                .findTopByTeacherNumberStartingWithOrderByTeacherNumberDesc(prefix);
+
+        int nextSequence = 1;
+
+        if (lastTeacher.isPresent()) {
+            String lastNumber = lastTeacher.get().getTeacherNumber();
+            String sequencePart = lastNumber.substring(prefix.length());
+            try {
+                nextSequence = Integer.parseInt(sequencePart) + 1;
+            } catch (NumberFormatException e) {
+                // Se por algum motivo o formato estiver corrompido, cai para 1
+                nextSequence = 1;
+            }
+        }
+
+        return prefix + String.format("%04d", nextSequence);
     }
 
     // ─────────────────────────────────────────────────────────────

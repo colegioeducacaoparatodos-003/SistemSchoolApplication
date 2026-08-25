@@ -31,7 +31,6 @@
             <artifactId>myfaces-spring-boot-starter</artifactId>
             <version>${joinfaces.version}</version>
         </dependency>
-
         <!-- ============================================ -->
         <!-- JAKARTA CDI / INJECT (necessario para @Named, -->
         <!-- @Inject, @SessionScoped, etc. no teu codigo) -->
@@ -46,7 +45,6 @@
             <artifactId>jakarta.inject-api</artifactId>
             <version>2.0.1</version>
         </dependency>
-
         <!-- ============================================ -->
         <!-- MYFACES IMPL (para StartupServletContextListener) -->
         <!-- ============================================ -->
@@ -55,7 +53,6 @@
             <artifactId>myfaces-impl</artifactId>
             <version>4.1.0</version>
         </dependency>
-
         <!-- ============================================ -->
         <!-- SPRING BOOT STARTERS                           -->
         <!-- ============================================ -->
@@ -80,7 +77,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
         <!-- ============================================ -->
         <!-- PRIMEFACES (classifier jakarta = Jakarta EE)   -->
         <!-- ============================================ -->
@@ -90,7 +86,6 @@
             <version>${primefaces.version}</version>
             <classifier>jakarta</classifier>
         </dependency>
-
         <!-- ============================================ -->
         <!-- BANCO DE DADOS                                 -->
         <!-- ============================================ -->
@@ -104,7 +99,6 @@
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <!-- ============================================ -->
         <!-- JAKARTA JSON (necessario para PrimeFaces)      -->
         <!-- ============================================ -->
@@ -122,7 +116,6 @@
             <artifactId>parsson</artifactId>
             <version>1.1.1</version>
         </dependency>
-
         <!-- ============================================ -->
         <!-- VALIDACAO                                      -->
         <!-- ============================================ -->
@@ -130,7 +123,6 @@
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
-
         <!-- ============================================ -->
         <!-- UTILITARIOS                                    -->
         <!-- ============================================ -->
@@ -148,7 +140,6 @@
             <artifactId>commons-io</artifactId>
             <version>2.15.1</version>
         </dependency>
-
         <!-- ============================================ -->
         <!-- GRAFICOS                                       -->
         <!-- ============================================ -->
@@ -162,7 +153,6 @@
             <artifactId>jfreechart</artifactId>
             <version>1.5.4</version>
         </dependency>
-
         <!-- ============================================ -->
         <!-- RELATORIOS                                     -->
         <!-- ============================================ -->
@@ -181,7 +171,6 @@
             <artifactId>itextpdf</artifactId>
             <version>5.5.13.3</version>
         </dependency>
-
         <!-- ============================================ -->
         <!-- EXCEL / CSV                                    -->
         <!-- ============================================ -->
@@ -195,7 +184,6 @@
             <artifactId>opencsv</artifactId>
             <version>5.7.1</version>
         </dependency>
-
         <!-- ============================================ -->
         <!-- FIREBASE                                       -->
         <!-- ============================================ -->
@@ -204,7 +192,6 @@
             <artifactId>firebase-admin</artifactId>
             <version>9.2.0</version>
         </dependency>
-
         <!-- ============================================ -->
         <!-- SNMP                                           -->
         <!-- ============================================ -->
@@ -214,7 +201,6 @@
             <version>3.6.4</version>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>

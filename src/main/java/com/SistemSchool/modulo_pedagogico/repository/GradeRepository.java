@@ -2,6 +2,7 @@ package com.SistemSchool.modulo_pedagogico.repository;
 
 import com.SistemSchool.modulo_pedagogico.dto.GradeDTO;
 import com.SistemSchool.modulo_pedagogico.interfaces.GradeTableProjection;
+import com.SistemSchool.modulo_pedagogico.io.EvaluationType;
 import com.SistemSchool.modulo_pedagogico.io.GradeStatus;
 import com.SistemSchool.modulo_pedagogico.model.Grade;
 
@@ -66,6 +67,41 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
        List<GradeDTO> findAllGradesDTO();
 
        // -------------------------------
+       // Dados para Mini-Pauta (todas as notas de uma disciplina + turma + trimestre)
+       // -------------------------------
+
+       @Query("""
+                     SELECT g
+                     FROM Grade g
+                     WHERE g.evaluation.discipline.pkDiscipline = :disciplinePk
+                       AND g.evaluation.trimester = :trimester
+                       AND g.enrolment.schoolClass.pkSchoolClass = :schoolClassPk
+                       AND g.value IS NOT NULL
+                     """)
+       List<Grade> findByDisciplineAndTrimesterAndClass(
+                     @Param("disciplinePk") Long disciplinePk,
+                     @Param("trimester") Integer trimester,
+                     @Param("schoolClassPk") Long schoolClassPk);
+
+       // -------------------------------
+       // Dados para Boletim (todas as notas de um aluno + matrícula + trimestre)
+       // -------------------------------
+
+       @Query("""
+                     SELECT g
+                     FROM Grade g
+                     WHERE g.student.pkStudent = :studentPk
+                       AND g.enrolment.phEnrolment = :enrolmentPk
+                       AND g.evaluation.trimester = :trimester
+                       AND g.value IS NOT NULL
+                     ORDER BY g.evaluation.discipline.disciplineName
+                     """)
+       List<Grade> findByStudentAndEnrolmentAndTrimester(
+                     @Param("studentPk") Long studentPk,
+                     @Param("enrolmentPk") Long enrolmentPk,
+                     @Param("trimester") Integer trimester);
+
+       // -------------------------------
        // Cálculo de médias (Boletim / Pauta)
        // -------------------------------
 
@@ -77,7 +113,8 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
                        AND g.evaluation.trimester = :trimester
                        AND g.value IS NOT NULL
                      """)
-       Double calcularMediaFinal(@Param("studentPk") Long studentPk,
+       Double calcularMediaFinal(
+                     @Param("studentPk") Long studentPk,
                      @Param("disciplinePk") Long disciplinePk,
                      @Param("trimester") Integer trimester);
 
@@ -90,7 +127,8 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
                        AND g.value IS NOT NULL
                      GROUP BY g.student.pkStudent
                      """)
-       List<Object[]> calcularMediasDaTurma(@Param("schoolClassPk") Long schoolClassPk,
+       List<Object[]> calcularMediasDaTurma(
+                     @Param("schoolClassPk") Long schoolClassPk,
                      @Param("disciplinePk") Long disciplinePk,
                      @Param("trimester") Integer trimester);
 

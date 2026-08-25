@@ -1,19 +1,23 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
 <h:head>
     <f:facet name="first">
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     </f:facet>
-    
+
     <title>Login | Gestão Escolar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&amp;display=swap"
+        rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
     <style type="text/css">
         :root {
             --enr-black: #141414;
@@ -23,117 +27,723 @@
             --enr-border: #e6e6e8;
             --enr-text: #141414;
             --enr-muted: #666a70;
+            --enr-bg: #f3f4f6;
+            --enr-card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --enr-card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Background decoration */
+        .bg-decoration {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-decoration::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            right: -5%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(200, 16, 46, 0.06) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .bg-decoration::after {
+            content: '';
+            position: absolute;
+            bottom: -10%;
+            left: -5%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(245, 180, 0, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        /* Loading Overlay */
         .sc-loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s ease;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(20, 20, 20, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
-        .sc-loading-overlay.active { opacity: 1; visibility: visible; }
+
+        .sc-loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
         .sc-loading-box {
-            background: var(--enr-surface); border-radius: 12px; padding: 2.5rem 3rem;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); display: flex; flex-direction: column;
-            align-items: center; gap: 1.2rem; border: 1px solid var(--enr-border); min-width: 260px;
-            transform: scale(0.9); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: var(--enr-surface);
+            border-radius: 16px;
+            padding: 2.5rem 3rem;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            border: 1px solid rgba(230, 230, 232, 0.5);
+            min-width: 280px;
+            max-width: 90vw;
+            transform: scale(0.9) translateY(10px);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .sc-loading-overlay.active .sc-loading-box { transform: scale(1); }
-        .sc-loader-rings { position: relative; width: 72px; height: 72px; }
-        .sc-loader-rings::before, .sc-loader-rings::after {
-            content: ''; position: absolute; border-radius: 50%; border: 3px solid transparent;
+
+        .sc-loading-overlay.active .sc-loading-box {
+            transform: scale(1) translateY(0);
         }
+
+        .sc-loader-rings {
+            position: relative;
+            width: 72px;
+            height: 72px;
+        }
+
+        .sc-loader-rings::before,
+        .sc-loader-rings::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            border: 3px solid transparent;
+        }
+
         .sc-loader-rings::before {
-            top: 0; left: 0; width: 100%; height: 100%;
-            border-top-color: var(--enr-red); border-right-color: var(--enr-yellow);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-top-color: var(--enr-red);
+            border-right-color: var(--enr-yellow);
             animation: scSpin 1.2s linear infinite;
         }
+
         .sc-loader-rings::after {
-            top: 10px; left: 10px; width: calc(100% - 20px); height: calc(100% - 20px);
-            border-bottom-color: var(--enr-black); border-left-color: #e63946;
+            top: 10px;
+            left: 10px;
+            width: calc(100% - 20px);
+            height: calc(100% - 20px);
+            border-bottom-color: var(--enr-black);
+            border-left-color: #e63946;
             animation: scSpinReverse 0.9s linear infinite;
         }
-        .sc-loader-core {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 16px; height: 16px;
-            background: linear-gradient(135deg, var(--enr-red), var(--enr-yellow));
-            border-radius: 50%; animation: scPulse 1s ease-in-out infinite;
-            box-shadow: 0 0 15px rgba(200, 16, 46, 0.5);
-        }
-        @keyframes scSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes scSpinReverse { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
-        @keyframes scPulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.7; } }
-        .sc-loading-text { font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 600; color: var(--enr-text); text-align: center; }
-        .sc-loading-sub { font-size: 0.78rem; color: var(--enr-muted); text-align: center; margin-top: -0.6rem; }
-        .sc-loading-dots::after { content: ''; animation: scDots 1.5s steps(4, end) infinite; }
-        @keyframes scDots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } 100% { content: ''; } }
-        .sc-loading-progress { width: 100%; height: 3px; background: var(--enr-border); border-radius: 99px; overflow: hidden; margin-top: 0.3rem; }
-        .sc-loading-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow)); border-radius: 99px; animation: scProgress 2s ease-in-out infinite; }
-        @keyframes scProgress { 0% { width: 0%; margin-left: 0%; } 50% { width: 60%; margin-left: 20%; } 100% { width: 0%; margin-left: 100%; } }
 
-        @media (max-width: 576px) {
-            .sc-loading-box { padding: 2rem 1.5rem; min-width: 220px; margin: 0 1rem; }
+        .sc-loader-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--enr-red), var(--enr-yellow));
+            border-radius: 50%;
+            animation: scPulse 1s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(200, 16, 46, 0.4);
+        }
+
+        @keyframes scSpin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes scSpinReverse {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(-360deg);
+            }
+        }
+
+        @keyframes scPulse {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.4);
+                opacity: 0.7;
+            }
+        }
+
+        .sc-loading-text {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--enr-text);
+            text-align: center;
+            letter-spacing: -0.01em;
+        }
+
+        .sc-loading-sub {
+            font-size: 0.8rem;
+            color: var(--enr-muted);
+            text-align: center;
+            margin-top: -0.6rem;
+        }
+
+        .sc-loading-dots::after {
+            content: '';
+            animation: scDots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes scDots {
+            0% {
+                content: '';
+            }
+
+            25% {
+                content: '.';
+            }
+
+            50% {
+                content: '..';
+            }
+
+            75% {
+                content: '...';
+            }
+
+            100% {
+                content: '';
+            }
+        }
+
+        .sc-loading-progress {
+            width: 100%;
+            height: 3px;
+            background: var(--enr-border);
+            border-radius: 99px;
+            overflow: hidden;
+            margin-top: 0.3rem;
+        }
+
+        .sc-loading-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow));
+            border-radius: 99px;
+            animation: scProgress 2s ease-in-out infinite;
+        }
+
+        @keyframes scProgress {
+            0% {
+                width: 0%;
+                margin-left: 0%;
+            }
+
+            50% {
+                width: 60%;
+                margin-left: 20%;
+            }
+
+            100% {
+                width: 0%;
+                margin-left: 100%;
+            }
+        }
+
+        /* Login Card */
+        .login-wrapper {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .login-card {
+            background: var(--enr-surface);
+            border-radius: 20px;
+            box-shadow: var(--enr-card-shadow);
+            border: 1px solid rgba(230, 230, 232, 0.8);
+            width: 100%;
+            max-width: 440px;
+            overflow: hidden;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .login-card:hover {
+            box-shadow: var(--enr-card-shadow-hover);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            padding: 2.5rem 2rem 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .login-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow));
+            border-radius: 99px;
+        }
+
+        .login-logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--enr-red), var(--enr-yellow));
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 8px 24px rgba(200, 16, 46, 0.2);
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-4px);
+            }
+        }
+
+        .login-logo i {
+            color: white;
+            font-size: 1.75rem;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--enr-text);
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.02em;
+        }
+
+        .login-subtitle {
+            font-size: 0.875rem;
+            color: var(--enr-muted);
+            font-weight: 400;
+        }
+
+        .login-body {
+            padding: 1.5rem 2rem 2rem;
+        }
+
+        /* Form styling */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--enr-text);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .form-label .required {
+            color: var(--enr-red);
+            margin-left: 2px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--enr-muted);
+            font-size: 1rem;
+            pointer-events: none;
+            transition: color 0.2s ease;
+            z-index: 2;
+        }
+
+        .input-wrapper:focus-within .input-icon {
+            color: var(--enr-red);
+        }
+
+        /* Override PrimeFaces inputs */
+        .ui-inputfield,
+        .ui-password {
+            width: 100% !important;
+            padding: 0.75rem 0.875rem 0.75rem 2.5rem !important;
+            border: 1.5px solid var(--enr-border) !important;
+            border-radius: 12px !important;
+            font-family: 'DM Sans', sans-serif !important;
+            font-size: 0.9375rem !important;
+            color: var(--enr-text) !important;
+            background: var(--enr-surface) !important;
+            transition: all 0.2s ease !important;
+            box-shadow: none !important;
+        }
+
+        .ui-inputfield:focus,
+        .ui-password:focus {
+            border-color: var(--enr-red) !important;
+            box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.08) !important;
+            outline: none !important;
+        }
+
+        .ui-inputfield::placeholder {
+            color: #9ca3af !important;
+            font-weight: 400 !important;
+        }
+
+        /* Checkbox styling */
+        .remember-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .remember-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--enr-text);
+            cursor: pointer;
+            user-select: none;
+            font-weight: 500;
+        }
+
+        .ui-chkbox-box {
+            border-radius: 6px !important;
+            border: 1.5px solid var(--enr-border) !important;
+            width: 18px !important;
+            height: 18px !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .ui-chkbox-box.ui-state-active {
+            background: var(--enr-red) !important;
+            border-color: var(--enr-red) !important;
+        }
+
+        .ui-chkbox-icon {
+            margin-top: -1px !important;
+        }
+
+        /* Links */
+        .link-forgot {
+            font-size: 0.8125rem;
+            color: var(--enr-red);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .link-forgot:hover {
+            color: #a00d24;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .link-forgot i {
+            font-size: 0.75rem;
+        }
+
+        /* Button */
+        .btn-login {
+            width: 100%;
+            padding: 0.875rem !important;
+            border-radius: 12px !important;
+            font-family: 'DM Sans', sans-serif !important;
+            font-size: 0.9375rem !important;
+            font-weight: 600 !important;
+            letter-spacing: -0.01em !important;
+            background: linear-gradient(135deg, var(--enr-red), #e63946) !important;
+            border: none !important;
+            box-shadow: 0 4px 14px rgba(200, 16, 46, 0.3) !important;
+            transition: all 0.25s ease !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.15));
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(200, 16, 46, 0.35) !important;
+        }
+
+        .btn-login:hover::after {
+            opacity: 1;
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        /* Footer links */
+        .login-footer {
+            text-align: center;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--enr-border);
+            margin-top: 0.5rem;
+        }
+
+        .login-footer-text {
+            font-size: 0.8125rem;
+            color: var(--enr-muted);
+            margin: 0;
+        }
+
+        .login-footer-text a {
+            color: var(--enr-red);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+
+        .login-footer-text a:hover {
+            color: #a00d24;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        /* Messages */
+        .ui-messages {
+            border-radius: 12px !important;
+            margin-bottom: 1.25rem !important;
+        }
+
+        .ui-messages-info {
+            background: #eff6ff !important;
+            border-color: #bfdbfe !important;
+            color: #1e40af !important;
+        }
+
+        .ui-messages-warn {
+            background: #fffbeb !important;
+            border-color: #fde68a !important;
+            color: #92400e !important;
+        }
+
+        .ui-messages-error {
+            background: #fef2f2 !important;
+            border-color: #fecaca !important;
+            color: #991b1b !important;
+        }
+
+        .ui-messages-fatal {
+            background: #fef2f2 !important;
+            border-color: #fecaca !important;
+            color: #991b1b !important;
+        }
+
+        .ui-messages ul {
+            padding-left: 0 !important;
+            list-style: none !important;
+        }
+
+        .ui-messages .ui-messages-close {
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .ui-messages .ui-messages-close:hover {
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-wrapper {
+                padding: 1rem;
+            }
+
+            .login-card {
+                border-radius: 16px;
+            }
+
+            .login-header {
+                padding: 2rem 1.5rem 1.25rem;
+            }
+
+            .login-body {
+                padding: 1.25rem 1.5rem 1.5rem;
+            }
+
+            .sc-loading-box {
+                padding: 2rem 1.5rem;
+                min-width: 240px;
+            }
+        }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </h:head>
 
-<h:body class="bg-light">
-    
+<h:body>
+
+    <div class="bg-decoration"></div>
+
+    <!-- Loading Overlay -->
     <div id="scLoadingOverlay" class="sc-loading-overlay">
         <div class="sc-loading-box">
-            <div class="sc-loader-rings"><div class="sc-loader-core"></div></div>
+            <div class="sc-loader-rings">
+                <div class="sc-loader-core"></div>
+            </div>
             <div class="sc-loading-text">A processar<span class="sc-loading-dots"></span></div>
             <div class="sc-loading-sub">Por favor aguarde</div>
-            <div class="sc-loading-progress"><div class="sc-loading-progress-bar"></div></div>
+            <div class="sc-loading-progress">
+                <div class="sc-loading-progress-bar"></div>
+            </div>
         </div>
     </div>
 
-    <div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
-        <div class="card shadow-sm" style="max-width: 420px; width: 100%;">
-            <div class="card-body p-4">
+    <div class="login-wrapper">
+        <div class="login-card">
 
-                <div class="text-center mb-4">
-                    <h1 class="h4 mb-1">Gestão Escolar</h1>
-                    <p class="text-muted small mb-0">Portal administrativo e pedagógico</p>
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="bi bi-mortarboard-fill"></i>
                 </div>
+                <h1 class="login-title">Gestão Escolar</h1>
+                <p class="login-subtitle">Portal administrativo e pedagógico</p>
+            </div>
 
+            <div class="login-body">
                 <p:messages id="messages" showDetail="true" showSummary="true" closable="true" />
 
                 <h:form id="loginForm">
-                    <div class="mb-3">
-                        <h:outputLabel for="email" value="Email" styleClass="form-label" />
-                        <p:inputText id="email" value="#{userController.loginEmail}"
-                            placeholder="seu.email@escola.co.ao" required="true" requiredMessage="Email é obrigatório"
-                            style="width: 100%;" />
+
+                    <div class="form-group">
+                        <h:outputLabel for="email" value="Email" styleClass="form-label">
+                            <span class="required">*</span>
+                        </h:outputLabel>
+                        <div class="input-wrapper">
+                            <i class="bi bi-envelope input-icon"></i>
+                            <p:inputText id="email" value="#{userController.loginEmail}"
+                                placeholder="seu.email@escola.co.ao" required="true"
+                                requiredMessage="Email é obrigatório" type="email" />
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <h:outputLabel for="password" value="Palavra-passe" styleClass="form-label" />
-                        <p:password id="password" value="#{userController.loginPassword}" feedback="false"
-                            required="true" requiredMessage="Senha é obrigatória" style="width: 100%;" />
+                    <div class="form-group">
+                        <h:outputLabel for="password" value="Palavra-passe" styleClass="form-label">
+                            <span class="required">*</span>
+                        </h:outputLabel>
+                        <div class="input-wrapper">
+                            <i class="bi bi-lock-fill input-icon"></i>
+                            <p:password id="password" value="#{userController.loginPassword}" feedback="false"
+                                toggleMask="true" required="true" requiredMessage="Senha é obrigatória"
+                                placeholder="••••••••" />
+                        </div>
                     </div>
 
-                    <div class="mb-3 d-flex align-items-center gap-2">
-                        <p:selectBooleanCheckbox id="remember" value="#{userController.rememberMe}" />
-                        <h:outputLabel for="remember" value="Lembrar-me" />
+                    <div class="remember-row">
+                        <label class="remember-label">
+                            <p:selectBooleanCheckbox id="remember" value="#{userController.rememberMe}" />
+                            <span>Lembrar-me</span>
+                        </label>
+
+                        <!-- LINK PARA ALTERAR/RECUPERAR SENHA -->
+                        <h:outputLink value="#{request.contextPath}/components/dashboard/recuperar_senha.xhtml"
+                            styleClass="link-forgot">
+                            <i class="bi bi-key-fill"></i>
+                            Esqueceu a senha?
+                        </h:outputLink>
                     </div>
 
                     <p:commandButton value="Entrar" action="#{userController.login}" update=":messages"
-                        style="width: 100%;"
-                        onstart="showScLoading()"
-                        oncomplete="hideScLoading()"
+                        styleClass="btn-login" onstart="showScLoading()" oncomplete="hideScLoading()"
                         onerror="hideScLoading()" />
+
                 </h:form>
 
                 <!-- LINK "CRIAR CONTA" — SÓ APARECE QUANDO NÃO EXISTE ADMIN -->
-                <!-- CORREÇÃO: h:outputLink com value direto em vez de h:link outcome -->
                 <h:panelGroup rendered="#{userController.firstAdminSetup}">
-                    <p class="text-center small text-muted mt-3 mb-0">
-                        Ainda não tem conta?
-                        <h:outputLink value="#{request.contextPath}/components/dashboard/sign_in.xhtml" styleClass="text-decoration-none fw-semibold">
-                            Criar conta
-                        </h:outputLink>
-                    </p>
+                    <div class="login-footer">
+                        <p class="login-footer-text">
+                            Ainda não tem conta?
+                            <h:outputLink value="#{request.contextPath}/components/dashboard/sign_in.xhtml">
+                                Criar conta
+                            </h:outputLink>
+                        </p>
+                    </div>
                 </h:panelGroup>
 
             </div>
@@ -166,6 +776,11 @@
                 PrimeFaces.ajax.Queue.originalAdd(req);
             };
         }
+
+        // Auto-hide loading on page load (safety)
+        document.addEventListener('DOMContentLoaded', function () {
+            hideScLoading();
+        });
         //]]>
     </script>
 </h:body>

@@ -128,7 +128,7 @@ public class EnrolmentController implements Serializable {
         return all.stream()
                 .filter(e -> filterSchoolClassId == null ||
                         filterSchoolClassId.toString().isEmpty() ||
-                        (e.getSchoolclassPk() != null && e.getSchoolclassPk().equals(filterSchoolClassId)))
+                        (e.getSchoolClassPk() != null && e.getSchoolClassPk().equals(filterSchoolClassId)))
                 .filter(e -> filterShift == null || filterShift.isBlank() ||
                         (e.getShift() != null && e.getShift().toString().equalsIgnoreCase(filterShift)))
                 .filter(e -> filterEnrolmentType == null || filterEnrolmentType.isBlank() ||
@@ -237,7 +237,7 @@ public class EnrolmentController implements Serializable {
             }
             byte[] pdf = PdfReportService.generateEnrolmentReport(en, st);
             PdfReportService.streamToResponse(pdf,
-                    "matricula_" + en.getEnrolmentNumer() + ".pdf", true);
+                    "matricula_" + en.getEnrolmentNumber() + ".pdf", true);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erro ao imprimir matrícula", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
@@ -265,7 +265,7 @@ public class EnrolmentController implements Serializable {
             }
             byte[] pdf = PdfReportService.generateEnrolmentCardA6(en, st);
             PdfReportService.streamToResponse(pdf,
-                    "cartao_" + en.getEnrolmentNumer() + ".pdf", true);
+                    "cartao_" + en.getEnrolmentNumber() + ".pdf", true);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erro ao gerar cartão A6", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
@@ -306,8 +306,8 @@ public class EnrolmentController implements Serializable {
             Set<Object> classes = new HashSet<>();
             Set<Object> studentIds = new HashSet<>();
             for (EnrolmentDTO e : all) {
-                if (e.getSchoolclassPk() != null)
-                    classes.add(e.getSchoolclassPk());
+                if (e.getSchoolClassPk() != null)
+                    classes.add(e.getSchoolClassPk());
                 if (e.getStudentPk() != null)
                     studentIds.add(e.getStudentPk());
             }
@@ -359,7 +359,7 @@ public class EnrolmentController implements Serializable {
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Matrícula registada com sucesso");
             return "/management/secretaria/enrolments.xhtml?faces-redirect=true";
-            
+
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erro ao gravar matrícula", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
@@ -379,7 +379,7 @@ public class EnrolmentController implements Serializable {
             mapDtoFields(dto, editDto = new EnrolmentDTO());
             mapDtoFields(dto, selectedEnrolment);
             selectedStudentId = dto.getStudentPk();
-            selectedSchoolClassId = dto.getSchoolclassPk();
+            selectedSchoolClassId = dto.getSchoolClassPk();
         } else {
             addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Matrícula não encontrada");
         }
@@ -414,7 +414,7 @@ public class EnrolmentController implements Serializable {
             if (selectedStudentId != null)
                 editDto.setStudentPk(selectedStudentId);
             if (selectedSchoolClassId != null)
-                editDto.setSchoolclassPk(selectedSchoolClassId);
+                editDto.setSchoolClassPk(selectedSchoolClassId);
             enrolmentService.update(editDto);
             init();
             editDto = new EnrolmentDTO();
@@ -445,15 +445,15 @@ public class EnrolmentController implements Serializable {
 
     private void mapDtoFields(EnrolmentDTO source, EnrolmentDTO target) {
         target.setPhEnrolment(source.getPhEnrolment());
-        target.setEnrolmentNumer(source.getEnrolmentNumer());
+        target.setEnrolmentNumber(source.getEnrolmentNumber());
         target.setShift(source.getShift());
         target.setEnrolmentType(source.getEnrolmentType());
         target.setStudentPk(source.getStudentPk());
         target.setStudentFullName(source.getStudentFullName());
         target.setStudentNumber(source.getStudentNumber());
-        target.setSchoolclassPk(source.getSchoolclassPk());
-        target.setSchoolclassnome(source.getSchoolclassnome());
-        target.setSchoolclasscode(source.getSchoolclasscode());
+        target.setSchoolClassPk(source.getSchoolClassPk());
+        target.setSchoolClassCode(source.getSchoolClassCode());
+        target.setSchoolClassName(source.getSchoolClassName());
         target.setEnrolmentData(source.getEnrolmentData());
         target.setObs(source.getObs());
     }

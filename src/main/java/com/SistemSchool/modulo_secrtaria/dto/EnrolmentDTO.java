@@ -10,61 +10,45 @@ import com.SistemSchool.modulo_secrtaria.model.Enrolment;
 public class EnrolmentDTO {
 
     private Long phEnrolment;
-    private String enrolmentNumer;
+    private String enrolmentNumber;        // ← corrigido
     private ShiftType shift;
     private EnrolmentType enrolmentType;
 
-    // Dados "achatados" do Student, para evitar carregar a entidade completa
-    // na tabela lazy (mesma lógica usada no StudentTableProjection).
     private Long studentPk;
     private String studentFullName;
     private String studentNumber;
 
-    private Long schoolclassPk;
-    private String schoolclassnome;
-    private String schoolclasscode;
+    private Long schoolClassPk;            // ← corrigido
+    private String schoolClassName;        // ← corrigido
+    private String schoolClassCode;        // ← corrigido
 
     private LocalDate enrolmentData;
     private String obs;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public EnrolmentDTO() {
-    }
+    public EnrolmentDTO() {}
 
-
-    public EnrolmentDTO(Long phEnrolment, String enrolmentNumer, ShiftType shift, 
+    public EnrolmentDTO(Long phEnrolment, String enrolmentNumber, ShiftType shift, 
         EnrolmentType enrolmentType, Long studentPk, String studentFullName, 
-        String studentNumber, Long schoolclassPk, String schoolclassnome, 
-        String schoolclasscode, LocalDate enrolmentData, String obs, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        String studentNumber, Long schoolClassPk, String schoolClassName, 
+        String schoolClassCode, LocalDate enrolmentData, String obs, 
+        LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.phEnrolment = phEnrolment;
-        this.enrolmentNumer = enrolmentNumer;
+        this.enrolmentNumber = enrolmentNumber;
         this.shift = shift;
         this.enrolmentType = enrolmentType;
         this.studentPk = studentPk;
         this.studentFullName = studentFullName;
         this.studentNumber = studentNumber;
-        this.schoolclassPk = schoolclassPk;
-        this.schoolclassnome = schoolclassnome;
-        this.schoolclasscode = schoolclasscode;
+        this.schoolClassPk = schoolClassPk;
+        this.schoolClassName = schoolClassName;
+        this.schoolClassCode = schoolClassCode;
         this.enrolmentData = enrolmentData;
         this.obs = obs;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
-    
-
-    // Construtor sem studentNumber, útil para queries JPQL mais simples
-    public EnrolmentDTO(Long phEnrolment, String enrolmentNumer, ShiftType shift, 
-        EnrolmentType enrolmentType, Long studentPk, String studentFullName, 
-         Long schoolclassPk, String schoolclasscode, LocalDate enrolmentData, String obs, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this(phEnrolment, enrolmentNumer, shift, enrolmentType, studentPk, studentFullName,
-                null, schoolclassPk, null, schoolclasscode,  enrolmentData, obs, createdAt, updatedAt);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // CONVERSÃO (enrolment → DTO)
-    // ─────────────────────────────────────────────────────────────
 
     public static EnrolmentDTO fromEntity(Enrolment enrolment) {
         return new EnrolmentDTO(
@@ -74,7 +58,7 @@ public class EnrolmentDTO {
                 enrolment.getEnrolmentType(),
                 enrolment.getStudent() != null ? enrolment.getStudent().getPkStudent() : null,
                 enrolment.getStudent() != null ? enrolment.getStudent().getFullName() : null,
-                enrolment.getStudent() != null ? enrolment.getStudent().getSudentNumber() : null,
+               enrolment.getStudent() != null ? enrolment.getStudent().getSudentNumber() : null,
                 enrolment.getSchoolClass() != null ? enrolment.getSchoolClass().getPkSchoolClass() : null,
                 enrolment.getSchoolClass() != null ? enrolment.getSchoolClass().getClassName() : null,
                 enrolment.getSchoolClass() != null ? enrolment.getSchoolClass().getClassCode() : null,
@@ -84,117 +68,46 @@ public class EnrolmentDTO {
                 enrolment.getUpdatedAt());
     }
 
+    // Getters e Setters corrigidos
+    public Long getPhEnrolment() { return phEnrolment; }
+    public void setPhEnrolment(Long phEnrolment) { this.phEnrolment = phEnrolment; }
 
-    public Long getPhEnrolment() {
-        return this.phEnrolment;
-    }
+    public String getEnrolmentNumber() { return enrolmentNumber; }        // ← corrigido
+    public void setEnrolmentNumber(String enrolmentNumber) { this.enrolmentNumber = enrolmentNumber; }
 
-    public void setPhEnrolment(Long phEnrolment) {
-        this.phEnrolment = phEnrolment;
-    }
+    public ShiftType getShift() { return shift; }
+    public void setShift(ShiftType shift) { this.shift = shift; }
 
-    public String getEnrolmentNumer() {
-        return this.enrolmentNumer;
-    }
+    public EnrolmentType getEnrolmentType() { return enrolmentType; }
+    public void setEnrolmentType(EnrolmentType enrolmentType) { this.enrolmentType = enrolmentType; }
 
-    public void setEnrolmentNumer(String enrolmentNumer) {
-        this.enrolmentNumer = enrolmentNumer;
-    }
+    public Long getStudentPk() { return studentPk; }
+    public void setStudentPk(Long studentPk) { this.studentPk = studentPk; }
 
-    public ShiftType getShift() {
-        return this.shift;
-    }
+    public String getStudentFullName() { return studentFullName; }
+    public void setStudentFullName(String studentFullName) { this.studentFullName = studentFullName; }
 
-    public void setShift(ShiftType shift) {
-        this.shift = shift;
-    }
+    public String getStudentNumber() { return studentNumber; }
+    public void setStudentNumber(String studentNumber) { this.studentNumber = studentNumber; }
 
-    public EnrolmentType getEnrolmentType() {
-        return this.enrolmentType;
-    }
+    public Long getSchoolClassPk() { return schoolClassPk; }              // ← corrigido
+    public void setSchoolClassPk(Long schoolClassPk) { this.schoolClassPk = schoolClassPk; }
 
-    public void setEnrolmentType(EnrolmentType enrolmentType) {
-        this.enrolmentType = enrolmentType;
-    }
+    public String getSchoolClassName() { return schoolClassName; }        // ← corrigido
+    public void setSchoolClassName(String schoolClassName) { this.schoolClassName = schoolClassName; }
 
-    public Long getStudentPk() {
-        return this.studentPk;
-    }
+    public String getSchoolClassCode() { return schoolClassCode; }        // ← corrigido
+    public void setSchoolClassCode(String schoolClassCode) { this.schoolClassCode = schoolClassCode; }
 
-    public void setStudentPk(Long studentPk) {
-        this.studentPk = studentPk;
-    }
+    public LocalDate getEnrolmentData() { return enrolmentData; }
+    public void setEnrolmentData(LocalDate enrolmentData) { this.enrolmentData = enrolmentData; }
 
-    public String getStudentFullName() {
-        return this.studentFullName;
-    }
+    public String getObs() { return obs; }
+    public void setObs(String obs) { this.obs = obs; }
 
-    public void setStudentFullName(String studentFullName) {
-        this.studentFullName = studentFullName;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public String getStudentNumber() {
-        return this.studentNumber;
-    }
-
-    public void setStudentNumber(String studentNumber) {
-        this.studentNumber = studentNumber;
-    }
-
-    public Long getSchoolclassPk() {
-        return this.schoolclassPk;
-    }
-
-    public void setSchoolclassPk(Long schoolclassPk) {
-        this.schoolclassPk = schoolclassPk;
-    }
-
-    public String getSchoolclassnome() {
-        return this.schoolclassnome;
-    }
-
-    public void setSchoolclassnome(String schoolclassnome) {
-        this.schoolclassnome = schoolclassnome;
-    }
-
-    public String getSchoolclasscode() {
-        return this.schoolclasscode;
-    }
-
-    public void setSchoolclasscode(String schoolclasscode) {
-        this.schoolclasscode = schoolclasscode;
-    }
-
-    public LocalDate getEnrolmentData() {
-        return this.enrolmentData;
-    }
-
-    public void setEnrolmentData(LocalDate enrolmentData) {
-        this.enrolmentData = enrolmentData;
-    }
-
-    public String getObs() {
-        return this.obs;
-    }
-
-    public void setObs(String obs) {
-        this.obs = obs;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return this.createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return this.updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

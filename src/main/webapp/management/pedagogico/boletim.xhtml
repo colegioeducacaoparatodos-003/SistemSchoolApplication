@@ -1,0 +1,227 @@
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <ui:define name="titulo">#{msg['boletim']}</ui:define>
+
+    <ui:define name="content">
+        <style type="text/css">
+            /* <![CDATA[ */
+            :root {
+                --enr-black: #141414; --enr-red: #c8102e; --enr-yellow: #f5b400;
+                --enr-blue: #1a5fb4; --enr-green: #1e8e3e; --enr-surface: #ffffff;
+                --enr-surface-2: #f7f7f8; --enr-border: #e6e6e8; --enr-text: #141414;
+                --enr-muted: #666a70; --enr-radius: 12px; --enr-shadow: 0 4px 20px rgba(20,20,20,.10);
+                --font-mono: 'DM Mono', monospace;
+            }
+            .breadcrumb-pill { display:inline-flex; align-items:center; gap:5px; background:#fff8e1; border:1px solid rgba(245,180,0,.35); color:#8a6400; border-radius:99px; padding:3px 12px; font-size:.72rem; font-weight:600; }
+            .enr-page { padding:1.2rem; }
+            @media(min-width:768px){ .enr-page { padding:1.6rem 2rem 2.5rem; } }
+            .enr-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:1.4rem; }
+            .enr-header-left { display:flex; align-items:center; gap:1rem; }
+            .enr-header-icon { width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg,var(--enr-black) 0%,var(--enr-red) 100%); display:flex; align-items:center; justify-content:center; color:var(--enr-yellow); font-size:1.2rem; flex-shrink:0; }
+            .enr-header-title h1 { font-size:1.35rem; font-weight:800; margin:0 0 .2rem; color:var(--enr-text); }
+            .enr-header-title p { font-size:.85rem; color:var(--enr-muted); margin:0; }
+
+            .enr-card { background:var(--enr-surface); border:1px solid var(--enr-border); border-radius:var(--enr-radius); box-shadow:var(--enr-shadow); overflow:hidden; }
+            .enr-toolbar { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.2rem; border-bottom:1px solid var(--enr-border); gap:1rem; flex-wrap:wrap; }
+            .enr-toolbar-left { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+            .enr-toolbar-right { display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
+            .enr-filters { display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; padding:.8rem 1.2rem; background:var(--enr-surface-2); border-bottom:1px solid var(--enr-border); }
+            .enr-filters .ui-inputfield, .enr-filters .ui-selectonemenu { min-width:200px; }
+
+            .boletim-table.p-datatable .p-datatable-thead tr th {
+                background:var(--enr-black) !important; color:var(--enr-yellow) !important;
+                font-size:.72rem !important; text-transform:uppercase !important; padding:.7rem .5rem !important; border-color:var(--enr-black) !important; text-align:center !important;
+            }
+            .boletim-table.p-datatable .p-datatable-tbody tr td {
+                font-size:.85rem !important; padding:.65rem .5rem !important; text-align:center;
+            }
+            .boletim-table.p-datatable .p-datatable-tbody tr td:first-child { text-align:left; font-weight:600; }
+            .boletim-table.p-datatable .p-datatable-tbody tr:hover { background:var(--enr-surface-2) !important; }
+
+            .nota-cell { font-family:var(--font-mono); font-weight:700; font-size:.9rem; }
+            .nota-cell.aprovado { color:var(--enr-green); }
+            .nota-cell.reprovado { color:var(--enr-red); }
+
+            .boletim-header-card {
+                background: linear-gradient(135deg, var(--enr-black) 0%, #2a2a2a 100%);
+                color: #fff; padding: 1.5rem; border-radius: var(--enr-radius);
+                margin-bottom: 1.4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+            }
+            @media(max-width:768px){ .boletim-header-card { grid-template-columns: 1fr; } }
+            .boletim-header-card .label { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--enr-yellow); font-weight: 700; margin-bottom: .2rem; }
+            .boletim-header-card .value { font-size: 1rem; font-weight: 600; }
+
+            .media-final-box {
+                background: var(--enr-surface-2); border: 2px solid var(--enr-yellow);
+                border-radius: var(--enr-radius); padding: 1.2rem; text-align: center;
+                margin-top: 1rem;
+            }
+            .media-final-box .label { font-size: .75rem; color: var(--enr-muted); text-transform: uppercase; font-weight: 700; }
+            .media-final-box .value { font-size: 2.5rem; font-weight: 800; font-family: var(--font-mono); color: var(--enr-text); }
+            .media-final-box .result { font-size: .9rem; font-weight: 700; margin-top: .3rem; }
+
+            @media print {
+                .enr-header, .enr-toolbar, .enr-filters, .breadcrumb-pill, .ui-button { display:none !important; }
+                .enr-card { border:none; box-shadow:none; }
+                .boletim-table.p-datatable .p-datatable-thead tr th { background:#333 !important; color:#fff !important; }
+            }
+            /* ]]> */
+        </style>
+
+        <div class="enr-page">
+            <h:form id="formBoletim">
+                <p:growl id="messages" showDetail="true" life="5000"><p:autoUpdate /></p:growl>
+
+                <div class="enr-header">
+                    <div class="enr-header-left">
+                        <div class="enr-header-icon"><i class="pi pi-id-card"></i></div>
+                        <div class="enr-header-title">
+                            <h1>#{msg['boletim']}</h1>
+                            <p>#{msg.boletimDescription}</p>
+                        </div>
+                    </div>
+                    <span class="breadcrumb-pill">
+                        <i class="pi pi-home" style="font-size:.65rem"></i> #{msg.management} &#8250; #{msg['boletim']}
+                    </span>
+                </div>
+
+                <!-- Filtros -->
+                <div class="enr-card" style="margin-bottom:1.4rem;">
+                    <div class="enr-toolbar">
+                        <div class="enr-toolbar-left">
+                            <span style="font-weight:700; font-size:.9rem; color:var(--enr-text);">
+                                <i class="pi pi-filter" style="color:var(--enr-red); margin-right:.4rem;"></i> #{msg.filters}
+                            </span>
+                        </div>
+                        <div class="enr-toolbar-right">
+                            <p:commandButton value="#{msg.clear}" icon="pi pi-filter-slash" action="#{'{boletimController.clear}'}}"
+                                update="@form" styleClass="ui-button-outlined ui-button-secondary" />
+                            <p:commandButton value="#{msg.generate}" icon="pi pi-play"
+                                action="#{'{boletimController.generateBoletim}'}}"
+                                update="@form" styleClass="ui-button-success" />
+                        </div>
+                    </div>
+                    <div class="enr-filters">
+                        <p:selectOneMenu value="#{'{boletimController.selectedStudentId}'}}" placeholder="#{msg.student}" style="min-width:220px;">
+                            <f:selectItem itemLabel="#{msg.selectStudent}" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{'{boletimController.students}'}}" var="s" itemLabel="#{s.fullName}" itemValue="#{s.pkStudent}" />
+                            <p:ajax event="change" update="@this" />
+                        </p:selectOneMenu>
+
+                        <p:selectOneMenu value="#{'{boletimController.selectedEnrolmentId}'}}" placeholder="#{msg.enrolment}" style="min-width:220px;">
+                            <f:selectItem itemLabel="#{msg.selectEnrolment}" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{'{boletimController.enrolments}'}}" var="e" itemLabel="#{e.enrolmentNumer}" itemValue="#{e.phEnrolment}" />
+                            <p:ajax event="change" update="@this" />
+                        </p:selectOneMenu>
+
+                        <p:selectOneMenu value="#{'{boletimController.selectedTrimester}'}}" placeholder="#{msg.trimester}" style="min-width:140px;">
+                            <f:selectItem itemLabel="#{msg.selectTrimester}" itemValue="#{null}" noSelectionOption="true" />
+                            <f:selectItems value="#{'{boletimController.trimesters}'}}" var="t" itemLabel="#{t}º #{msg.trimester}" itemValue="#{t}" />
+                            <p:ajax event="change" update="@this" />
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+
+                <!-- Resultado -->
+                <h:panelGroup rendered="#{'{not empty boletimController.boletim}'}}" layout="block">
+
+                    <!-- Cabeçalho do Aluno -->
+                    <div class="boletim-header-card">
+                        <div>
+                            <div class="label">#{msg.student}</div>
+                            <div class="value">#{'{boletimController.boletim.studentFullName}'}}</div>
+                        </div>
+                        <div>
+                            <div class="label">#{msg.enrolment}</div>
+                            <div class="value">#{'{boletimController.boletim.enrolmentNumber}'}}</div>
+                        </div>
+                        <div>
+                            <div class="label">#{msg.schoolClass}</div>
+                            <div class="value">#{'{boletimController.boletim.schoolClassName}'}}</div>
+                        </div>
+                        <div>
+                            <div class="label">#{msg.academicYear} / #{msg.period}</div>
+                            <div class="value">#{'{boletimController.boletim.academicYear}'}} — #{'{boletimController.boletim.period}'}}</div>
+                        </div>
+                    </div>
+
+                    <!-- Tabela Boletim -->
+                    <div class="enr-card">
+                        <div class="enr-toolbar">
+                            <div class="enr-toolbar-left">
+                                <span style="font-weight:700; font-size:.9rem; color:var(--enr-text);">
+                                    <i class="pi pi-list" style="color:var(--enr-red); margin-right:.4rem;"></i>
+                                    #{msg.disciplines} — #{msg.trimester} #{'{boletimController.boletim.trimester}'}}
+                                </span>
+                            </div>
+                            <div class="enr-toolbar-right">
+                                <p:commandButton value="#{msg.print}" icon="pi pi-print" onclick="window.print(); return false;" styleClass="ui-button-outlined" />
+                                <p:commandButton value="PDF" icon="pi pi-file-pdf" styleClass="ui-button-outlined ui-button-secondary" />
+                            </div>
+                        </div>
+
+                        <p:dataTable id="dtBoletim" styleClass="boletim-table" var="d"
+                            value="#{'{boletimController.boletim.disciplines}'}}"
+                            paginator="false" rows="50" reflow="true"
+                            emptyMessage="#{msg.noDisciplinesFound}">
+
+                            <p:column headerText="#{msg.discipline}" style="min-width:160px">
+                                <h:outputText value="#{'{d.disciplineName}'}}" />
+                            </p:column>
+
+                            <p:column headerText="MAC" style="width:70px">
+                                <h:outputText value="#{'{d.mac}'}}" styleClass="nota-cell" rendered="#{'{not empty d.mac}'}}">
+                                    <f:convertNumber pattern="#0" />
+                                </h:outputText>
+                                <h:outputText value="—" rendered="#{'{empty d.mac}'}}" style="color:var(--enr-muted)" />
+                            </p:column>
+
+                            <p:column headerText="NPP" style="width:70px">
+                                <h:outputText value="#{'{d.npp}'}}" styleClass="nota-cell" rendered="#{'{not empty d.npp}'}}">
+                                    <f:convertNumber pattern="#0" />
+                                </h:outputText>
+                                <h:outputText value="—" rendered="#{'{empty d.npp}'}}" style="color:var(--enr-muted)" />
+                            </p:column>
+
+                            <p:column headerText="NPT" style="width:70px">
+                                <h:outputText value="#{'{d.npt}'}}" styleClass="nota-cell" rendered="#{'{not empty d.npt}'}}">
+                                    <f:convertNumber pattern="#0" />
+                                </h:outputText>
+                                <h:outputText value="—" rendered="#{'{empty d.npt}'}}" style="color:var(--enr-muted)" />
+                            </p:column>
+
+                            <p:column headerText="MT" style="width:80px; background:#fff8e1;">
+                                <h:outputText value="#{'{d.mt}'}}" styleClass="nota-cell #{d.mt >= 10 ? 'aprovado' : 'reprovado'}" rendered="#{'{not empty d.mt}'}}">
+                                    <f:convertNumber pattern="#0.0" />
+                                </h:outputText>
+                                <h:outputText value="—" rendered="#{'{empty d.mt}'}}" style="color:var(--enr-muted)" />
+                            </p:column>
+                        </p:dataTable>
+
+                        <!-- Média Geral -->
+                        <div class="media-final-box">
+                            <div class="label">#{msg.generalAverage}</div>
+                            <div class="value" style="color:#{'{boletimController.boletim.generalAverage >= 10 ? "var(--enr-green)" : "var(--enr-red)"}'}};">
+                                <h:outputText value="#{'{boletimController.boletim.generalAverage}'}}"><f:convertNumber pattern="#0.0" /></h:outputText>
+                            </div>
+                            <div class="result" style="color:#{'{boletimController.boletim.generalAverage >= 10 ? "var(--enr-green)" : "var(--enr-red)"}'}};">
+                                #{'{boletimController.boletim.finalResult}'}}
+                            </div>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{'{empty boletimController.boletim}'}}" layout="block" style="text-align:center; padding:4rem 1rem; color:var(--enr-muted);">
+                    <i class="pi pi-id-card" style="font-size:3rem; opacity:.2; display:block; margin-bottom:.5rem;"></i>
+                    <div style="font-size:1rem; font-weight:600;">#{msg.selectFiltersToGenerateBoletim}</div>
+                    <div style="font-size:.85rem; margin-top:.3rem;">#{msg.chooseStudentEnrolmentTrimester}</div>
+                </h:panelGroup>
+            </h:form>
+        </div>
+    </ui:define>
+</ui:composition>

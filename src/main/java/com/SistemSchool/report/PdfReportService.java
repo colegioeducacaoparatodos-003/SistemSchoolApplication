@@ -28,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -155,10 +156,10 @@ public final class PdfReportService {
         for (EnrolmentDTO e : list) {
             BaseColor bg = alt ? ROW_ALT_BG : BaseColor.WHITE;
             alt = !alt;
-            addCell(table, fmt(e.getEnrolmentNumer()), bg);
+            addCell(table, fmt(e.getEnrolmentNumber()), bg);
             addCell(table, fmt(e.getStudentFullName()), bg);
             addCell(table, fmt(e.getStudentNumber()), bg);
-            addCell(table, fmt(e.getSchoolclasscode()), bg);
+            addCell(table, fmt(e.getSchoolClassPk()), bg);
             addCell(table, fmt(e.getShift()), bg);
             addCell(table, fmt(e.getEnrolmentType()), bg);
             addCell(table, fmt(e.getEnrolmentData()), bg);
@@ -217,7 +218,7 @@ public final class PdfReportService {
             for (EnrolmentDTO e : list) {
                 BaseColor bg = alt ? ROW_ALT_BG : BaseColor.WHITE;
                 alt = !alt;
-                addCell(table, fmt(e.getEnrolmentNumer()), bg);
+                addCell(table, fmt(e.getEnrolmentNumber()), bg);
                 addCell(table, fmt(e.getStudentFullName()), bg);
                 addCell(table, fmt(e.getStudentNumber()), bg);
                 addCell(table, fmt(e.getEnrolmentType()), bg);
@@ -312,12 +313,12 @@ public final class PdfReportService {
 
         Paragraph pNum = new Paragraph();
         pNum.add(new Chunk("Nº: ", F6_LABEL));
-        pNum.add(new Chunk(fmt(enrolment.getEnrolmentNumer()), F6_VALUE));
+        pNum.add(new Chunk(fmt(enrolment.getEnrolmentNumber()), F6_VALUE));
         dataCell.addElement(pNum);
 
         Paragraph pClass = new Paragraph();
         pClass.add(new Chunk("Turma: ", F6_LABEL));
-        pClass.add(new Chunk(fmt(enrolment.getSchoolclasscode()), F6_VALUE));
+        pClass.add(new Chunk(fmt(enrolment.getSchoolClassCode()), F6_VALUE));
         dataCell.addElement(pClass);
 
         Paragraph pShift = new Paragraph();
@@ -473,11 +474,28 @@ public final class PdfReportService {
         return p;
     }
 
+    /**
+     * Formata valores para exibição. Para enums, tenta chamar getDescricao()
+     * antes de cair no name(). Funciona para ShiftType e EnrolmentType.
+     */
     private static String fmt(Object value) {
         if (value == null) return "-";
         if (value instanceof LocalDate) return ((LocalDate) value).format(DATE_FMT);
         if (value instanceof LocalDateTime) return ((LocalDateTime) value).format(DATETIME_FMT);
-        if (value instanceof Enum) return ((Enum<?>) value).name();
+        if (value instanceof Enum) {
+            Enum<?> e = (Enum<?>) value;
+            try {
+                Method m = e.getDeclaringClass().getMethod("getDescricao");
+                Object result = m.invoke(value);
+                if (result != null) {
+                    String s = result.toString().trim();
+                    return s.isEmpty() ? "-" : s;
+                }
+            } catch (Exception ignored) {
+                // não possui getDescricao(), cai no name()
+            }
+            return e.name();
+        }
         String s = value.toString().trim();
         return s.isEmpty() ? "-" : s;
     }
@@ -551,8 +569,8 @@ public final class PdfReportService {
         table.setSpacingBefore(4f);
         table.setSpacingAfter(4f);
 
-        addPlainFieldCellA4(table, "CLASSE", e.getSchoolclassnome());
-        addPlainFieldCellA4(table, "Nº DA FICHA", e.getEnrolmentNumer());
+        addPlainFieldCellA4(table, "CLASSE", e.getSchoolClassName());
+        addPlainFieldCellA4(table, "Nº DA FICHA", e.getEnrolmentNumber());
         addPlainFieldCellA4(table, "PERÍODO", e.getShift());
         addPlainFieldCellA4(table, "ANO LECTIVO", currentAcademicYear());
 

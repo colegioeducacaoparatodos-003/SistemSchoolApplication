@@ -211,12 +211,12 @@
                             <div class="imp-field">
                                 <label for="formImpressao:enrolment">#{msg.student}</label>
                                 <p:selectOneMenu id="enrolment"
-                                    value="#{impressaoPedagogicaController.selectedEnrolmentId}"
-                                    filter="true" filterMatchMode="contains">
+                                    value="#{impressaoPedagogicaController.selectedEnrolmentId}" filter="true"
+                                    filterMatchMode="contains">
                                     <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
                                         noSelectionOption="true" />
                                     <f:selectItems value="#{impressaoPedagogicaController.enrolments}" var="e"
-                                        itemLabel="#{e.studentName} — #{e.enrolmentNumer}"
+                                        itemLabel="#{e.studentFullName} — #{e.enrolmentNumer}"
                                         itemValue="#{e.phEnrolment}" />
                                 </p:selectOneMenu>
                             </div>
@@ -262,8 +262,8 @@
                             <div class="imp-field">
                                 <label for="formImpressao:schoolClass">#{msg.schoolClass}</label>
                                 <p:selectOneMenu id="schoolClass"
-                                    value="#{impressaoPedagogicaController.selectedSchoolClassId}"
-                                    filter="true" filterMatchMode="contains">
+                                    value="#{impressaoPedagogicaController.selectedSchoolClassId}" filter="true"
+                                    filterMatchMode="contains">
                                     <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
                                         noSelectionOption="true" />
                                     <f:selectItems value="#{impressaoPedagogicaController.schoolClasses}" var="sc"
@@ -275,8 +275,8 @@
                             <div class="imp-field">
                                 <label for="formImpressao:discipline">#{msg.discipline}</label>
                                 <p:selectOneMenu id="discipline"
-                                    value="#{impressaoPedagogicaController.selectedDisciplineId}"
-                                    filter="true" filterMatchMode="contains">
+                                    value="#{impressaoPedagogicaController.selectedDisciplineId}" filter="true"
+                                    filterMatchMode="contains">
                                     <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
                                         noSelectionOption="true" />
                                     <f:selectItems value="#{impressaoPedagogicaController.disciplines}" var="d"

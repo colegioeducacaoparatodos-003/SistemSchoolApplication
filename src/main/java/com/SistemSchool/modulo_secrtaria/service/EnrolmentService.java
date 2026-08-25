@@ -119,14 +119,14 @@ public class EnrolmentService {
             enrolment.setStudent(student);
         }
 
-        if (dto.getSchoolclassPk() != null
-                && !dto.getSchoolclassPk().equals(enrolment.getSchoolClass().getPkSchoolClass())) {
-            SchoolClass schoolClass = schoolClassRepository.findById(dto.getSchoolclassPk())
-                    .orElseThrow(() -> new RuntimeException("Turma não encontrada com id: " + dto.getSchoolclassPk()));
+        if (dto.getSchoolClassPk() != null
+                && !dto.getSchoolClassPk().equals(enrolment.getSchoolClass().getPkSchoolClass())) {
+            SchoolClass schoolClass = schoolClassRepository.findById(dto.getSchoolClassPk())
+                    .orElseThrow(() -> new RuntimeException("Turma não encontrada com id: " + dto.getSchoolClassPk()));
             enrolment.setSchoolClass(schoolClass);
         }
 
-        enrolment.setEnrolmentNumer(dto.getEnrolmentNumer());
+        enrolment.setEnrolmentNumer(dto.getEnrolmentNumber());
         enrolment.setShift(dto.getShift());
         enrolment.setEnrolmentType(dto.getEnrolmentType());
         enrolment.setEnrolmentData(dto.getEnrolmentData());
@@ -193,11 +193,11 @@ public class EnrolmentService {
                     }
 
                     boolean fieldMatches = switch (field) {
-                        case "enrolmentNumer" -> contains(dto.getEnrolmentNumer(), expected);
+                        case "enrolmentNumer" -> contains(dto.getEnrolmentNumber(), expected);
                         case "studentFullName" -> contains(dto.getStudentFullName(), expected);
                         case "studentNumber" -> contains(dto.getStudentNumber(), expected);
-                        case "schoolclasscode" -> contains(dto.getSchoolclasscode(), expected);
-                        case "schoolclassnome" -> contains(dto.getSchoolclassnome(), expected);
+                        case "schoolclasscode" -> contains(dto.getSchoolClassCode(), expected);
+                        case "schoolclassnome" -> contains(dto.getSchoolClassName(), expected);
                         case "shift" -> contains(dto.getShift() != null ? dto.getShift().name() : null, expected);
                         case "enrolmentType" ->
                             contains(dto.getEnrolmentType() != null ? dto.getEnrolmentType().name() : null, expected);
@@ -220,11 +220,11 @@ public class EnrolmentService {
     }
 
     private boolean matchesGlobal(EnrolmentDTO dto, String globalTerm) {
-        return contains(dto.getEnrolmentNumer(), globalTerm)
+        return contains(dto.getEnrolmentNumber(), globalTerm)
                 || contains(dto.getStudentFullName(), globalTerm)
                 || contains(dto.getStudentNumber(), globalTerm)
-                || contains(dto.getSchoolclasscode(), globalTerm)
-                || contains(dto.getSchoolclassnome(), globalTerm)
+                || contains(dto.getSchoolClassCode(), globalTerm)
+                || contains(dto.getSchoolClassName(), globalTerm)
                 || contains(dto.getObs(), globalTerm)
                 || contains(dto.getShift() != null ? dto.getShift().name() : null, globalTerm)
                 || contains(dto.getEnrolmentType() != null ? dto.getEnrolmentType().name() : null, globalTerm);
