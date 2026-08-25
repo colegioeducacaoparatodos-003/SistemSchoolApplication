@@ -238,7 +238,8 @@ public final class PdfReportService {
        ═══════════════════════════════════════════════════════════════ */
     public static byte[] generateEnrolmentReport(EnrolmentDTO enrolment, StudentDTO student)
             throws DocumentException {
-        Document doc = new Document(PageSize.A4, 28, 28, 20, 20);
+        // Margens reduzidas para garantir que a ficha caiba numa única página A4
+        Document doc = new Document(PageSize.A4, 24, 24, 14, 14);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfWriter.getInstance(doc, baos);
 
@@ -513,7 +514,8 @@ public final class PdfReportService {
         Image logo = tryLoadLogo();
         PdfPCell logoCell;
         if (logo != null) {
-            logo.scaleToFit(80f, 80f);
+            // Logo reduzido para poupar altura vertical
+            logo.scaleToFit(60f, 60f);
             logoCell = new PdfPCell(logo, false);
         } else {
             logoCell = new PdfPCell(new Phrase(""));
@@ -521,19 +523,19 @@ public final class PdfReportService {
         logoCell.setBorder(Rectangle.NO_BORDER);
         logoCell.setHorizontalAlignment(Element.ALIGN_CENTER);
         logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        logoCell.setPadding(4f);
+        logoCell.setPadding(3f);
         header.addCell(logoCell);
 
         PdfPCell titleCell = new PdfPCell();
         titleCell.setBorder(Rectangle.NO_BORDER);
         titleCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        titleCell.setPadding(4f);
+        titleCell.setPadding(3f);
 
         Paragraph schoolName = new Paragraph("COMPLEXO ESCOLAR PRIVADO EDUCAÇÃO PARA TODOS", F_A4_SCHOOL);
         schoolName.setAlignment(Element.ALIGN_CENTER);
         Paragraph fichaTitle = new Paragraph("FICHA DO(A) ALUNO(A)", F_A4_FICHA);
         fichaTitle.setAlignment(Element.ALIGN_CENTER);
-        fichaTitle.setSpacingBefore(6f);
+        fichaTitle.setSpacingBefore(4f);
 
         titleCell.addElement(schoolName);
         titleCell.addElement(fichaTitle);
@@ -542,7 +544,8 @@ public final class PdfReportService {
         PdfPCell photoCell = new PdfPCell(new Phrase("FOTO", F_A4_PHOTO));
         photoCell.setBorder(Rectangle.BOX);
         photoCell.setBorderColor(BaseColor.BLACK);
-        photoCell.setFixedHeight(90f);
+        // Altura reduzida (era 90f) para libertar espaço na página
+        photoCell.setFixedHeight(65f);
         photoCell.setHorizontalAlignment(Element.ALIGN_CENTER);
         photoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         header.addCell(photoCell);
@@ -566,8 +569,8 @@ public final class PdfReportService {
         PdfPTable table = new PdfPTable(2);
         table.setWidthPercentage(100);
         try { table.setWidths(new float[] { 50f, 50f }); } catch (DocumentException ignored) {}
-        table.setSpacingBefore(4f);
-        table.setSpacingAfter(4f);
+        table.setSpacingBefore(3f);
+        table.setSpacingAfter(3f);
 
         addPlainFieldCellA4(table, "CLASSE", e.getSchoolClassName());
         addPlainFieldCellA4(table, "Nº DA FICHA", e.getEnrolmentNumber());
@@ -582,7 +585,7 @@ public final class PdfReportService {
         PdfPTable table = new PdfPTable(2);
         table.setWidthPercentage(100);
         try { table.setWidths(new float[] { 50f, 50f }); } catch (DocumentException ignored) {}
-        table.setSpacingAfter(4f);
+        table.setSpacingAfter(3f);
 
         // Nome ocupa linha completa
         addFullLineCellA4(table, "NOME", s.getFullName(), 2);
@@ -605,7 +608,7 @@ public final class PdfReportService {
     private static PdfPTable buildFiliacaoTableA4(StudentDTO s) {
         PdfPTable table = new PdfPTable(1);
         table.setWidthPercentage(100);
-        table.setSpacingAfter(4f);
+        table.setSpacingAfter(3f);
 
         addFullLineCellA4(table, "NOME DO PAI", s.getNameFather(), 1);
         addFullLineCellA4(table, "NOME DA MÃE", s.getNameMather(), 1);
@@ -625,8 +628,9 @@ public final class PdfReportService {
         PdfPCell cell = new PdfPCell();
         cell.setBorder(Rectangle.BOX);
         cell.setBorderColor(BORDER_COLOR);
-        cell.setPadding(10f);
-        cell.setMinimumHeight(70f);
+        cell.setPadding(8f);
+        // Altura mínima reduzida (era 70f) para caber numa única página
+        cell.setMinimumHeight(45f);
 
         String obsText = (e.getObs() != null && !e.getObs().trim().isEmpty())
                 ? e.getObs() : " ";
@@ -640,11 +644,12 @@ public final class PdfReportService {
         PdfPTable table = new PdfPTable(2);
         table.setWidthPercentage(90);
         table.setHorizontalAlignment(Element.ALIGN_CENTER);
-        table.setSpacingBefore(24f);
+        // Espaçamento antes reduzido (era 24f)
+        table.setSpacingBefore(14f);
         try { table.setWidths(new float[] { 50f, 50f }); } catch (DocumentException ignored) {}
 
-        table.addCell(emptyCellA4(36f));
-        table.addCell(emptyCellA4(36f));
+        table.addCell(emptyCellA4(22f));
+        table.addCell(emptyCellA4(22f));
         table.addCell(signatureLabelCellA4("O FUNCIONÁRIO"));
         table.addCell(signatureLabelCellA4("O ENCARREGADO"));
         return table;
@@ -656,7 +661,7 @@ public final class PdfReportService {
         PdfPCell cell = new PdfPCell();
         cell.setBorder(Rectangle.BOTTOM);
         cell.setBorderColor(BORDER_COLOR);
-        cell.setPadding(7f);
+        cell.setPadding(5f);
         Phrase phrase = new Phrase();
         phrase.add(new Chunk(label + ": ", F_A4_LBL));
         phrase.add(new Chunk(fmt(value), F_A4_VAL));
@@ -668,7 +673,7 @@ public final class PdfReportService {
         PdfPCell cell = new PdfPCell();
         cell.setBorder(Rectangle.BOTTOM);
         cell.setBorderColor(BORDER_COLOR);
-        cell.setPadding(7f);
+        cell.setPadding(5f);
         cell.setColspan(colspan);
         Phrase phrase = new Phrase();
         phrase.add(new Chunk(label + ": ", F_A4_LBL));
@@ -688,15 +693,15 @@ public final class PdfReportService {
         PdfPCell cell = new PdfPCell(new Phrase(label, F_A4_SIGN));
         cell.setBorder(Rectangle.TOP);
         cell.setBorderColor(BaseColor.BLACK);
-        cell.setPaddingTop(6f);
+        cell.setPaddingTop(5f);
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
         return cell;
     }
 
     private static void addSectionTitleA4(Document doc, String text) throws DocumentException {
         Paragraph p = new Paragraph(text, F_A4_SECTION);
-        p.setSpacingBefore(6f);
-        p.setSpacingAfter(4f);
+        p.setSpacingBefore(4f);
+        p.setSpacingAfter(3f);
         doc.add(p);
         LineSeparator sep = new LineSeparator(1f, 100f, BORDER_COLOR, Element.ALIGN_LEFT, -2);
         doc.add(new Chunk(sep));
@@ -704,7 +709,7 @@ public final class PdfReportService {
 
     private static Paragraph spacerSmallA4() {
         Paragraph p = new Paragraph(" ");
-        p.setSpacingAfter(3);
+        p.setSpacingAfter(2);
         return p;
     }
 
@@ -895,9 +900,14 @@ public final class PdfReportService {
         return cell;
     }
 
+    /**
+     * Ano lectivo actual. Calendário lectivo angolano corre de Fevereiro a
+     * Novembro/Dezembro — por isso o corte é em Fevereiro (mês 2), não
+     * Setembro. Ex.: em Agosto/2026 devolve "2026/2027".
+     */
     private static String currentAcademicYear() {
         LocalDate today = LocalDate.now();
-        int startYear = today.getMonthValue() >= 9 ? today.getYear() : today.getYear() - 1;
+        int startYear = today.getMonthValue() >= 2 ? today.getYear() : today.getYear() - 1;
         return startYear + "/" + (startYear + 1);
     }
 }
