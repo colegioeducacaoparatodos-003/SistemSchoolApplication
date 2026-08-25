@@ -302,7 +302,7 @@ public class PagamentoService {
 
     private void registrarMovimentoFinanceiro(Pagamento pagamento, String operador) {
         FinancialMovement movement = new FinancialMovement();
-        movement.setMovementNumber(generateMovementNumber());
+        movement.setMovementNumber(financialMovementService.generateMovementNumber());
         movement.setCashBox(pagamento.getCashBox());
         movement.setDescription("Pagamento " + pagamento.getNumeroDocumento() + " - matrícula "
                 + pagamento.getEnrolment().getEnrolmentNumer());
@@ -312,7 +312,17 @@ public class PagamentoService {
         movement.setCategory("PROPINA");
         movement.setResponsible(operador);
         movement.setMovementDate(LocalDateTime.now());
-        financialMovementService.save(movement);
+
+        try {
+            financialMovementService.save(movement);
+        } catch (RuntimeException e) {
+            // Corrida rara: outro pedido gerou/gravou o mesmo número de movimento
+            // entretanto. Gera um novo número e tenta novamente uma vez.
+            LOGGER.log(Level.WARNING,
+                    "Conflito de numeroMovimento ao registar movimento financeiro, a gerar novo número e repetir.", e);
+            movement.setMovementNumber(financialMovementService.generateMovementNumber());
+            financialMovementService.save(movement);
+        }
     }
 
     private void reconciliarSaldoCaixa(EstadoPagamento estadoAnterior, BigDecimal totalAnterior,
@@ -617,11 +627,5 @@ public class PagamentoService {
         }
 
         return numero;
-    }
-
-    private String generateMovementNumber() {
-        int year = Year.now().getValue();
-        long count = financialMovementService.count() + 1;
-        return String.format("MOV-%d-%05d", year, count);
     }
 }

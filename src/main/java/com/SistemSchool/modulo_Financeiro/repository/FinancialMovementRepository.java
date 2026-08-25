@@ -146,6 +146,18 @@ public interface FinancialMovementRepository
         boolean existsByMovementNumber(
                         String movementNumber);
 
+        /**
+         * Maior sequência já usada para os números de movimento de um ano
+         * (formato "MOV-<ano>-<sequência 5 dígitos>"). Usado para gerar o
+         * próximo número de forma segura, em vez de depender de count(),
+         * que fica incorreto assim que algum movimento é eliminado.
+         */
+        @Query(value = """
+                        SELECT COALESCE(MAX(CAST(SUBSTRING(fm.movement_number, 10) AS INTEGER)), 0)
+                        FROM financial_movement fm WHERE fm.movement_number LIKE CONCAT('MOV-', :year, '-%')
+                        """, nativeQuery = true)
+        long findMaxSequenceForYear(@Param("year") int year);
+
         // =====================================================
         // Relatórios Financeiros
         // =====================================================

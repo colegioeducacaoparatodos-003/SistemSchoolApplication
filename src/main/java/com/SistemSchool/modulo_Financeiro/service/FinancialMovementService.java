@@ -20,12 +20,15 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.List;
 import java.util.Map;
 
 @Service
 @Transactional
 public class FinancialMovementService {
+
+    private static final int MAX_TENTATIVAS_NUMERO_MOVIMENTO = 20;
 
     private final FinancialMovementRepository repository;
     private final CashBoxRepository cashBoxRepository;
@@ -234,6 +237,55 @@ public class FinancialMovementService {
 
     public long count() {
         return repository.count();
+    }
+
+    public boolean existsByMovementNumber(String movementNumber) {
+        return repository.existsByMovementNumber(movementNumber);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // GERAÇÃO DE NÚMEROS SEQUENCIAIS
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Gera o próximo número de movimento no formato MOV-<ano>-<sequência>.
+     *
+     * IMPORTANTE: usa a MAIOR sequência já usada no ano (via
+     * findMaxSequenceForYear), e NÃO repository.count(). Usar count() estava
+     * a causar duplicados (ex: "MOV-2026-00094" já existente) sempre que um
+     * movimento era eliminado, porque a contagem total de linhas baixa mas a
+     * sequência de números já emitidos não retrocede. Isso, por sua vez,
+     * fazia com que a gravação do movimento falhasse a meio da transação de
+     * confirmação de pagamento, provocando rollback do pagamento também.
+     *
+     * Este método é a fonte única de geração de números de movimento —
+     * usado tanto pelo PagamentoService (movimento automático ao confirmar
+     * um pagamento) como por qualquer outro ponto que precise de um número
+     * novo. Não escreve nada na base de dados; é apenas cálculo em memória
+     * antes do save().
+     */
+    public String generateMovementNumber() {
+        int year = Year.now().getValue();
+        long nextSeq = repository.findMaxSequenceForYear(year) + 1;
+
+        String numero;
+        int tentativas = 0;
+        do {
+            numero = String.format("MOV-%d-%05d", year, nextSeq);
+            if (!repository.existsByMovementNumber(numero)) {
+                break;
+            }
+            nextSeq++;
+            tentativas++;
+        } while (tentativas < MAX_TENTATIVAS_NUMERO_MOVIMENTO);
+
+        if (tentativas >= MAX_TENTATIVAS_NUMERO_MOVIMENTO) {
+            throw new RuntimeException(
+                    "Não foi possível gerar um número de movimento único após " + MAX_TENTATIVAS_NUMERO_MOVIMENTO
+                            + " tentativas. Verifique a sequência de movimentos do ano " + year + ".");
+        }
+
+        return numero;
     }
 
     // ─────────────────────────────────────────────────────────────
