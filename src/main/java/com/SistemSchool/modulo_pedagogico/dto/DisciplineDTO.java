@@ -10,136 +10,55 @@ public class DisciplineDTO {
     private Long pkDiscipline;
     private String disciplineCode;
     private String disciplineName;
-    private Integer workload;
+    private String description;
     private DisciplineStatus status;
+    private String obs;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public DisciplineDTO() {
-    }
+    public DisciplineDTO() {}
 
-    public DisciplineDTO(Long pkDiscipline, String disciplineCode, String disciplineName, Integer workload,
-            DisciplineStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public DisciplineDTO(Long pkDiscipline, String disciplineCode, String disciplineName, String description,
+                         DisciplineStatus status, String obs, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.pkDiscipline = pkDiscipline;
         this.disciplineCode = disciplineCode;
         this.disciplineName = disciplineName;
-        this.workload = workload;
+        this.description = description;
         this.status = status;
+        this.obs = obs;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // CONVERSÃO (entity → DTO)
-    // ─────────────────────────────────────────────────────────────
-
-    public static DisciplineDTO fromEntity(Discipline entity) {
+    public static DisciplineDTO fromEntity(Discipline d) {
         return new DisciplineDTO(
-                entity.getPkDiscipline(),
-                entity.getDisciplineCode(),
-                entity.getDisciplineName(),
-                entity.getWorkload(),
-                entity.getStatus(),
-                entity.getCreatedAt(),
-                entity.getUpdatedAt());
+            d.getPkDiscipline(), d.getDisciplineCode(), d.getDisciplineName(),
+            d.getDescription(), d.getStatus(), d.getObs(), d.getCreatedAt(), d.getUpdatedAt()
+        );
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // GETTERS / SETTERS
-    // ─────────────────────────────────────────────────────────────
+    // Getters e Setters
+    public Long getPkDiscipline() { return pkDiscipline; }
+    public void setPkDiscipline(Long pkDiscipline) { this.pkDiscipline = pkDiscipline; }
 
-    public Long getPkDiscipline() {
-        return this.pkDiscipline;
-    }
+    public String getDisciplineCode() { return disciplineCode; }
+    public void setDisciplineCode(String disciplineCode) { this.disciplineCode = disciplineCode; }
 
-    public void setPkDiscipline(Long pkDiscipline) {
-        this.pkDiscipline = pkDiscipline;
-    }
+    public String getDisciplineName() { return disciplineName; }
+    public void setDisciplineName(String disciplineName) { this.disciplineName = disciplineName; }
 
-    public String getDisciplineCode() {
-        return this.disciplineCode;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setDisciplineCode(String disciplineCode) {
-        this.disciplineCode = disciplineCode;
-    }
+    public DisciplineStatus getStatus() { return status; }
+    public void setStatus(DisciplineStatus status) { this.status = status; }
 
-    public String getDisciplineName() {
-        return this.disciplineName;
-    }
+    public String getObs() { return obs; }
+    public void setObs(String obs) { this.obs = obs; }
 
-    public void setDisciplineName(String disciplineName) {
-        this.disciplineName = disciplineName;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public Integer getWorkload() {
-        return this.workload;
-    }
-
-    public void setWorkload(Integer workload) {
-        this.workload = workload;
-    }
-
-    public DisciplineStatus getStatus() {
-        return this.status;
-    }
-
-    public void setStatus(DisciplineStatus status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return this.createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return this.updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // FLUENT SETTERS (mesmo padrão do SchoolClassDTO)
-    // ─────────────────────────────────────────────────────────────
-
-    public DisciplineDTO pkDiscipline(Long pkDiscipline) {
-        setPkDiscipline(pkDiscipline);
-        return this;
-    }
-
-    public DisciplineDTO disciplineCode(String disciplineCode) {
-        setDisciplineCode(disciplineCode);
-        return this;
-    }
-
-    public DisciplineDTO disciplineName(String disciplineName) {
-        setDisciplineName(disciplineName);
-        return this;
-    }
-
-    public DisciplineDTO workload(Integer workload) {
-        setWorkload(workload);
-        return this;
-    }
-
-    public DisciplineDTO status(DisciplineStatus status) {
-        setStatus(status);
-        return this;
-    }
-
-    public DisciplineDTO createdAt(LocalDateTime createdAt) {
-        setCreatedAt(createdAt);
-        return this;
-    }
-
-    public DisciplineDTO updatedAt(LocalDateTime updatedAt) {
-        setUpdatedAt(updatedAt);
-        return this;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

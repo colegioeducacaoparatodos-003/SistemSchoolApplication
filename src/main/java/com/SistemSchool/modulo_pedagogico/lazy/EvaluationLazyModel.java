@@ -17,6 +17,7 @@ public class EvaluationLazyModel extends LazyDataModel<EvaluationDTO> {
     private static final long serialVersionUID = 1L;
 
     private final EvaluationService evaluationService;
+    private Map<String, Object> activeFilters = new HashMap<>();
 
     public EvaluationLazyModel(EvaluationService evaluationService) {
         this.evaluationService = evaluationService;
@@ -37,7 +38,8 @@ public class EvaluationLazyModel extends LazyDataModel<EvaluationDTO> {
             sort = Sort.by(direction, sortMeta.getField());
         }
 
-        Page<EvaluationDTO> result = evaluationService.findLazy(page, pageSize, sort, null);
+        activeFilters = extractFilters(filterBy);
+        Page<EvaluationDTO> result = evaluationService.findLazy(page, pageSize, sort, activeFilters);
 
         setRowCount((int) result.getTotalElements());
 
@@ -46,17 +48,29 @@ public class EvaluationLazyModel extends LazyDataModel<EvaluationDTO> {
 
     @Override
     public int count(Map<String, FilterMeta> filterBy) {
-        Map<String, Object> filters = new HashMap<>();
-        if (filterBy != null) {
-            for (FilterMeta meta : filterBy.values()) {
-                Object value = meta.getFilterValue();
-                if (value != null && !value.toString().isBlank()) {
-                    filters.put(meta.getField(), value);
-                }
-            }
-        }
+        Map<String, Object> filters = extractFilters(filterBy);
         Page<EvaluationDTO> page = evaluationService.findLazy(0, 1, Sort.unsorted(), filters);
         return (int) page.getTotalElements();
+    }
+
+    private Map<String, Object> extractFilters(Map<String, FilterMeta> filterBy) {
+        Map<String, Object> filters = new HashMap<>();
+        if (filterBy == null) {
+            return filters;
+        }
+
+        for (FilterMeta meta : filterBy.values()) {
+            Object value = meta.getFilterValue();
+            if (value != null && !value.toString().isBlank()) {
+                filters.put(meta.getField(), value);
+            }
+        }
+
+        return filters;
+    }
+
+    public void clearFilters() {
+        activeFilters = new HashMap<>();
     }
 
     @Override

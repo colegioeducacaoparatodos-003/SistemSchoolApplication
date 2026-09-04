@@ -115,9 +115,10 @@
 
                     <div class="sc-photo-row">
                         <div class="sc-photo-preview">
-                            <!-- uploadPhoto guarda apenas o nome do ficheiro; o caminho vem do resource,
-                                 tal como na listagem (h:graphicImage value="#{resource['uploads/alunosFotos']}/...") -->
-                            <h:graphicImage id="scPhotoPreviewImg" value="#{resource['uploads/alunosFotos']}/#{studentController.editDto.uploadPhoto}"
+                            <!-- uploadPhoto guarda apenas o nome do ficheiro; o caminho fisico real
+                                 e /student_img/ dentro do webapp (mesma pasta usada por
+                                 StudentService.guardarFoto e por PdfReportService para a ficha/cartao) -->
+                            <h:graphicImage id="scPhotoPreviewImg" value="#{request.contextPath}/student_img/#{studentController.editDto.uploadPhoto}"
                                 styleClass="#{empty studentController.editDto.uploadPhoto ? 'sc-photo-preview-img sc-hidden' : 'sc-photo-preview-img'}" />
                             <i id="scPhotoPlaceholderIcon"
                                 class="#{empty studentController.editDto.uploadPhoto ? 'pi pi-user sc-photo-placeholder-icon' : 'pi pi-user sc-photo-placeholder-icon sc-hidden'}"></i>

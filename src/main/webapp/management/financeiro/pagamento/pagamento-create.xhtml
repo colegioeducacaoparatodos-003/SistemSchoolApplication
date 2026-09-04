@@ -23,7 +23,8 @@
                         styleClass="sc-readonly-field sc-input" />
 
                     <p:outputLabel for="estado" value="#{msg.status}" styleClass="sc-label" />
-                    <p:selectOneMenu id="estado" value="#{pagamentoController.pagamento.estado}" style="width:100%;">
+                    <p:selectOneMenu id="estado" value="#{pagamentoController.pagamento.estado}" style="width:100%;"
+                        filter="true" filterMatchMode="contains" filterPlaceholder="#{msg.search}">
                         <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}"
                             noSelectionOption="true" />
                         <f:selectItems value="#{pagamentoController.estados}" var="e" itemLabel="#{e.descricao}"
@@ -32,7 +33,8 @@
 
                     <p:outputLabel for="mesReferencia" value="#{msg.referenceMonth}" styleClass="sc-label" />
                     <p:selectOneMenu id="mesReferencia" value="#{pagamentoController.pagamento.mesReferencia}"
-                        style="width:100%;">
+                        style="width:100%;" filter="true" filterMatchMode="contains"
+                        filterPlaceholder="#{msg.search}">
                         <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}"
                             noSelectionOption="true" />
                         <f:selectItems value="#{pagamentoController.mesesReferencia}" var="m" itemLabel="#{m.descricao}"
@@ -52,7 +54,8 @@
                     <p:outputLabel for="enrolment" value="#{msg.enrolment}" styleClass="sc-label req" />
                     <h:panelGroup>
                         <p:selectOneMenu id="enrolment" value="#{pagamentoController.selectedEnrolmentId}"
-                            required="true" requiredMessage="#{msg.enrolment} #{msg.isRequired}" style="width:100%;">
+                            required="true" requiredMessage="#{msg.enrolment} #{msg.isRequired}" style="width:100%;"
+                            filter="true" filterMatchMode="contains" filterPlaceholder="#{msg.search}">
                             <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}"
                                 noSelectionOption="true" />
                             <f:selectItems value="#{pagamentoController.enrolments}" var="enr"
@@ -65,7 +68,8 @@
                     <p:outputLabel for="fee" value="#{msg.fee}" styleClass="sc-label req" />
                     <h:panelGroup>
                         <p:selectOneMenu id="fee" value="#{pagamentoController.selectedFeeId}" required="true"
-                            requiredMessage="#{msg.fee} #{msg.isRequired}" style="width:100%;">
+                            requiredMessage="#{msg.fee} #{msg.isRequired}" style="width:100%;" filter="true"
+                            filterMatchMode="contains" filterPlaceholder="#{msg.search}">
                             <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}"
                                 noSelectionOption="true" />
                             <f:selectItems value="#{pagamentoController.fees}" var="fee" itemLabel="#{fee.displayLabel}"
@@ -80,7 +84,8 @@
                     <p:outputLabel for="cashBox" value="#{msg.cashBox}" styleClass="sc-label req" />
                     <h:panelGroup>
                         <p:selectOneMenu id="cashBox" value="#{pagamentoController.selectedCashBoxId}" required="true"
-                            requiredMessage="#{msg.cashBox} #{msg.isRequired}" style="width:100%;">
+                            requiredMessage="#{msg.cashBox} #{msg.isRequired}" style="width:100%;" filter="true"
+                            filterMatchMode="contains" filterPlaceholder="#{msg.search}">
                             <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}"
                                 noSelectionOption="true" />
                             <f:selectItems value="#{pagamentoController.cashBoxes}" var="cb"
@@ -134,7 +139,8 @@
                     <h:panelGroup>
                         <p:selectOneMenu id="formaPagamento" value="#{pagamentoController.pagamento.formaPagamento}"
                             required="true" requiredMessage="#{msg.paymentMethod} #{msg.isRequired}"
-                            style="width:100%;">
+                            style="width:100%;" filter="true" filterMatchMode="contains"
+                            filterPlaceholder="#{msg.search}">
                             <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}"
                                 noSelectionOption="true" />
                             <f:selectItems value="#{pagamentoController.formasPagamento}" var="fp"
@@ -293,6 +299,15 @@
             .sc-dialog-body::-webkit-scrollbar-thumb {
                 background: #d1d5db;
                 border-radius: 99px;
+            }
+
+            /* PrimeFaces filter box inside the select panel — align with sc- theme */
+            .ui-selectonemenu-filter-container {
+                padding: .5rem !important;
+            }
+
+            .ui-selectonemenu-filter-container .ui-inputfield {
+                width: 100% !important;
             }
 
             @media (max-width: 768px) {

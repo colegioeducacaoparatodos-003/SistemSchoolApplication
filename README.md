@@ -17,3 +17,16 @@ UPDATE enrolment SET enrolment_Type = CASE enrolment_Type
     WHEN 'ENROLMENT' THEN 'Matrícula'
     WHEN 'CONFIRMATION' THEN 'Confirmação'
     ELSE enrolment_Type END;
+
+API para validação do BI : https://consulta.edgarsingui.ao/consultar/006987033BO043/bilhete
+API para validação do NIF : https://consulta.edgarsingui.ao/consultar/006987033BO043/nif
+
+-- 1. Apagar as tabelas que referenciam evaluation
+DROP TABLE IF EXISTS grade;
+DROP TABLE IF EXISTS schedule;
+DROP TABLE IF EXISTS discipline;
+DROP TABLE IF EXISTS trimester_result;
+
+-- 2. Agora sim, apagar a tabela pai
+DROP TABLE IF EXISTS evaluation;
+DROP TABLE IF EXISTS teacher;

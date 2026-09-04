@@ -1,5 +1,19 @@
 package com.SistemSchool.modulo_Recursoa_Humano.controller;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.file.UploadedFile;
+
 import com.SistemSchool.io.Gender;
 import com.SistemSchool.modulo_Recursoa_Humano.dto.TeacherDTO;
 import com.SistemSchool.modulo_Recursoa_Humano.io.ContractType;
@@ -9,420 +23,204 @@ import com.SistemSchool.modulo_Recursoa_Humano.lazy.TeacherLazyModel;
 import com.SistemSchool.modulo_Recursoa_Humano.model.Teacher;
 import com.SistemSchool.modulo_Recursoa_Humano.service.TeacherService;
 
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Inject;
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Named;
-
-import com.SistemSchool.service.BIValidationService;
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.validator.ValidatorException;
-import org.primefaces.model.file.UploadedFile;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-
-import com.SistemSchool.report.PdfReportService;
-import com.itextpdf.text.DocumentException;
-
 @Named
 @ViewScoped
 public class TeacherController implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private static final String TEACHER_IMG_FOLDER = "teacher_img";
-    private static final String TEACHER_IMG_WEB = "/" + TEACHER_IMG_FOLDER + "/";
-
-    // ─────────────────────────────────────────────────────────────
-    // MODELOS
-    // ─────────────────────────────────────────────────────────────
-
-    private Teacher teacher = new Teacher();
-
-    private TeacherDTO editDto = new TeacherDTO();
-    private TeacherDTO selectedTeacher = new TeacherDTO();
-    private Long selectedId;
-
-    private UploadedFile uploadedPhoto;
-
-    private long totalTeacherCount;
-    private long activeTeacherCount;
-    private long onLeaveTeacherCount;
-    private long newTeacherCount;
-
-    // ─────────────────────────────────────────────────────────────
-    // SERVIÇOS
-    // ─────────────────────────────────────────────────────────────
-
     @Inject
     private TeacherService teacherService;
 
-    @Inject
-    private BIValidationService biValidationService;
+    private TeacherLazyModel lazyModel;
 
-    private transient TeacherLazyModel lazyModel;
+    private Teacher teacher;
+    private TeacherDTO editDto;
+    private Teacher selectedTeacher;
+    private Long selectedId;
 
-    // ─────────────────────────────────────────────────────────────
-    // INICIALIZAÇÃO E NAVEGAÇÃO
-    // ─────────────────────────────────────────────────────────────
+    private transient UploadedFile uploadedPhoto;
+
+    // ---------------- Filtros ----------------
+    private String filterTeacherNumber;
+    private String filterName;
+    private String filterStatus;
+
+    // ---------------- Estatísticas do cabeçalho ----------------
+    private long totalTeacherCount;
+    private long activeTeacherCount;
+    private long newTeacherCountThisMonth;
+    private BigDecimal totalBaseSalary;
 
     @PostConstruct
     public void init() {
-        lazyModel = new TeacherLazyModel(teacherService);
-        loadStatistics();
+        teacher = new Teacher();
+        editDto = new TeacherDTO();
+        lazyModel = new TeacherLazyModel(this);
+        refreshStats();
     }
 
-    private void loadStatistics() {
-        totalTeacherCount = teacherService.countAll();
-        activeTeacherCount = teacherService.countByStatus(TeacherStatus.ACTIVE);
-        onLeaveTeacherCount = teacherService.countByStatus(TeacherStatus.ON_LEAVE);
-
-        List<TeacherDTO> allTeachers = teacherService.getAllTeachers();
-        if (allTeachers == null) {
-            newTeacherCount = 0;
-            return;
-        }
-
-        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-        newTeacherCount = 0;
-        if (allTeachers != null) {
-            for (TeacherDTO teacherDto : allTeachers) {
-                if (teacherDto.getCreatedAt() != null && teacherDto.getCreatedAt().isAfter(thirtyDaysAgo)) {
-                    newTeacherCount++;
-                }
-            }
-        }
+    private void refreshStats() {
+        totalTeacherCount = teacherService.countTotal();
+        activeTeacherCount = teacherService.countActive();
+        newTeacherCountThisMonth = teacherService.countNewThisMonth();
+        totalBaseSalary = teacherService.sumBaseSalary();
     }
 
-    public String loadTeachers() {
-        try {
-            lazyModel = new TeacherLazyModel(teacherService); // Recarga na navegação
-        } catch (Exception e) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao carregar professores", e.getMessage());
-            e.printStackTrace();
-        }
+    /*
+     * ---------------- LOAD PAGE ----------------
+     */
+    public String load() {
+        lazyModel = new TeacherLazyModel(this);
+        refreshStats();
         return "/management/recursohumano/teachers.xhtml?faces-redirect=true";
     }
 
-    public TeacherLazyModel getLazyModel() {
-        return lazyModel;
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // CRUD
-    // ─────────────────────────────────────────────────────────────
-
-    // ─────────────────────────────────────────────────────────────
-    // PREPARAÇÃO DO NOVO PROFESSOR (abertura do diálogo de criação)
-    // ─────────────────────────────────────────────────────────────
-
+    /* ---------------- NOVO / EDITAR / VER ---------------- */
     public void prepareNewTeacher() {
         teacher = new Teacher();
         uploadedPhoto = null;
-        teacher.setTeacherNumber(teacherService.generateTeacherNumber());
     }
 
-    public String saveTeacher() {
+    public void openEditDialog(Long pkTeacher) {
+        Teacher found = teacherService.findById(pkTeacher);
+
+        editDto = new TeacherDTO();
+        editDto.setPkTeacher(found.getPkTeacher());
+        editDto.setFristName(found.getFristName());
+        editDto.setLastName(found.getLastName());
+        editDto.setGender(found.getGender());
+        editDto.setQualificationLivel(found.getQualificationLivel());
+        editDto.setContractType(found.getContractType());
+        editDto.setStatus(found.getStatus());
+        editDto.setBiNumber(found.getBiNumber());
+        editDto.setBiExpiryDate(found.getBiExpiryDate());
+        editDto.setAddressStreet(found.getAddressStreet());
+        editDto.setAddressProvice(found.getAddressProvice());
+        editDto.setBaseSalary(found.getBaseSalary());
+        editDto.setEmail(found.getEmail());
+        editDto.setPhone(found.getPhone());
+        editDto.setMobilePhone(found.getMobilePhone());
+        editDto.setObs(found.getObs());
+
+        uploadedPhoto = null;
+    }
+
+    public void viewTeacherDetails(Long pkTeacher) {
+        selectedTeacher = teacherService.findById(pkTeacher);
+    }
+
+    /* ---------------- UPLOAD DE FOTO ---------------- */
+    public void handlePhotoUpload(FileUploadEvent event) {
+        this.uploadedPhoto = event.getFile();
+    }
+
+    /* ---------------- CRUD ---------------- */
+    public void save() {
         try {
-            // 1. Upload da foto
-            processPhotoUpload();
-
-            // 2. Persistir o professor
-            teacherService.save(teacher);
-
-            // 3. Repor estado
+            // Validação de campos obrigatórios
+            if (teacher.getFristName() == null || teacher.getFristName().trim().isEmpty()) {
+                addMessage(FacesMessage.SEVERITY_WARN, "Professor", "O primeiro nome é obrigatório");
+                return;
+            }
+            if (teacher.getLastName() == null || teacher.getLastName().trim().isEmpty()) {
+                addMessage(FacesMessage.SEVERITY_WARN, "Professor", "O último nome é obrigatório");
+                return;
+            }
+            if (teacher.getQualificationLivel() == null) {
+                addMessage(FacesMessage.SEVERITY_WARN, "Professor", "Selecione o nível de qualificação");
+                return;
+            }
+            if (teacher.getContractType() == null) {
+                addMessage(FacesMessage.SEVERITY_WARN, "Professor", "Selecione o tipo de vínculo");
+                return;
+            }
+            if (teacher.getStatus() == null) {
+                addMessage(FacesMessage.SEVERITY_WARN, "Professor", "Selecione o estado");
+                return;
+            }
+            
+            System.out.println("Iniciando salvamento do professor: " + teacher.getFristName() + " " + teacher.getLastName());
+            teacherService.save(teacher, uploadedPhoto);
             teacher = new Teacher();
             uploadedPhoto = null;
-            init(); // Recarrega o lazy model e as estatísticas
-
-            FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .getFlash()
-                    .setKeepMessages(true);
-
+            lazyModel = new TeacherLazyModel(this);
+            refreshStats();
             addMessage(FacesMessage.SEVERITY_INFO, "Professor", "Professor registado com sucesso");
-
-            return "/management/recursohumano/teachers.xhtml?faces-redirect=true";
-
-        } catch (Exception e) {
+            System.out.println("Professor registado com sucesso");
+        } catch (IOException e) {
+            System.err.println("Erro de I/O ao salvar professor: " + e.getMessage());
             e.printStackTrace();
-            addMessage(FacesMessage.SEVERITY_ERROR, "Professor", e.getMessage());
-            return null;
+            addMessage(FacesMessage.SEVERITY_ERROR, "Professor", "Erro ao processar a imagem: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Erro inesperado ao salvar professor: " + e.getMessage());
+            e.printStackTrace();
+            addMessage(FacesMessage.SEVERITY_ERROR, "Professor", "Erro ao registar o professor: " + e.getMessage());
         }
-    }
-
-    /**
-     * Validador customizado para o campo BI, usado via
-     * validator="#{teacherController.validateBI}"
-     * no p:inputText. O campo é opcional: só valida o formato se algo for
-     * preenchido.
-     */
-    public void validateBI(FacesContext context, UIComponent component, Object value) {
-        if (value == null) {
-            return;
-        }
-
-        String bi = value.toString().trim();
-        if (bi.isEmpty()) {
-            return;
-        }
-
-        if (!biValidationService.validar(bi)) {
-            FacesMessage message = new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "BI inválido",
-                    "Formato inválido. Ex: 003456789LA034 (9 dígitos + 2 letras + 3 dígitos)");
-            throw new ValidatorException(message);
-        }
-    }
-
-    /**
-     * Lógica de upload centralizada, chamada dentro do saveTeacher.
-     */
-    private void processPhotoUpload() throws IOException {
-        if (uploadedPhoto == null || uploadedPhoto.getContent() == null
-                || uploadedPhoto.getContent().length == 0) {
-            return;
-        }
-
-        if (uploadedPhoto.getSize() > 2097152) {
-            throw new IOException("O arquivo excede o tamanho máximo de 2MB.");
-        }
-
-        if (uploadedPhoto.getContent().length > 2 * 1024 * 1024) {
-            throw new IllegalArgumentException("A foto não pode exceder 2 MB.");
-        }
-
-        String originalName = uploadedPhoto.getFileName();
-        if (originalName == null || !originalName.matches("(?i).+\\.(jpg|jpeg|png|webp)$")) {
-            throw new IllegalArgumentException("Apenas ficheiros JPG, PNG ou WEBP são permitidos.");
-        }
-
-        String realPath = FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getRealPath(TEACHER_IMG_WEB);
-
-        Path uploadDir = Paths.get(realPath);
-        if (!Files.exists(uploadDir)) {
-            Files.createDirectories(uploadDir);
-        }
-
-        String extension = originalName.contains(".")
-                ? originalName.substring(originalName.lastIndexOf(".")).toLowerCase()
-                : ".jpg";
-        String uniqueName = UUID.randomUUID().toString() + extension;
-
-        Path destination = uploadDir.resolve(uniqueName);
-        try (InputStream is = uploadedPhoto.getInputStream()) {
-            Files.copy(is, destination, StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        teacher.setPhotoPhath(TEACHER_IMG_WEB + uniqueName);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // EDIT / UPDATE / DELETE
-    // ─────────────────────────────────────────────────────────────
-
-    public void openEditDialog() {
-        if (selectedId == null || selectedId == 0) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Nenhum professor selecionado!", "");
-            return;
-        }
-
-        TeacherDTO dto = null;
-        for (TeacherDTO teacherDto : teacherService.getAllTeachers()) {
-            if (teacherDto.getPkTeacher() != null && teacherDto.getPkTeacher().equals(selectedId)) {
-                dto = teacherDto;
-                break;
-            }
-        }
-
-        if (dto != null) {
-            mapDtoFields(dto, editDto = new TeacherDTO());
-            mapDtoFields(dto, selectedTeacher);
-        } else {
-            addMessage(FacesMessage.SEVERITY_WARN, "Professor não encontrado", "");
-        }
-    }
-
-    public void loadSelectedTeacher() {
-        if (selectedId == null || selectedId == 0) {
-            return;
-        }
-
-        TeacherDTO dto = null;
-        for (TeacherDTO teacherDto : teacherService.getAllTeachers()) {
-            if (teacherDto.getPkTeacher() != null && teacherDto.getPkTeacher().equals(selectedId)) {
-                dto = teacherDto;
-                break;
-            }
-        }
-
-        if (dto != null) {
-            mapDtoFields(dto, selectedTeacher);
-        } else {
-            addMessage(FacesMessage.SEVERITY_WARN, "Professor não encontrado", "");
-        }
-    }
-
-    private void mapDtoFields(TeacherDTO source, TeacherDTO target) {
-        target.setPkTeacher(source.getPkTeacher());
-        target.setTeacherNumber(source.getTeacherNumber());
-        target.setFristName(source.getFristName());
-        target.setLastName(source.getLastName());
-        target.setGender(source.getGender());
-        target.setQualificationLivel(source.getQualificationLivel());
-        target.setContractType(source.getContractType());
-        target.setStatus(source.getStatus());
-        target.setPhotoPhath(source.getPhotoPhath());
-        target.setBiNumber(source.getBiNumber());
-        target.setBiExpiryDate(source.getBiExpiryDate());
-        target.setAddressStreet(source.getAddressStreet());
-        target.setAddressProvice(source.getAddressProvice());
-        target.setBaseSalary(source.getBaseSalary());
-        target.setEmail(source.getEmail());
-        target.setPhone(source.getPhone());
-        target.setMobilePhone(source.getMobilePhone());
-        target.setObs(source.getObs());
-        target.setCreatedAt(source.getCreatedAt());
-        target.setUpdatedAt(source.getUpdatedAt());
     }
 
     public void saveUpdate() {
         try {
+            System.out.println("Iniciando atualização do professor: " + editDto.getPkTeacher());
             teacherService.update(editDto);
-            init(); // Recarrega o lazy model e as estatísticas
+
+            if (uploadedPhoto != null && uploadedPhoto.getSize() > 0) {
+                System.out.println("Atualizando foto do professor...");
+                teacherService.updatePhoto(editDto.getPkTeacher(), uploadedPhoto);
+            }
+
+            lazyModel = new TeacherLazyModel(this);
             editDto = new TeacherDTO();
-            selectedId = null;
+            uploadedPhoto = null;
+            refreshStats();
+
             addMessage(FacesMessage.SEVERITY_INFO, "Professor", "Professor atualizado com sucesso");
-        } catch (Exception e) {
+            System.out.println("Professor atualizado com sucesso");
+        } catch (IOException e) {
+            System.err.println("Erro de I/O ao atualizar professor: " + e.getMessage());
             e.printStackTrace();
-            addMessage(FacesMessage.SEVERITY_ERROR, "Professor", e.getMessage());
+            addMessage(FacesMessage.SEVERITY_ERROR, "Professor", "Erro ao processar a imagem: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Erro ao atualizar professor: " + e.getMessage());
+            e.printStackTrace();
+            addMessage(FacesMessage.SEVERITY_ERROR, "Professor", "Erro ao atualizar o professor: " + e.getMessage());
         }
     }
 
-    public void delete() {
+    public void delete(Long pkTeacher) {
         try {
-            teacherService.delete(selectedId);
-            selectedId = null;
-            init(); // Recarrega o lazy model e as estatísticas
-            addMessage(FacesMessage.SEVERITY_INFO, "Professor", "Professor eliminado com sucesso");
+            teacherService.delete(pkTeacher);
+            lazyModel = new TeacherLazyModel(this);
+            refreshStats();
         } catch (Exception e) {
             e.printStackTrace();
             addMessage(FacesMessage.SEVERITY_ERROR, "Professor", e.getMessage());
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // PDF
-    // ─────────────────────────────────────────────────────────────
-    /**
-     * public void printStudentPdf() {
-     * if (selectedId == null) {
-     * addMessage(FacesMessage.SEVERITY_WARN, "Nenhum aluno selecionado!", "");
-     * return;
-     * }
-     * try {
-     * TeacherDTO dto = teacherService.getAllTeachers().stream()
-     * .filter(s -> s.getPkTeacher().equals(selectedId))
-     * .findFirst()
-     * .orElse(null);
-     * 
-     * if (dto == null) {
-     * addMessage(FacesMessage.SEVERITY_WARN, "Aluno não encontrado", "");
-     * return;
-     * }
-     * 
-     * byte[] pdf = PdfReportService.generateStudentReport(dto);
-     * String fileName = "aluno_" + dto.getTeacherNumber() + ".pdf";
-     * PdfReportService.streamToResponse(pdf, fileName);
-     * 
-     * } catch (DocumentException | IOException e) {
-     * e.printStackTrace();
-     * addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao gerar PDF", e.getMessage());
-     * }
-     * }
-     */
-    // ─────────────────────────────────────────────────────────────
-    // UTIL
-    // ─────────────────────────────────────────────────────────────
-
-    private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+    /* ---------------- FILTROS ---------------- */
+    public void applyFilters() {
+        // O recarregamento é feito automaticamente pelo PrimeFaces
+        // ao atualizar a p:dataTable (update="dtTeachers") após o ajax.
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // GETTERS E SETTERS
-    // ─────────────────────────────────────────────────────────────
-
-    public Teacher getTeacher() {
-        return teacher;
+    public void clearFilters() {
+        filterTeacherNumber = null;
+        filterName = null;
+        filterStatus = null;
     }
 
-    public void setTeacher(Teacher teacher) {
-        this.teacher = teacher;
+    /* ---------------- EXPORTAÇÃO ---------------- */
+    public void exportTeacherListPdf() {
+        try {
+            teacherService.exportTeacherListPdf(filterTeacherNumber, filterName, filterStatus);
+        } catch (IOException e) {
+            e.printStackTrace();
+            addMessage(FacesMessage.SEVERITY_ERROR, "Professor", "Erro ao gerar o PDF da lista de professores");
+        }
     }
 
-    public UploadedFile getUploadedPhoto() {
-        return uploadedPhoto;
-    }
-
-    public void setUploadedPhoto(UploadedFile uploadedPhoto) {
-        this.uploadedPhoto = uploadedPhoto;
-    }
-
-    public TeacherDTO getEditDto() {
-        return editDto;
-    }
-
-    public void setEditDto(TeacherDTO editDto) {
-        this.editDto = editDto;
-    }
-
-    public TeacherDTO getSelectedTeacher() {
-        return selectedTeacher;
-    }
-
-    public void setSelectedTeacher(TeacherDTO selectedTeacher) {
-        this.selectedTeacher = selectedTeacher;
-    }
-
-    public Long getSelectedId() {
-        return selectedId;
-    }
-
-    public void setSelectedId(Long selectedId) {
-        this.selectedId = selectedId;
-    }
-
-    public void setLazyModel(TeacherLazyModel lazyModel) {
-        this.lazyModel = lazyModel;
-    }
-
-    public TeacherService getTeacherService() {
-        return teacherService;
-    }
-
-    public void setTeacherService(TeacherService teacherService) {
-        this.teacherService = teacherService;
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // ENUMS PARA DROPDOWNS
-    // ─────────────────────────────────────────────────────────────
-
+    /* ---------------- OPÇÕES PARA OS COMBOS (p:selectOneMenu) ---------------- */
     public Gender[] getGenders() {
         return Gender.values();
     }
@@ -439,82 +237,100 @@ public class TeacherController implements Serializable {
         return TeacherStatus.values();
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // LABELS LEGÍVEIS PARA OS ENUMS (f:selectItems var/itemLabel)
-    // ─────────────────────────────────────────────────────────────
-
-    public String genderLabel(Gender g) {
-        if (g == null)
-            return "";
-        switch (g) {
-            case MALE:
-                return "Masculino";
-            case FEMALE:
-                return "Feminino";
-            case OTHER:
-                return "Outro";
-            case PREFER_NOT_TO_SAY:
-                return "Prefiro não dizer";
-            default:
-                return g.name();
+    public String[] getStatuses() {
+        TeacherStatus[] values = TeacherStatus.values();
+        String[] names = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            names[i] = values[i].name();
         }
+        return names;
     }
 
-    public String qualificationLabel(QualificationLevel q) {
-        if (q == null)
-            return "";
-        switch (q) {
-            case SECONDARY:
-                return "Ensino Médio";
-            case BACHELOR:
-                return "Licenciatura";
-            case POST_GRADUATION:
-                return "Pós-Graduação";
-            case MASTER:
-                return "Mestrado";
-            case DOCTORATE:
-                return "Doutoramento";
-            case POST_DOCTORATE:
-                return "Pós-Doutoramento";
-            default:
-                return q.name();
-        }
+    /* ---------------- UTIL ---------------- */
+    private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
     }
 
-    public String contractTypeLabel(ContractType c) {
-        if (c == null)
-            return "";
-        return c.name(); // Ajustar conforme os valores reais de ContractType
+    /* ---------------- GETTERS E SETTERS ---------------- */
+    public TeacherLazyModel getLazyModel() {
+        return lazyModel;
     }
 
-    public String statusLabel(TeacherStatus s) {
-        if (s == null)
-            return "";
-        switch (s) {
-            case ACTIVE:
-                return "Ativo";
-            case ON_LEAVE:
-                return "Em Licença";
-            case SUSPENDED:
-                return "Suspenso";
-            case RESIGNED:
-                return "Demitido";
-            case RETIRED:
-                return "Reformado";
-            case TERMINATED:
-                return "Rescindido";
-            case DECEASED:
-                return "Falecido";
-            default:
-                return s.name();
-        }
+    public void setLazyModel(TeacherLazyModel lazyModel) {
+        this.lazyModel = lazyModel;
     }
 
-    public java.util.List<TeacherDTO> getTeachers() {
-        return teacherService.getAllTeachers();
+    public Teacher getTeacher() {
+        return teacher;
     }
 
-    // Métodos para estatísticas
+    public void setTeacher(Teacher teacher) {
+        this.teacher = teacher;
+    }
+
+    public TeacherDTO getEditDto() {
+        return editDto;
+    }
+
+    public void setEditDto(TeacherDTO editDto) {
+        this.editDto = editDto;
+    }
+
+    public Teacher getSelectedTeacher() {
+        return selectedTeacher;
+    }
+
+    public void setSelectedTeacher(Teacher selectedTeacher) {
+        this.selectedTeacher = selectedTeacher;
+    }
+
+    public Long getSelectedId() {
+        return selectedId;
+    }
+
+    public void setSelectedId(Long selectedId) {
+        this.selectedId = selectedId;
+    }
+
+    public UploadedFile getUploadedPhoto() {
+        return uploadedPhoto;
+    }
+
+    public void setUploadedPhoto(UploadedFile uploadedPhoto) {
+        this.uploadedPhoto = uploadedPhoto;
+    }
+
+    public TeacherService getTeacherService() {
+        return teacherService;
+    }
+
+    public void setTeacherService(TeacherService teacherService) {
+        this.teacherService = teacherService;
+    }
+
+    public String getFilterTeacherNumber() {
+        return filterTeacherNumber;
+    }
+
+    public void setFilterTeacherNumber(String filterTeacherNumber) {
+        this.filterTeacherNumber = filterTeacherNumber;
+    }
+
+    public String getFilterName() {
+        return filterName;
+    }
+
+    public void setFilterName(String filterName) {
+        this.filterName = filterName;
+    }
+
+    public String getFilterStatus() {
+        return filterStatus;
+    }
+
+    public void setFilterStatus(String filterStatus) {
+        this.filterStatus = filterStatus;
+    }
 
     public long getTotalTeacherCount() {
         return totalTeacherCount;
@@ -524,36 +340,12 @@ public class TeacherController implements Serializable {
         return activeTeacherCount;
     }
 
-    public long getOnLeaveTeacherCount() {
-        return onLeaveTeacherCount;
+    public long getNewTeacherCountThisMonth() {
+        return newTeacherCountThisMonth;
     }
 
-    public long getNewTeacherCount() {
-        return newTeacherCount;
-    }
-
-    public void setTotalTeacherCount(long totalTeacherCount) {
-        this.totalTeacherCount = totalTeacherCount;
-    }
-
-    public void setActiveTeacherCount(long activeTeacherCount) {
-        this.activeTeacherCount = activeTeacherCount;
-    }
-
-    public void setOnLeaveTeacherCount(long onLeaveTeacherCount) {
-        this.onLeaveTeacherCount = onLeaveTeacherCount;
-    }
-
-    public void setNewTeacherCount(long newTeacherCount) {
-        this.newTeacherCount = newTeacherCount;
-    }
-
-    public BIValidationService getBiValidationService() {
-        return this.biValidationService;
-    }
-
-    public void setBiValidationService(BIValidationService biValidationService) {
-        this.biValidationService = biValidationService;
+    public BigDecimal getTotalBaseSalary() {
+        return totalBaseSalary;
     }
 
 }

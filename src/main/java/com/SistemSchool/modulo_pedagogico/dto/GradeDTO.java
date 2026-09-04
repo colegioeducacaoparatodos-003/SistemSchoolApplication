@@ -1,236 +1,118 @@
 package com.SistemSchool.modulo_pedagogico.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.SistemSchool.modulo_pedagogico.io.GradeStatus;
+import com.SistemSchool.modulo_pedagogico.io.EvaluationType;
+import com.SistemSchool.modulo_pedagogico.io.Trimester;
 import com.SistemSchool.modulo_pedagogico.model.Grade;
 
 public class GradeDTO {
 
     private Long pkGrade;
-
-    // Dados "achatados" da Evaluation (+ Discipline via Evaluation)
     private Long evaluationPk;
-    private String evaluationDescription; // "Título - Disciplina"
+    private String evaluationName;
+    private EvaluationType evaluationType;
+    private Trimester trimester;
+    private String disciplineName;
 
-    // Dados "achatados" do Enrolment
     private Long enrolmentPk;
-    private String enrolmentNumber;
-
-    // Dados "achatados" do Student
-    private Long studentPk;
     private String studentFullName;
+    private String studentNumber;
+    private String schoolClassName;
 
-    private Double value;
-    private GradeStatus status;
-    private String observation;
-
+    private Double score;
+    private LocalDate launchDate;
+    private String obs;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public GradeDTO() {
-    }
+    public GradeDTO() {}
 
-    public GradeDTO(Long pkGrade, Long evaluationPk, String evaluationDescription,
-            Long enrolmentPk, String enrolmentNumber, Long studentPk, String studentFullName,
-            Double value, GradeStatus status, String observation,
-            LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public GradeDTO(Long pkGrade, Long evaluationPk, String evaluationName, EvaluationType evaluationType,
+                    Trimester trimester, String disciplineName, Long enrolmentPk, String studentFullName,
+                    String studentNumber, String schoolClassName, Double score, LocalDate launchDate,
+                    String obs, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.pkGrade = pkGrade;
         this.evaluationPk = evaluationPk;
-        this.evaluationDescription = evaluationDescription;
+        this.evaluationName = evaluationName;
+        this.evaluationType = evaluationType;
+        this.trimester = trimester;
+        this.disciplineName = disciplineName;
         this.enrolmentPk = enrolmentPk;
-        this.enrolmentNumber = enrolmentNumber;
-        this.studentPk = studentPk;
         this.studentFullName = studentFullName;
-        this.value = value;
-        this.status = status;
-        this.observation = observation;
+        this.studentNumber = studentNumber;
+        this.schoolClassName = schoolClassName;
+        this.score = score;
+        this.launchDate = launchDate;
+        this.obs = obs;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // CONVERSÃO (grade → DTO)
-    // ─────────────────────────────────────────────────────────────
-
-    public static GradeDTO fromEntity(Grade grade) {
-        String evalDesc = null;
-        if (grade.getEvaluation() != null) {
-            String title = grade.getEvaluation().getTitle();
-            String discipline = grade.getEvaluation().getDiscipline() != null
-                    ? grade.getEvaluation().getDiscipline().getDisciplineName()
-                    : null;
-            evalDesc = discipline != null ? title + " - " + discipline : title;
-        }
-
+    public static GradeDTO fromEntity(Grade g) {
         return new GradeDTO(
-                grade.getPkGrade(),
-                grade.getEvaluation() != null ? grade.getEvaluation().getPkEvaluation() : null,
-                evalDesc,
-                grade.getEnrolment() != null ? grade.getEnrolment().getPhEnrolment() : null,
-                grade.getEnrolment() != null ? grade.getEnrolment().getEnrolmentNumer() : null,
-                grade.getStudent() != null ? grade.getStudent().getPkStudent() : null,
-                grade.getStudent() != null ? grade.getStudent().getFullName() : null,
-                grade.getValue(),
-                grade.getStatus(),
-                grade.getObservation(),
-                grade.getCreatedAt(),
-                grade.getUpdatedAt());
+            g.getPkGrade(),
+            g.getEvaluation() != null ? g.getEvaluation().getPkEvaluation() : null,
+            g.getEvaluation() != null ? g.getEvaluation().getEvaluationName() : null,
+            g.getEvaluation() != null ? g.getEvaluation().getEvaluationType() : null,
+            g.getEvaluation() != null ? g.getEvaluation().getTrimester() : null,
+            g.getEvaluation() != null && g.getEvaluation().getDiscipline() != null
+                ? g.getEvaluation().getDiscipline().getDisciplineName() : null,
+            g.getEnrolment() != null ? g.getEnrolment().getPhEnrolment() : null,
+            g.getEnrolment() != null && g.getEnrolment().getStudent() != null
+                ? g.getEnrolment().getStudent().getFullName() : null,
+            g.getEnrolment() != null && g.getEnrolment().getStudent() != null
+                ? g.getEnrolment().getStudent().getSudentNumber() : null,
+            g.getEnrolment() != null && g.getEnrolment().getSchoolClass() != null
+                ? g.getEnrolment().getSchoolClass().getClassName() : null,
+            g.getScore(), g.getLaunchDate(), g.getObs(), g.getCreatedAt(), g.getUpdatedAt()
+        );
     }
 
-    public Long getPkGrade() {
-        return this.pkGrade;
-    }
+    // Getters e Setters
+    public Long getPkGrade() { return pkGrade; }
+    public void setPkGrade(Long pkGrade) { this.pkGrade = pkGrade; }
 
-    public void setPkGrade(Long pkGrade) {
-        this.pkGrade = pkGrade;
-    }
+    public Long getEvaluationPk() { return evaluationPk; }
+    public void setEvaluationPk(Long evaluationPk) { this.evaluationPk = evaluationPk; }
 
-    public Long getEvaluationPk() {
-        return this.evaluationPk;
-    }
+    public String getEvaluationName() { return evaluationName; }
+    public void setEvaluationName(String evaluationName) { this.evaluationName = evaluationName; }
 
-    public void setEvaluationPk(Long evaluationPk) {
-        this.evaluationPk = evaluationPk;
-    }
+    public EvaluationType getEvaluationType() { return evaluationType; }
+    public void setEvaluationType(EvaluationType evaluationType) { this.evaluationType = evaluationType; }
 
-    public String getEvaluationDescription() {
-        return this.evaluationDescription;
-    }
+    public Trimester getTrimester() { return trimester; }
+    public void setTrimester(Trimester trimester) { this.trimester = trimester; }
 
-    public void setEvaluationDescription(String evaluationDescription) {
-        this.evaluationDescription = evaluationDescription;
-    }
+    public String getDisciplineName() { return disciplineName; }
+    public void setDisciplineName(String disciplineName) { this.disciplineName = disciplineName; }
 
-    public Long getEnrolmentPk() {
-        return this.enrolmentPk;
-    }
+    public Long getEnrolmentPk() { return enrolmentPk; }
+    public void setEnrolmentPk(Long enrolmentPk) { this.enrolmentPk = enrolmentPk; }
 
-    public void setEnrolmentPk(Long enrolmentPk) {
-        this.enrolmentPk = enrolmentPk;
-    }
+    public String getStudentFullName() { return studentFullName; }
+    public void setStudentFullName(String studentFullName) { this.studentFullName = studentFullName; }
 
-    public String getEnrolmentNumber() {
-        return this.enrolmentNumber;
-    }
+    public String getStudentNumber() { return studentNumber; }
+    public void setStudentNumber(String studentNumber) { this.studentNumber = studentNumber; }
 
-    public void setEnrolmentNumber(String enrolmentNumber) {
-        this.enrolmentNumber = enrolmentNumber;
-    }
+    public String getSchoolClassName() { return schoolClassName; }
+    public void setSchoolClassName(String schoolClassName) { this.schoolClassName = schoolClassName; }
 
-    public Long getStudentPk() {
-        return this.studentPk;
-    }
+    public Double getScore() { return score; }
+    public void setScore(Double score) { this.score = score; }
 
-    public void setStudentPk(Long studentPk) {
-        this.studentPk = studentPk;
-    }
+    public LocalDate getLaunchDate() { return launchDate; }
+    public void setLaunchDate(LocalDate launchDate) { this.launchDate = launchDate; }
 
-    public String getStudentFullName() {
-        return this.studentFullName;
-    }
+    public String getObs() { return obs; }
+    public void setObs(String obs) { this.obs = obs; }
 
-    public void setStudentFullName(String studentFullName) {
-        this.studentFullName = studentFullName;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public Double getValue() {
-        return this.value;
-    }
-
-    public void setValue(Double value) {
-        this.value = value;
-    }
-
-    public GradeStatus getStatus() {
-        return this.status;
-    }
-
-    public void setStatus(GradeStatus status) {
-        this.status = status;
-    }
-
-    public String getObservation() {
-        return this.observation;
-    }
-
-    public void setObservation(String observation) {
-        this.observation = observation;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return this.createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return this.updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public GradeDTO pkGrade(Long pkGrade) {
-        setPkGrade(pkGrade);
-        return this;
-    }
-
-    public GradeDTO evaluationPk(Long evaluationPk) {
-        setEvaluationPk(evaluationPk);
-        return this;
-    }
-
-    public GradeDTO evaluationDescription(String evaluationDescription) {
-        setEvaluationDescription(evaluationDescription);
-        return this;
-    }
-
-    public GradeDTO enrolmentPk(Long enrolmentPk) {
-        setEnrolmentPk(enrolmentPk);
-        return this;
-    }
-
-    public GradeDTO enrolmentNumber(String enrolmentNumber) {
-        setEnrolmentNumber(enrolmentNumber);
-        return this;
-    }
-
-    public GradeDTO studentPk(Long studentPk) {
-        setStudentPk(studentPk);
-        return this;
-    }
-
-    public GradeDTO studentFullName(String studentFullName) {
-        setStudentFullName(studentFullName);
-        return this;
-    }
-
-    public GradeDTO value(Double value) {
-        setValue(value);
-        return this;
-    }
-
-    public GradeDTO status(GradeStatus status) {
-        setStatus(status);
-        return this;
-    }
-
-    public GradeDTO observation(String observation) {
-        setObservation(observation);
-        return this;
-    }
-
-    public GradeDTO createdAt(LocalDateTime createdAt) {
-        setCreatedAt(createdAt);
-        return this;
-    }
-
-    public GradeDTO updatedAt(LocalDateTime updatedAt) {
-        setUpdatedAt(updatedAt);
-        return this;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

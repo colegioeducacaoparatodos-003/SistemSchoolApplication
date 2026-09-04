@@ -2,20 +2,44 @@ package com.SistemSchool.modulo_Recursoa_Humano.io;
 
 public enum QualificationLevel {
 
-    SECONDARY,
-    BACHELOR,
-    POST_GRADUATION,
-    MASTER,
-    DOCTORATE,
-    POST_DOCTORATE;
+    ENSINO_MEDIO("Ensino Médio"),
+    BACHARELATO("Bacharelato"),
+    LICENCIATURA("Licenciatura"),
+    POS_GRADUACAO("Pós-Graduação"),
+    MESTRADO("Mestrado"),
+    DOUTORAMENTO("Doutoramento");
 
-    // Métodos utilitários (mantidos, mas opcionais)
-    public boolean isSECONDARY() { return this == SECONDARY; }
-    public boolean isBACHELOR() { return this == BACHELOR; }
-    public boolean isPOST_GRADUATION() { return this == POST_GRADUATION; }
-    public boolean isMASTER() { return this == MASTER; }
-    public boolean isDOCTORATE() { return this == DOCTORATE; }
-    public boolean isPOST_DOCTORATE() { return this == POST_DOCTORATE; }
+    private final String descricao;
 
-    
+    QualificationLevel(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public boolean isENSINO_MEDIO() {
+        return this == ENSINO_MEDIO;
+    }
+
+    public boolean isBACHARELATO() {
+        return this == BACHARELATO;
+    }
+
+    public boolean isLICENCIATURA() {
+        return this == LICENCIATURA;
+    }
+
+    public boolean isPOS_GRADUACAO() {
+        return this == POS_GRADUACAO;
+    }
+
+    public boolean isMESTRADO() {
+        return this == MESTRADO;
+    }
+
+    public boolean isDOUTORAMENTO() {
+        return this == DOUTORAMENTO;
+    }
 }

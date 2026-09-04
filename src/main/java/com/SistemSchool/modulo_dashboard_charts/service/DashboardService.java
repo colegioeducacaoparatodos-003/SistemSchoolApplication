@@ -70,7 +70,7 @@ public class DashboardService {
         long totalTeachers = teacherRepository.countByStatus(TeacherStatus.ACTIVE);
         long totalClasses = schoolClassRepository.countByStatus(SchoolClaassStatus.ACTIVE);
         long totalEnrolments = enrolmentRepository.count();
-        long totalDisciplines = disciplineRepository.countByStatus(DisciplineStatus.ACTIVE);
+        long totalDisciplines = disciplineRepository.countByStatus(DisciplineStatus.ATIVO);
 
         LocalDateTime inicioMes = YearMonth.now().atDay(1).atStartOfDay();
         LocalDateTime fimMes = YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);

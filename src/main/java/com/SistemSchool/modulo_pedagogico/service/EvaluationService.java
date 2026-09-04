@@ -2,26 +2,20 @@ package com.SistemSchool.modulo_pedagogico.service;
 
 import com.SistemSchool.modulo_pedagogico.dto.EvaluationDTO;
 import com.SistemSchool.modulo_pedagogico.interfaces.EvaluationTableProjection;
-import com.SistemSchool.modulo_pedagogico.io.EvaluationStatus;
-import com.SistemSchool.modulo_pedagogico.io.EvaluationType;
-import com.SistemSchool.modulo_pedagogico.io.WeekDay;
 import com.SistemSchool.modulo_pedagogico.model.Discipline;
 import com.SistemSchool.modulo_pedagogico.model.Evaluation;
-import com.SistemSchool.modulo_pedagogico.model.Schedule;
 import com.SistemSchool.modulo_pedagogico.repository.DisciplineRepository;
 import com.SistemSchool.modulo_pedagogico.repository.EvaluationRepository;
-import com.SistemSchool.modulo_pedagogico.repository.ScheduleRepository;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,13 +25,10 @@ public class EvaluationService {
 
     private final EvaluationRepository repository;
     private final DisciplineRepository disciplineRepository;
-    private final ScheduleRepository scheduleRepository;
 
-    public EvaluationService(EvaluationRepository evaluationRepository,
-            DisciplineRepository disciplineRepository, ScheduleRepository scheduleRepository) {
-        this.repository = evaluationRepository;
+    public EvaluationService(EvaluationRepository repository, DisciplineRepository disciplineRepository) {
+        this.repository = repository;
         this.disciplineRepository = disciplineRepository;
-        this.scheduleRepository = scheduleRepository;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -46,23 +37,12 @@ public class EvaluationService {
 
     public Evaluation save(Evaluation evaluation) {
         if (evaluation.getDiscipline() == null || evaluation.getDiscipline().getPkDiscipline() == null) {
-            throw new RuntimeException("É necessário indicar a disciplina da avaliação.");
-        }
-        if (evaluation.getSchedule() == null || evaluation.getSchedule().getPkSchedule() == null) {
-            throw new RuntimeException("É necessário indicar o horário da avaliação.");
-        }
-        if (repository.existsByDiscipline_PkDisciplineAndTitleAndTrimester(
-                evaluation.getDiscipline().getPkDiscipline(), evaluation.getTitle(), evaluation.getTrimester())) {
-            throw new RuntimeException("Já existe uma avaliação com este título para esta disciplina e trimestre.");
+            throw new RuntimeException("É necessário indicar a disciplina para a avaliação.");
         }
 
         Discipline discipline = disciplineRepository.findById(evaluation.getDiscipline().getPkDiscipline())
-                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada."));
-        Schedule schedule = scheduleRepository.findById(evaluation.getSchedule().getPkSchedule())
-                .orElseThrow(() -> new RuntimeException("Horário não encontrado."));
-
+                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada com id: " + evaluation.getDiscipline().getPkDiscipline()));
         evaluation.setDiscipline(discipline);
-        evaluation.setSchedule(schedule);
 
         return repository.save(evaluation);
     }
@@ -71,40 +51,28 @@ public class EvaluationService {
         Evaluation evaluation = repository.findById(dto.getPkEvaluation())
                 .orElseThrow(() -> new RuntimeException("Avaliação não encontrada com id: " + dto.getPkEvaluation()));
 
-        if (dto.getDisciplinePk() != null
-                && !dto.getDisciplinePk().equals(evaluation.getDiscipline().getPkDiscipline())) {
+        if (dto.getDisciplinePk() != null && !dto.getDisciplinePk().equals(evaluation.getDiscipline().getPkDiscipline())) {
             Discipline discipline = disciplineRepository.findById(dto.getDisciplinePk())
-                    .orElseThrow(() -> new RuntimeException("Disciplina não encontrada."));
+                    .orElseThrow(() -> new RuntimeException("Disciplina não encontrada com id: " + dto.getDisciplinePk()));
             evaluation.setDiscipline(discipline);
         }
 
-        if (dto.getSchedulePk() != null
-                && !dto.getSchedulePk().equals(evaluation.getSchedule().getPkSchedule())) {
-            Schedule schedule = scheduleRepository.findById(dto.getSchedulePk())
-                    .orElseThrow(() -> new RuntimeException("Horário não encontrado."));
-            evaluation.setSchedule(schedule);
-        }
-
-        evaluation.setTitle(dto.getTitle());
-        evaluation.setType(dto.getType());
-        evaluation.setWeight(dto.getWeight());
-        evaluation.setEvaluationDate(dto.getEvaluationDate());
-        evaluation.setStatus(dto.getStatus());
+        evaluation.setEvaluationName(dto.getEvaluationName());
+        evaluation.setEvaluationType(dto.getEvaluationType());
         evaluation.setTrimester(dto.getTrimester());
+        evaluation.setEvaluationDate(dto.getEvaluationDate());
+        evaluation.setAnoLectivo(dto.getAnoLectivo());
+        evaluation.setObs(dto.getObs());
+        evaluation.onUpdate();
 
         repository.save(evaluation);
     }
 
     public void delete(Long id) {
-        try {
-            Evaluation evaluation = repository.findById(id)
-                    .orElseThrow(() -> new EntityNotFoundException("Avaliação não encontrada"));
-            repository.delete(evaluation);
-            repository.flush(); // força o erro aqui, dentro do try
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalStateException(
-                    "Não é possível eliminar esta avaliação porque já existem notas lançadas para ela.");
+        if (!repository.existsById(id)) {
+            throw new RuntimeException("Avaliação não encontrada com id: " + id);
         }
+        repository.deleteById(id);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -120,24 +88,89 @@ public class EvaluationService {
     // ─────────────────────────────────────────────────────────────
 
     public Page<EvaluationDTO> findLazy(int page, int size, Sort sort, Map<String, Object> filters) {
-        Pageable pageable = PageRequest.of(page, size, sort);
+        List<EvaluationDTO> all = getAllEvaluations();
+        List<EvaluationDTO> filtered = applyFilters(all, filters);
 
-        Page<EvaluationTableProjection> projections = repository.findAllForTable(pageable);
+        int fromIndex = Math.min(page * size, filtered.size());
+        int toIndex = Math.min(fromIndex + size, filtered.size());
 
-        return projections.map(p -> new EvaluationDTO(
-                p.getPkEvaluation(),
-                p.getDisciplinePk(),
-                p.getDisciplineName(),
-                p.getSchedulePk(),
-                p.getScheduleWeekDay() != null ? WeekDay.valueOf(p.getScheduleWeekDay()) : null,
-                p.getTitle(),
-                p.getType() != null ? EvaluationType.valueOf(p.getType()) : null,
-                p.getWeight(),
-                p.getEvaluationDate(),
-                p.getStatus() != null ? EvaluationStatus.valueOf(p.getStatus()) : null,
-                p.getTrimester(),
-                p.getCreatedAt(),
-                p.getUpdatedAt()));
+        List<EvaluationDTO> pageContent = filtered.subList(fromIndex, toIndex);
+        return new PageImpl<>(pageContent, PageRequest.of(page, size, sort), filtered.size());
+    }
+
+    private List<EvaluationDTO> applyFilters(List<EvaluationDTO> source, Map<String, Object> filters) {
+        if (filters == null || filters.isEmpty()) {
+            return source;
+        }
+
+        List<EvaluationDTO> filtered = new ArrayList<>();
+        String globalTerm = normalize(filters.get("global"));
+
+        for (EvaluationDTO dto : source) {
+            boolean matches = true;
+
+            if (!globalTerm.isEmpty()) {
+                matches = matchesGlobal(dto, globalTerm);
+            }
+
+            if (matches) {
+                for (Map.Entry<String, Object> entry : filters.entrySet()) {
+                    String field = entry.getKey();
+                    if ("global".equals(field)) {
+                        continue;
+                    }
+                    String expected = normalize(entry.getValue());
+                    if (expected.isEmpty()) {
+                        continue;
+                    }
+
+                    boolean fieldMatches = switch (field) {
+                        case "disciplineName" -> contains(dto.getDisciplineName(), expected);
+                        case "evaluationName" -> contains(dto.getEvaluationName(), expected);
+                        case "evaluationType" -> contains(dto.getEvaluationType() != null ? dto.getEvaluationType().name() : null, expected);
+                        case "trimester" -> contains(dto.getTrimester() != null ? dto.getTrimester().name() : null, expected);
+                        case "anoLectivo" -> contains(dto.getAnoLectivo(), expected);
+                        default -> true;
+                    };
+
+                    if (!fieldMatches) {
+                        matches = false;
+                        break;
+                    }
+                }
+            }
+
+            if (matches) {
+                filtered.add(dto);
+            }
+        }
+
+        return filtered;
+    }
+
+    private boolean matchesGlobal(EvaluationDTO dto, String globalTerm) {
+        return contains(dto.getDisciplineName(), globalTerm)
+                || contains(dto.getEvaluationName(), globalTerm)
+                || contains(dto.getEvaluationType() != null ? dto.getEvaluationType().name() : null, globalTerm)
+                || contains(dto.getTrimester() != null ? dto.getTrimester().name() : null, globalTerm)
+                || contains(dto.getAnoLectivo(), globalTerm)
+                || contains(dto.getObs(), globalTerm);
+    }
+
+    private boolean contains(String value, String expected) {
+        return value != null && value.toLowerCase().contains(expected.toLowerCase());
+    }
+
+    private String normalize(Object value) {
+        return value == null ? "" : value.toString().trim();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // CONTAGEM
+    // ─────────────────────────────────────────────────────────────
+
+    public long count() {
+        return repository.count();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -146,22 +179,6 @@ public class EvaluationService {
 
     public List<Evaluation> getByDiscipline(Long disciplinePk) {
         return repository.findByDiscipline_PkDiscipline(disciplinePk);
-    }
-
-    public List<Evaluation> getBySchedule(Long schedulePk) {
-        return repository.findBySchedule_PkSchedule(schedulePk);
-    }
-
-    public List<Evaluation> getByType(EvaluationType type) {
-        return repository.findByType(type);
-    }
-
-    public List<Evaluation> getByStatus(EvaluationStatus status) {
-        return repository.findByStatus(status);
-    }
-
-    public List<Evaluation> getByTrimester(Integer trimester) {
-        return repository.findByTrimester(trimester);
     }
 
     public Evaluation getById(Long id) {

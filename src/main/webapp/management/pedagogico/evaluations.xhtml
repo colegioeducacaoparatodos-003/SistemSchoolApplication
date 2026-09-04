@@ -2,490 +2,226 @@
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:define name="titulo">#{msg.evaluationList}</ui:define>
-
-    <h:outputStylesheet library="webjars" name="bootstrap/5.3.2/css/bootstrap.min.css" />
-    <h:outputStylesheet name="general.css" library="css" />
-    <h:outputScript name="general.js" library="js" />
+    <ui:define name="titulo">Avaliações</ui:define>
 
     <ui:define name="content">
-<style>
-            @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&amp;family=DM+Mono:wght@400;500&amp;display=swap');
-
+        <style>
             :root {
-                --black: #141414;
-                --black-mid: #262626;
-                --black-lt: #3a3a3a;
-                --red: #c8102e;
-                --red-lt: #e63946;
-                --red-pale: #fdecee;
-                --yellow: #f5b400;
-                --yellow-lt: #ffd23f;
-                --yellow-pale: #fff8e1;
-                --blue: #1a5fb4;
-                --blue-pale: #eaf1fb;
-                --green: #1e8e3e;
-                --green-pale: #e8f6ec;
-                --surface: #ffffff;
-                --surface-2: #f7f7f8;
-                --border: #e6e6e8;
-                --border-dk: #cfcfd3;
-                --text: #141414;
-                --text-muted: #666a70;
-                --text-faint: #9a9ea4;
-                --radius-sm: 6px;
-                --radius: 10px;
-                --radius-lg: 14px;
-                --shadow-sm: 0 1px 4px rgba(20, 20, 20, .08);
-                --shadow: 0 4px 20px rgba(20, 20, 20, .12);
-                --font: 'DM Sans', system-ui, sans-serif;
+                --stu-black: #141414;
+                --stu-red: #c8102e;
+                --stu-yellow: #f5b400;
+                --stu-green: #1e8e3e;
+                --stu-blue: #1a5fb4;
+                --stu-surface: #ffffff;
+                --stu-surface-2: #f7f7f8;
+                --stu-border: #e6e6e8;
+                --stu-text: #141414;
+                --stu-muted: #666a70;
+                --stu-radius: 12px;
+                --stu-shadow: 0 4px 20px rgba(20, 20, 20, .10);
                 --font-mono: 'DM Mono', monospace;
-            }
-
-            body {
-                background: var(--surface-2);
-                font-family: var(--font);
-            }
-
-            .page-scroll-wrapper {
-                height: calc(100vh - 72px);
-                overflow-y: auto;
-                overflow-x: hidden;
-                padding: 1rem;
-                box-sizing: border-box;
-                scroll-behavior: smooth;
-            }
-
-            @media (min-width: 768px) {
-                .page-scroll-wrapper {
-                    padding: 1.6rem 1.8rem 2.5rem;
-                }
-            }
-
-            .page-scroll-wrapper::-webkit-scrollbar {
-                width: 5px;
-            }
-
-            .page-scroll-wrapper::-webkit-scrollbar-track {
-                background: transparent;
-            }
-
-            .page-scroll-wrapper::-webkit-scrollbar-thumb {
-                background: var(--border-dk);
-                border-radius: 99px;
-            }
-
-            .page-scroll-wrapper::-webkit-scrollbar-thumb:hover {
-                background: var(--black-lt);
-            }
-
-            .page-header {
-                display: flex;
-                align-items: flex-start;
-                justify-content: space-between;
-                flex-wrap: wrap;
-                gap: 1rem;
-                margin-bottom: 1.2rem;
-            }
-
-            @media (min-width: 576px) {
-                .page-header {
-                    align-items: center;
-                    margin-bottom: 1.5rem;
-                }
-            }
-
-            .page-header-left {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
-            }
-
-            .page-header-icon {
-                width: 42px;
-                height: 42px;
-                border-radius: var(--radius);
-                background: linear-gradient(135deg, var(--black) 0%, var(--red) 100%);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: var(--yellow);
-                font-size: 1.1rem;
-                flex-shrink: 0;
-                box-shadow: 0 4px 12px rgba(20, 20, 20, .3);
-            }
-
-            @media (min-width: 768px) {
-                .page-header-icon {
-                    width: 48px;
-                    height: 48px;
-                    font-size: 1.25rem;
-                }
-            }
-
-            .page-header-title h1 {
-                font-size: 1.15rem;
-                font-weight: 700;
-                color: var(--black);
-                margin: 0 0 .15rem;
-            }
-
-            @media (min-width: 768px) {
-                .page-header-title h1 {
-                    font-size: 1.35rem;
-                }
-            }
-
-            .page-header-title span {
-                font-size: .75rem;
-                color: var(--text-muted);
             }
 
             .breadcrumb-pill {
                 display: inline-flex;
                 align-items: center;
                 gap: 5px;
-                background: var(--yellow-pale);
+                background: #fff8e1;
                 border: 1px solid rgba(245, 180, 0, .35);
                 color: #8a6400;
                 border-radius: 99px;
                 padding: 3px 12px;
-                font-size: .7rem;
+                font-size: .72rem;
                 font-weight: 600;
             }
 
-            /* ── Stat cards ── */
-            .stat-row {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: .8rem;
-                margin-bottom: 1.2rem;
+            .stu-page {
+                padding: 1.2rem;
             }
 
-            @media (min-width: 576px) {
-                .stat-row {
-                    grid-template-columns: repeat(2, 1fr);
+            @media(min-width:768px) {
+                .stu-page {
+                    padding: 1.6rem 2rem 2.5rem;
                 }
             }
 
-            @media (min-width: 992px) {
-                .stat-row {
-                    grid-template-columns: repeat(4, 1fr);
-                    margin-bottom: 1.5rem;
-                }
+            .stu-header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 1rem;
+                margin-bottom: 1.4rem;
             }
 
-            .stat-card {
-                background: var(--surface);
-                border: 1px solid var(--border);
-                border-radius: var(--radius-lg);
-                box-shadow: var(--shadow-sm);
-                padding: .9rem 1rem;
+            .stu-header-left {
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
-                gap: .8rem;
+                gap: 1rem;
             }
 
-            .stat-card .stat-label {
-                font-size: .72rem;
-                color: var(--text-muted);
-                text-transform: uppercase;
-                letter-spacing: .03em;
-                display: block;
-                margin-bottom: .2rem;
-            }
-
-            .stat-card .stat-value {
-                font-size: 1.35rem;
-                font-weight: 700;
-                color: var(--black);
-                font-family: var(--font-mono);
-            }
-
-            @media (min-width: 768px) {
-                .stat-card .stat-value {
-                    font-size: 1.5rem;
-                }
-            }
-
-            .stat-icon {
-                width: 38px;
-                height: 38px;
-                border-radius: var(--radius);
+            .stu-header-icon {
+                width: 46px;
+                height: 46px;
+                border-radius: 12px;
+                background: linear-gradient(135deg, var(--stu-black) 0%, var(--stu-red) 100%);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 1rem;
+                color: var(--stu-yellow);
+                font-size: 1.2rem;
                 flex-shrink: 0;
             }
 
-            @media (min-width: 768px) {
-                .stat-icon {
-                    width: 42px;
-                    height: 42px;
-                    font-size: 1.1rem;
+            .stu-header-title h1 {
+                font-size: 1.35rem;
+                font-weight: 800;
+                margin: 0 0 .2rem;
+                color: var(--stu-text);
+            }
+
+            .stu-header-title p {
+                font-size: .85rem;
+                color: var(--stu-muted);
+                margin: 0;
+            }
+
+            .stu-stats {
+                display: grid;
+                grid-template-columns: repeat(1, 1fr);
+                gap: .9rem;
+                margin-bottom: 1.4rem;
+            }
+
+            @media(min-width:576px) {
+                .stu-stats {
+                    grid-template-columns: repeat(3, 1fr);
                 }
             }
 
-            .stat-icon.total {
-                background: var(--black);
-                color: var(--yellow);
+            .stu-stat {
+                background: var(--stu-surface);
+                border: 1px solid var(--stu-border);
+                border-radius: var(--stu-radius);
+                box-shadow: var(--stu-shadow);
+                padding: 1.1rem 1.2rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                transition: transform .2s;
             }
 
-            .stat-icon.new {
-                background: var(--blue-pale);
-                color: var(--blue);
+            .stu-stat:hover {
+                transform: translateY(-2px);
             }
 
-            .stat-icon.open {
-                background: var(--green-pale);
-                color: var(--green);
+            .stu-stat-label {
+                font-size: .72rem;
+                color: var(--stu-muted);
+                text-transform: uppercase;
+                letter-spacing: .04em;
+                font-weight: 700;
             }
 
-            .stat-icon.closed {
-                background: var(--red-pale);
-                color: var(--red);
+            .stu-stat-value {
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: var(--stu-text);
+                margin-top: .15rem;
             }
 
-            /* ── Main card / table ── */
-            .main-card {
-                background: var(--surface);
-                border: 1px solid var(--border);
-                border-radius: var(--radius-lg);
-                box-shadow: var(--shadow);
+            .stu-stat-icon {
+                width: 42px;
+                height: 42px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.1rem;
+            }
+
+            .stu-stat-icon.dark {
+                background: var(--stu-black);
+                color: var(--stu-yellow);
+            }
+
+            .stu-stat-icon.blue {
+                background: #eaf1fb;
+                color: var(--stu-blue);
+            }
+
+            .stu-stat-icon.green {
+                background: #e8f6ec;
+                color: var(--stu-green);
+            }
+
+            .stu-card {
+                background: var(--stu-surface);
+                border: 1px solid var(--stu-border);
+                border-radius: var(--stu-radius);
+                box-shadow: var(--stu-shadow);
                 overflow: hidden;
             }
 
-            .card-toolbar {
-                display: flex;
-                align-items: stretch;
-                justify-content: space-between;
-                padding: .8rem 1rem;
-                border-bottom: 1px solid var(--border);
-                gap: .8rem;
-                flex-direction: column;
-            }
-
-            @media (min-width: 768px) {
-                .card-toolbar {
-                    align-items: center;
-                    flex-direction: row;
-                    padding: .9rem 1.2rem;
-                }
-            }
-
-            .toolbar-left {
+            .stu-toolbar {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                padding: 1rem 1.2rem;
+                border-bottom: 1px solid var(--stu-border);
                 gap: 1rem;
-                width: 100%;
-            }
-
-            @media (min-width: 768px) {
-                .toolbar-left {
-                    width: auto;
-                    gap: 2.5rem;
-                }
-            }
-
-            .toolbar-title {
-                font-size: .82rem;
-                font-weight: 700;
-                color: var(--black);
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                white-space: nowrap;
-            }
-
-            .toolbar-right {
-                display: flex;
-                align-items: center;
-                gap: .5rem;
                 flex-wrap: wrap;
-                width: 100%;
             }
 
-            @media (min-width: 768px) {
-                .toolbar-right {
-                    width: auto;
-                    flex-wrap: nowrap;
-                }
-            }
-
-            .search-wrap {
-                position: relative;
+            .stu-toolbar-left {
                 display: flex;
                 align-items: center;
+                gap: 1rem;
+                flex-wrap: wrap;
                 flex-grow: 1;
             }
 
-            @media (min-width: 768px) {
-                .search-wrap {
-                    flex-grow: 0;
-                }
-            }
-
-            .search-wrap .pi-search {
-                position: absolute;
-                left: 9px;
-                color: var(--text-faint);
-                font-size: .75rem;
-            }
-
-            .search-input {
-                padding: 6px 10px 6px 28px;
-                border: 1px solid var(--border);
-                border-radius: var(--radius-sm);
-                font-size: .8rem;
-                width: 100%;
-                background: var(--surface-2);
-                outline: none;
-            }
-
-            @media (min-width: 768px) {
-                .search-input {
-                    width: 200px;
-                }
-            }
-
-            .search-input:focus {
-                border-color: var(--red);
-                box-shadow: 0 0 0 3px rgba(200, 16, 46, .1);
-            }
-
-            .btn-new, .btn-ghost {
-                flex-grow: 1;
-                justify-content: center;
-            }
-
-            @media (min-width: 768px) {
-                .btn-new, .btn-ghost {
-                    flex-grow: 0;
-                }
-            }
-
-            .btn-new {
-                background: linear-gradient(135deg, var(--black) 0%, var(--red) 100%);
-                color: #fff;
-                border: none;
-                border-radius: var(--radius-sm);
-                padding: 7px 16px;
-                font-size: .8rem;
-                font-weight: 600;
-                cursor: pointer;
-                display: inline-flex;
+            .stu-toolbar-right {
+                display: flex;
                 align-items: center;
-                gap: 6px;
-                white-space: nowrap;
+                gap: .6rem;
+                flex-wrap: wrap;
             }
 
-            .btn-new:hover {
-                filter: brightness(1.08);
-            }
-
-            .btn-ghost {
-                background: var(--surface-2);
-                color: var(--text);
-                border: 1px solid var(--border);
-                border-radius: var(--radius-sm);
-                padding: 7px 12px;
-                font-size: .8rem;
-                font-weight: 600;
-                cursor: pointer;
-                display: inline-flex;
+            .stu-filters {
+                display: flex;
                 align-items: center;
-                gap: 6px;
-                white-space: nowrap;
+                gap: .6rem;
+                flex-wrap: wrap;
+                padding: .8rem 1.2rem;
+                background: var(--stu-surface-2);
+                border-bottom: 1px solid var(--stu-border);
             }
 
-            .btn-ghost:hover {
-                background: var(--border);
+            .stu-filters .ui-inputfield,
+            .stu-filters .ui-selectonemenu {
+                min-width: 160px;
             }
 
-            .sc-table.p-datatable .p-datatable-thead>tr>th {
-                background: var(--black) !important;
-                color: var(--yellow-lt) !important;
+            .stu-table.p-datatable .p-datatable-thead>tr>th {
+                background: var(--stu-black) !important;
+                color: var(--stu-yellow) !important;
                 font-size: .7rem !important;
                 text-transform: uppercase !important;
                 padding: .7rem 1rem !important;
-                border-color: var(--black) !important;
+                border-color: var(--stu-black) !important;
             }
 
-            .sc-table.p-datatable .p-datatable-tbody>tr>td {
+            .stu-table.p-datatable .p-datatable-tbody>tr>td {
                 font-size: .82rem !important;
                 padding: .72rem 1rem !important;
             }
 
-            .sc-table.p-datatable .p-datatable-tbody>tr:hover {
-                background: var(--surface-2) !important;
+            .stu-table.p-datatable .p-datatable-tbody>tr:hover {
+                background: var(--stu-surface-2) !important;
             }
 
-            .t-num {
-                display: inline-flex;
-                align-items: center;
-                gap: 4px;
-                background: var(--black-mid);
-                color: var(--yellow);
-                border-radius: 5px;
-                padding: 3px 9px;
-                font-family: var(--font-mono);
-                font-size: .75rem;
-            }
-
-            .t-cell {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-
-            .t-icon-badge {
-                width: 34px;
-                height: 34px;
-                border-radius: var(--radius-sm);
-                background: var(--black);
-                color: var(--yellow);
-                font-size: .85rem;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-shrink: 0;
-            }
-
-            .t-sub {
-                font-size: .72rem;
-                color: var(--text-muted);
-            }
-
-            .weight-badge,
-            .trimester-badge {
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-                padding: 3px 10px;
-                border-radius: 99px;
-                font-size: .78rem;
-                font-weight: 700;
-                background: var(--surface-2);
-                border: 1px solid var(--border-dk);
-                font-family: var(--font-mono);
-            }
-
-            .type-badge {
-                display: inline-flex;
-                align-items: center;
-                padding: 3px 10px;
-                border-radius: 99px;
-                font-size: .72rem;
-                font-weight: 700;
-                background: var(--blue-pale);
-                color: var(--blue);
-                border: 1px solid rgba(26, 95, 180, .3);
-            }
-
-            .status-badge {
+            .stu-badge {
                 display: inline-flex;
                 align-items: center;
                 gap: 5px;
@@ -495,255 +231,670 @@
                 font-weight: 700;
             }
 
-            .status-badge.open {
-                background: var(--green-pale);
-                color: var(--green);
-                border: 1px solid rgba(30, 142, 62, .3);
+            .stu-badge.eval-continua {
+                background: #e8f6ec;
+                color: var(--stu-green);
             }
 
-            .status-badge.closed {
-                background: var(--red-pale);
-                color: var(--red);
-                border: 1px solid rgba(200, 16, 46, .3);
+            .stu-badge.eval-prova {
+                background: #fdecee;
+                color: var(--stu-red);
             }
 
-            .actions-cell {
+            .stu-actions {
                 display: flex;
                 align-items: center;
                 gap: 4px;
                 justify-content: center;
+                flex-wrap: wrap;
             }
 
-            .act-btn {
-                width: 28px;
-                height: 28px;
-                border-radius: var(--radius-sm);
-                border: 1px solid var(--border);
+            .stu-act {
+                width: 30px;
+                height: 30px;
+                border-radius: 6px;
+                border: 1px solid var(--stu-border);
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                font-size: .75rem;
+                font-size: .8rem;
                 cursor: pointer;
+                transition: all .15s;
             }
 
-            .act-btn.edit {
+            .stu-act:hover {
+                transform: scale(1.08);
+            }
+
+            .stu-act.view {
+                color: var(--stu-blue);
+                background: #eaf1fb;
+            }
+
+            .stu-act.edit {
                 color: #8a6400;
-                background: var(--yellow-pale);
+                background: #fff8e1;
             }
 
-            .act-btn.delete {
-                color: var(--red);
-                background: var(--red-pale);
+            .stu-act.delete {
+                color: var(--stu-red);
+                background: #fdecee;
+            }
+
+            .stu-empty {
+                text-align: center;
+                padding: 3rem 1rem;
+                color: var(--stu-muted);
+            }
+
+            .stu-empty i {
+                font-size: 2.5rem;
+                opacity: .2;
+                margin-bottom: .5rem;
+                display: block;
+            }
+
+            .stu-dialog-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: .6rem;
+                margin-top: .5rem;
+                flex-wrap: wrap;
+            }
+
+            .sc-loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(20, 20, 20, 0.85);
+                -webkit-backdrop-filter: blur(8px);
+                backdrop-filter: blur(8px);
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity .35s ease, visibility .35s ease;
+            }
+
+            .sc-loading-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .sc-loading-box {
+                background: var(--stu-surface);
+                border-radius: var(--stu-radius);
+                padding: 2.5rem 3rem;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 1.2rem;
+                border: 1px solid var(--stu-border);
+                min-width: 260px;
+                transform: scale(0.9);
+                transition: transform .35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+            .sc-loading-overlay.active .sc-loading-box {
+                transform: scale(1);
+            }
+
+            .sc-loader-rings {
+                position: relative;
+                width: 72px;
+                height: 72px;
+            }
+
+            .sc-loader-rings::before,
+            .sc-loader-rings::after {
+                content: '';
+                position: absolute;
+                border-radius: 50%;
+                border: 3px solid transparent;
+            }
+
+            .sc-loader-rings::before {
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border-top-color: var(--stu-red);
+                border-right-color: var(--stu-yellow);
+                animation: scSpin 1.2s linear infinite;
+            }
+
+            .sc-loader-rings::after {
+                top: 10px;
+                left: 10px;
+                width: calc(100% - 20px);
+                height: calc(100% - 20px);
+                border-bottom-color: var(--stu-black);
+                border-left-color: #e63946;
+                animation: scSpinReverse .9s linear infinite;
+            }
+
+            .sc-loader-core {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 16px;
+                height: 16px;
+                background: linear-gradient(135deg, var(--stu-red), var(--stu-yellow));
+                border-radius: 50%;
+                animation: scPulse 1s ease-in-out infinite;
+                box-shadow: 0 0 15px rgba(200, 16, 46, 0.5);
+            }
+
+            @keyframes scSpin {
+                0% { transform: rotate(0deg) }
+                100% { transform: rotate(360deg) }
+            }
+
+            @keyframes scSpinReverse {
+                0% { transform: rotate(0deg) }
+                100% { transform: rotate(-360deg) }
+            }
+
+            @keyframes scPulse {
+                0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1 }
+                50% { transform: translate(-50%, -50%) scale(1.4); opacity: .7 }
+            }
+
+            .sc-loading-text {
+                font-family: 'DM Sans', system-ui, sans-serif;
+                font-size: 1rem;
+                font-weight: 600;
+                color: var(--stu-text);
+                text-align: center;
+            }
+
+            .sc-loading-sub {
+                font-size: .78rem;
+                color: var(--stu-muted);
+                text-align: center;
+                margin-top: -.6rem;
+            }
+
+            .sc-loading-dots::after {
+                content: '';
+                animation: scDots 1.5s steps(4, end) infinite;
+            }
+
+            @keyframes scDots {
+                0% { content: '' }
+                25% { content: '.' }
+                50% { content: '..' }
+                75% { content: '...' }
+                100% { content: '' }
+            }
+
+            .sc-loading-progress {
+                width: 100%;
+                height: 3px;
+                background: var(--stu-border);
+                border-radius: 99px;
+                overflow: hidden;
+                margin-top: .3rem;
+            }
+
+            .sc-loading-progress-bar {
+                height: 100%;
+                width: 0%;
+                background: linear-gradient(90deg, var(--stu-red), var(--stu-yellow));
+                border-radius: 99px;
+                animation: scProgress 2s ease-in-out infinite;
+            }
+
+            @keyframes scProgress {
+                0% { width: 0%; margin-left: 0% }
+                50% { width: 60%; margin-left: 20% }
+                100% { width: 0%; margin-left: 100% }
+            }
+
+            @media (max-width: 576px) {
+                .stu-header {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .stu-toolbar {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .stu-toolbar-right .ui-button {
+                    width: 100%;
+                }
+
+                .stu-filters {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .stu-filters .ui-inputfield,
+                .stu-filters .ui-selectonemenu,
+                .stu-filters .ui-button {
+                    width: 100% !important;
+                    min-width: unset !important;
+                }
+
+                .stu-dialog-footer {
+                    justify-content: stretch;
+                }
+
+                .stu-dialog-footer .ui-button {
+                    flex: 1 1 auto;
+                }
             }
         </style>
 
-        <div class="page-scroll-wrapper">
-            <h:form id="formEvaluations">
-                <p:growl id="messages" showDetail="true" life="4000" />
+        <div id="scLoadingOverlay" class="sc-loading-overlay">
+            <div class="sc-loading-box">
+                <div class="sc-loader-rings">
+                    <div class="sc-loader-core"></div>
+                </div>
+                <div class="sc-loading-text">A processar<span class="sc-loading-dots"></span></div>
+                <div class="sc-loading-sub">Por favor aguarde</div>
+                <div class="sc-loading-progress">
+                    <div class="sc-loading-progress-bar"></div>
+                </div>
+            </div>
+        </div>
 
-                <!-- ── Page Header ── -->
-                <div class="page-header">
-                    <div class="page-header-left">
-                        <div class="page-header-icon"><i class="pi pi-file-edit" /></div>
-                        <div class="page-header-title">
-                            <h1>#{msg.evaluationList}</h1>
-                            <span>#{msg.evaluationManagement}</span>
+        <div class="stu-page">
+            <h:form id="formAvaliacoes">
+                <p:growl id="messages" showDetail="true" life="5000">
+                    <p:autoUpdate />
+                </p:growl>
+
+                <div class="stu-header">
+                    <div class="stu-header-left">
+                        <div class="stu-header-icon"><i class="pi pi-file-edit" /></div>
+                        <div class="stu-header-title">
+                            <h1>Avaliações</h1>
+                            <p>Gestão de avaliações por disciplina, tipo e trimestre</p>
                         </div>
                     </div>
-                    <span class="breadcrumb-pill">
-                        <i class="pi pi-home" style="font-size:.65rem" /> #{msg.management} › #{msg.pedagogical} › #{msg.evaluations}
-                    </span>
+                    <span class="breadcrumb-pill"><i class="pi pi-home" style="font-size:.65rem" /> Gestão › Pedagógico
+                        › Avaliações</span>
                 </div>
 
-                <!-- ── Stat cards ── -->
-                <div class="stat-row">
-                    <div class="stat-card">
+                <div class="stu-stats">
+                    <div class="stu-stat">
                         <div>
-                            <span class="stat-label">#{msg.totalEvaluations}</span>
-                            <div class="stat-value">
+                            <div class="stu-stat-label">Total de Avaliações</div>
+                            <div class="stu-stat-value">
                                 <h:outputText value="#{evaluationController.totalEvaluationCount}">
-                                    <f:convertNumber pattern="#,##0" />
+                                    <f:convertNumber pattern="#,#00" />
                                 </h:outputText>
                             </div>
                         </div>
-                        <div class="stat-icon total"><i class="pi pi-file-edit" /></div>
+                        <div class="stu-stat-icon dark"><i class="pi pi-file-edit" /></div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stu-stat">
                         <div>
-                            <span class="stat-label">#{msg.newEvaluations}</span>
-                            <div class="stat-value">
-                                <h:outputText value="#{evaluationController.newEvaluationCount}">
-                                    <f:convertNumber pattern="#,##0" />
+                            <div class="stu-stat-label">Avaliação Contínua</div>
+                            <div class="stu-stat-value">
+                                <h:outputText value="#{evaluationController.continuaCount}">
+                                    <f:convertNumber pattern="#,#00" />
                                 </h:outputText>
                             </div>
                         </div>
-                        <div class="stat-icon new"><i class="pi pi-calendar-plus" /></div>
+                        <div class="stu-stat-icon blue"><i class="pi pi-chart-line" /></div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stu-stat">
                         <div>
-                            <span class="stat-label">#{msg.openEvaluations}</span>
-                            <div class="stat-value">
-                                <h:outputText value="#{evaluationController.openEvaluationCount}">
-                                    <f:convertNumber pattern="#,##0" />
+                            <div class="stu-stat-label">Prova Trimestral</div>
+                            <div class="stu-stat-value">
+                                <h:outputText value="#{evaluationController.provaTrimestralCount}">
+                                    <f:convertNumber pattern="#,#00" />
                                 </h:outputText>
                             </div>
                         </div>
-                        <div class="stat-icon open"><i class="pi pi-lock-open" /></div>
-                    </div>
-                    <div class="stat-card">
-                        <div>
-                            <span class="stat-label">#{msg.closedEvaluations}</span>
-                            <div class="stat-value">
-                                <h:outputText value="#{evaluationController.closedEvaluationCount}">
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputText>
-                            </div>
-                        </div>
-                        <div class="stat-icon closed"><i class="pi pi-lock" /></div>
+                        <div class="stu-stat-icon green"><i class="pi pi-calendar" /></div>
                     </div>
                 </div>
 
-                <!-- ── Main Card ── -->
-                <div class="main-card">
-                    <div class="card-toolbar">
-                        <div class="toolbar-left filter-zone">
-                            <span class="toolbar-title"><i class="pi pi-list" style="color:var(--red)" /> #{msg.record}</span>
-                            <div class="search-wrap">
-                                <input type="text" class="search-input" placeholder="#{msg.search}"
-                                    onkeyup="PF('dtEvaluations').filter(this.value, 'global', 'contains')" />
-                            </div>
+                <div class="stu-card">
+                    <div class="stu-toolbar">
+                        <div class="stu-toolbar-left">
+                            <span style="font-weight:700; font-size:.9rem; color:var(--stu-text);"><i class="pi pi-list"
+                                    style="color:var(--stu-red); margin-right:.4rem;" /> Registos</span>
                         </div>
-                        <div class="toolbar-right">
-                            <p:commandButton icon="pi pi-filter-slash" title="Limpar Filtros" styleClass="btn-ghost"
-                                actionListener="#{evaluationController.lazyModel.clearFilters}"
-                                update="dtEvaluations" />
-                            <p:commandButton value="#{msg.export}" icon="pi pi-file-export" styleClass="btn-ghost" />
-                            <p:commandButton value="#{msg.newEvaluation}" icon="pi pi-plus" styleClass="btn-new"
-                                oncomplete="PF('createEvaluationDialog').show()" update=":evaluationCreateForm"
-                                process="@this" />
+                        <div class="stu-toolbar-right">
+                            <p:menuButton value="Exportar" icon="pi pi-file-export" styleClass="ui-button-outlined">
+                                <p:menuitem value="PDF" icon="pi pi-file-pdf" action="#{evaluationController.exportPdf}"
+                                    ajax="false" />
+                                <p:menuitem value="Excel" icon="pi pi-file-excel">
+                                    <p:dataExporter type="xlsx" target="dtAvaliacoes" fileName="avaliacoes" />
+                                </p:menuitem>
+                                <p:menuitem value="CSV" icon="pi pi-file-o">
+                                    <p:dataExporter type="csv" target="dtAvaliacoes" fileName="avaliacoes" />
+                                </p:menuitem>
+                                <p:divider />
+                                <p:menuitem value="Imprimir" icon="pi pi-print"
+                                    onclick="window.print(); return false;" />
+                            </p:menuButton>
+                            <p:commandButton value="Nova Avaliação" icon="pi pi-plus" styleClass="ui-button-success"
+                                actionListener="#{evaluationController.prepareNewEvaluation}" onstart="showScLoading()"
+                                oncomplete="hideScLoading(); PF('createEvaluationDialog').show()"
+                                update=":evaluationCreateForm" process="@this" />
                         </div>
                     </div>
 
-                    <p:dataTable id="dtEvaluations" widgetVar="dtEvaluations" styleClass="sc-table" var="evaluation"
-                        value="#{evaluationController.lazyModel}" lazy="true" paginator="true" rows="10"
-                        paginatorPosition="bottom" reflow="true"
+                    <div class="stu-filters">
+                        <p:selectOneMenu value="#{evaluationController.filterDisciplineId}" placeholder="Disciplina">
+                            <f:selectItem itemLabel="Todas as disciplinas" itemValue="#{null}" />
+                            <f:selectItems value="#{evaluationController.disciplines}" var="d"
+                                itemLabel="#{d.disciplineName}" itemValue="#{d.pkDiscipline}" />
+                        </p:selectOneMenu>
+                        <p:selectOneMenu value="#{evaluationController.filterEvaluationType}" placeholder="Tipo">
+                            <f:selectItem itemLabel="Todos os tipos" itemValue="" />
+                            <f:selectItems value="#{evaluationController.evaluationTypes}" var="et"
+                                itemLabel="#{et}" itemValue="#{et}" />
+                        </p:selectOneMenu>
+                        <p:selectOneMenu value="#{evaluationController.filterTrimester}" placeholder="Trimestre">
+                            <f:selectItem itemLabel="Todos os trimestres" itemValue="" />
+                            <f:selectItems value="#{evaluationController.trimesters}" var="tr"
+                                itemLabel="#{tr}" itemValue="#{tr}" />
+                        </p:selectOneMenu>
+                        <p:inputText value="#{evaluationController.filterAnoLectivo}" placeholder="Ano letivo..."
+                            styleClass="stu-search-input" />
+                        <p:commandButton icon="pi pi-filter" value="Aplicar" action="#{evaluationController.applyFilters}"
+                            update="dtAvaliacoes messages" styleClass="ui-button-primary" />
+                        <p:commandButton icon="pi pi-filter-slash" value="Limpar"
+                            action="#{evaluationController.clearFilters}" update="@form"
+                            styleClass="ui-button-outlined ui-button-secondary" />
+                    </div>
+
+                    <p:dataTable id="dtAvaliacoes" widgetVar="dtAvaliacoes" styleClass="stu-table" var="ev"
+                        value="#{evaluationController.lazyModel}" paginator="true" rows="10" lazy="true" reflow="true"
+                        paginatorPosition="bottom"
                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                        currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords} registos"
-                        rowsPerPageTemplate="5,10,15,30" emptyMessage="#{msg.noEvaluationFound}">
+                        currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
+                        rowsPerPageTemplate="5,10,20,50" emptyMessage="Nenhuma avaliação encontrada.">
 
-                        <p:column headerText="Nº" sortBy="#{evaluation.pkEvaluation}" style="width:80px">
-                            <span class="t-num">
-                                <i class="pi pi-hashtag" style="font-size:.65rem" />
-                                <h:outputText value="#{evaluation.pkEvaluation}" />
-                            </span>
+                        <p:column headerText="Disciplina" sortBy="#{ev.disciplineName}">
+                            <div style="font-weight:700; color:var(--stu-text);">#{ev.disciplineName}</div>
                         </p:column>
-
-                        <p:column headerText="#{msg.discipline}" sortBy="#{evaluation.disciplineName}">
-                            <div class="t-cell">
-                                <div class="t-icon-badge"><i class="pi pi-book" /></div>
-                                <div>
-                                    <div class="fw-bold text-dark">
-                                        <h:outputText value="#{evaluation.disciplineName}" />
-                                    </div>
-                                    <div class="t-sub">
-                                        <h:outputText value="#{evaluation.scheduleWeekDay}" />
-                                    </div>
-                                </div>
-                            </div>
+                        <p:column headerText="Nome" sortBy="#{ev.evaluationName}" style="width:180px">
+                            #{ev.evaluationName}
                         </p:column>
-
-                        <p:column headerText="#{msg.title}" sortBy="#{evaluation.title}">
-                            <h:outputText value="#{evaluation.title}" />
+                        <p:column headerText="Tipo" sortBy="#{ev.evaluationType}" style="width:140px; text-align:center">
+                            <span class="stu-badge eval-#{ev.evaluationType.toString().toLowerCase().replace('_', '-')}">#{ev.evaluationType}</span>
                         </p:column>
-
-                        <p:column headerText="#{msg.type}" sortBy="#{evaluation.type}"
-                            style="width:120px; text-align:center">
-                            <span class="type-badge">
-                                <h:outputText value="#{msg[evaluation.type.toString()]}" />
-                            </span>
+                        <p:column headerText="Trimestre" sortBy="#{ev.trimester}" style="width:120px; text-align:center">
+                            #{ev.trimester}
                         </p:column>
-
-                        <p:column headerText="#{msg.weight}" sortBy="#{evaluation.weight}"
-                            style="width:90px; text-align:center">
-                            <span class="weight-badge">
-                                <h:outputText value="#{evaluation.weight}">
-                                    <f:convertNumber pattern="#,##0.0" />
-                                </h:outputText>
-                            </span>
+                        <p:column headerText="Data" sortBy="#{ev.evaluationDate}" style="width:110px; text-align:center">
+                            <h:outputText value="#{ev.evaluationDate}">
+                                <f:convertDateTime type="localDate" pattern="dd/MM/yyyy" />
+                            </h:outputText>
                         </p:column>
-
-                        <p:column headerText="#{msg.evaluationDate}" sortBy="#{evaluation.evaluationDate}"
-                            style="width:120px">
-                            <h:outputText value="#{evaluationController.formatDate(evaluation.evaluationDate)}" />
+                        <p:column headerText="Ano" sortBy="#{ev.anoLectivo}" style="width:100px; text-align:center">
+                            #{ev.anoLectivo}
                         </p:column>
-
-                        <p:column headerText="Trim." sortBy="#{evaluation.trimester}"
-                            style="width:70px; text-align:center">
-                            <span class="trimester-badge">
-                                <h:outputText value="#{evaluation.trimester}" />
-                            </span>
-                        </p:column>
-
-                        <p:column headerText="#{msg.status}" sortBy="#{evaluation.status}"
-                            style="width:120px; text-align:center">
-                            <span class="status-badge #{evaluation.status == 'OPEN' ? 'open' : 'closed'}">
-                                <i class="pi #{evaluation.status == 'OPEN' ? 'pi-lock-open' : 'pi-lock'}"
-                                    style="font-size:.65rem" />
-                                <h:outputText value="#{msg[evaluation.status.toString()]}" />
-                            </span>
-                        </p:column>
-
-                        <p:column headerText="#{msg.actions}" style="width:110px; text-align:center" exportable="false">
-                            <div class="actions-cell">
-                                <p:commandButton styleClass="act-btn edit" icon="pi pi-pencil" title="Editar"
-                                    actionListener="#{evaluationController.openEditDialog}"
-                                    oncomplete="PF('editEvaluationDialog').show()" update=":evaluationEditForm">
-                                    <f:setPropertyActionListener value="#{evaluation.pkEvaluation}"
-                                        target="#{evaluationController.selectedId}" />
-                                </p:commandButton>
-
-                                <p:commandButton styleClass="act-btn delete" icon="pi pi-trash" title="Excluir"
-                                    process="@this" oncomplete="PF('deleteEvaluationDialog').show()">
-                                    <f:setPropertyActionListener value="#{evaluation.pkEvaluation}"
+                        <p:column headerText="Ações" style="width:140px; text-align:center" exportable="false">
+                            <div class="stu-actions">
+                                <p:commandButton styleClass="stu-act view" icon="pi pi-eye" title="Ver"
+                                    action="#{evaluationController.viewEvaluationDetails(ev.pkEvaluation)}"
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('viewEvaluationDialog').show()"
+                                    update=":viewEvaluationForm" process="@this" />
+                                <p:commandButton styleClass="stu-act edit" icon="pi pi-pencil" title="Editar"
+                                    action="#{evaluationController.openEditDialog(ev.pkEvaluation)}"
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('editEvaluationDialog').show()"
+                                    update=":evaluationEditForm" process="@this" />
+                                <p:commandButton styleClass="stu-act delete" icon="pi pi-trash" title="Eliminar"
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('deleteEvaluationDialog').show()"
+                                    update=":deleteEvaluationForm" process="@this">
+                                    <f:setPropertyActionListener value="#{ev.pkEvaluation}"
                                         target="#{evaluationController.selectedId}" />
                                 </p:commandButton>
                             </div>
                         </p:column>
-
-                        <f:facet name="emptyMessage">
-                            <div class="text-center p-5 text-muted">
-                                <i class="pi pi-file-edit d-block mb-2" style="font-size:2rem; opacity:.2" />
-                                #{msg.noEvaluationFound}
-                            </div>
-                        </f:facet>
                     </p:dataTable>
                 </div>
+            </h:form>
 
-                <!-- ── Confirm delete dialog ── -->
-                <p:dialog widgetVar="deleteEvaluationDialog" modal="true" resizable="false" header="#{msg.confirmDeleteEvaluation}"
-                    width="380" closable="true" styleClass="confirm-delete-dialog">
-                    <div style="padding: .5rem 0 1rem; display:flex; gap:.8rem; align-items:flex-start;">
-                        <i class="pi pi-exclamation-triangle"
-                            style="color: var(--red); font-size: 1.6rem; flex-shrink:0;" />
-                        <span style="font-size:.88rem; color: var(--text);">
-                            #{msg.deleteEvaluationQuestion}
-                        </span>
+            <!-- VIEW -->
+            <h:form id="viewEvaluationForm">
+                <p:dialog widgetVar="viewEvaluationDialog" modal="true" resizable="false" header="Detalhes da Avaliação"
+                    style="width:90vw; max-width:500px;" closable="true" responsive="true" fitViewport="true">
+                    <div style="padding:.5rem 0;">
+                        <div style="text-align:center; margin-bottom:1.2rem;">
+                            <div
+                                style="width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg, var(--stu-black), var(--stu-red)); color:var(--stu-yellow); display:flex; align-items:center; justify-content:center; font-size:1.6rem; margin:0 auto .6rem;">
+                                <i class="pi pi-file-edit"></i>
+                            </div>
+                            <div style="font-size:1.15rem; font-weight:700;">
+                                #{evaluationController.selectedEvaluation.evaluationName}</div>
+                            <div style="font-size:.85rem; color:var(--stu-muted);">
+                                #{evaluationController.selectedEvaluation.disciplineName}</div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.8rem; font-size:.9rem;">
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                    Tipo</div>
+                                <div style="font-weight:700;">#{evaluationController.selectedEvaluation.evaluationType}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                    Trimestre</div>
+                                <div style="font-weight:700;">#{evaluationController.selectedEvaluation.trimester}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                    Data</div>
+                                <div style="font-weight:700;">
+                                    <h:outputText value="#{evaluationController.selectedEvaluation.evaluationDate}">
+                                        <f:convertDateTime type="localDate" pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                    Ano Letivo</div>
+                                <div style="font-weight:700;">#{evaluationController.selectedEvaluation.anoLectivo}</div>
+                            </div>
+                        </div>
+                        <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; margin-top:.8rem;">
+                            <div style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                Observações</div>
+                            <div style="font-weight:700; margin-top:.2rem;">
+                                <h:outputText value="#{evaluationController.selectedEvaluation.obs}" escape="false" />
+                            </div>
+                        </div>
                     </div>
-                    <div style="display:flex; justify-content:flex-end; gap:.6rem;">
-                        <p:commandButton value="#{msg.no}" type="button" onclick="PF('deleteEvaluationDialog').hide()"
-                            style="background: var(--surface-2); color: var(--text); border:1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 16px; font-size:.8rem;" />
-                        <p:commandButton value="#{msg.yes}" icon="pi pi-trash"
-                            actionListener="#{evaluationController.delete}" process="@this"
-                            update=":formEvaluations:dtEvaluations :formEvaluations:messages"
-                            oncomplete="PF('deleteEvaluationDialog').hide()"
-                            style="background: linear-gradient(135deg, var(--black) 0%, var(--red) 100%); color:#fff; border:none; border-radius: var(--radius-sm); padding: 7px 16px; font-size:.8rem;" />
+                    <div class="stu-dialog-footer">
+                        <p:commandButton value="Fechar" type="button" onclick="PF('viewEvaluationDialog').hide()"
+                            styleClass="ui-button-outlined" />
+                        <p:commandButton value="Imprimir" icon="pi pi-print" onclick="window.print(); return false;"
+                            styleClass="ui-button-primary" />
                     </div>
                 </p:dialog>
             </h:form>
 
-            <ui:include src="evaluation/evaluations-create.xhtml" />
-            <ui:include src="evaluation/evaluations-edit.xhtml" />
-        </div>
-    </ui:define>
+            <!-- CREATE -->
+            <h:form id="evaluationCreateForm">
+                <p:dialog widgetVar="createEvaluationDialog" header="Nova Avaliação" modal="true" showEffect="fade"
+                    hideEffect="fade" closeOnEscape="true" dynamic="true" resizable="false"
+                    styleClass="st-dialog-create" responsive="true" fitViewport="true">
+                    <p:messages showDetail="true" closable="true" />
+                    <div style="padding:1rem;">
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Disciplina" styleClass="st-label" />
+                            <p:selectOneMenu id="selDisciplinaCreate" value="#{evaluationController.selectedDisciplineId}"
+                                required="true" requiredMessage="Selecione uma disciplina." style="width:100%;">
+                                <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{evaluationController.disciplines}" var="d"
+                                    itemLabel="#{d.disciplineName}" itemValue="#{d.pkDiscipline}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Nome da Avaliação" styleClass="st-label" />
+                            <p:inputText id="txtNomeCreate" value="#{evaluationController.evaluation.evaluationName}"
+                                required="true" requiredMessage="Nome da avaliação é obrigatório." style="width:100%;" />
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Tipo" styleClass="st-label" />
+                            <p:selectOneMenu id="selTipoCreate" value="#{evaluationController.evaluation.evaluationType}"
+                                required="true" requiredMessage="Selecione o tipo de avaliação." style="width:100%;">
+                                <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{evaluationController.evaluationTypes}" var="et"
+                                    itemLabel="#{et}" itemValue="#{et}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Trimestre" styleClass="st-label" />
+                            <p:selectOneMenu id="selTrimestreCreate" value="#{evaluationController.evaluation.trimester}"
+                                required="true" requiredMessage="Selecione o trimestre." style="width:100%;">
+                                <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{evaluationController.trimesters}" var="tr"
+                                    itemLabel="#{tr}" itemValue="#{tr}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Data" styleClass="st-label" />
+                            <p:datePicker value="#{evaluationController.evaluation.evaluationDate}" 
+                                pattern="dd/MM/yyyy" showIcon="true" style="width:100%;" />
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Ano Letivo" styleClass="st-label" />
+                            <p:inputText value="#{evaluationController.evaluation.anoLectivo}" style="width:100%;"
+                                placeholder="2026" />
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Observações" styleClass="st-label" />
+                            <p:inputTextarea value="#{evaluationController.evaluation.obs}" rows="3" style="width:100%;" />
+                        </div>
+                    </div>
+                    <div class="stu-dialog-footer">
+                        <p:commandButton value="Cancelar" type="button" onclick="PF('createEvaluationDialog').hide()"
+                            styleClass="ui-button-outlined ui-button-secondary" />
+                        <p:commandButton value="Guardar" icon="pi pi-save" styleClass="ui-button-success"
+                            action="#{evaluationController.saveEvaluation}" process="@form"
+                            update=":evaluationCreateForm :formAvaliacoes:dtAvaliacoes :formAvaliacoes:messages"
+                            oncomplete="if(!args.validationFailed){ PF('createEvaluationDialog').hide(); }" />
+                    </div>
+                </p:dialog>
+            </h:form>
 
+            <!-- EDIT -->
+            <h:form id="evaluationEditForm">
+                <p:dialog widgetVar="editEvaluationDialog" header="Editar Avaliação" modal="true" showEffect="fade"
+                    hideEffect="fade" closeOnEscape="true" dynamic="true" resizable="false" appendTo="@(body)"
+                    styleClass="st-dialog-create" responsive="true" fitViewport="true">
+                    <p:messages showDetail="true" closable="true" />
+                    <div style="padding:1rem;">
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Disciplina" styleClass="st-label" />
+                            <p:selectOneMenu id="selDisciplinaEdit" value="#{evaluationController.selectedDisciplineId}"
+                                required="true" requiredMessage="Selecione uma disciplina." style="width:100%;">
+                                <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{evaluationController.disciplines}" var="d"
+                                    itemLabel="#{d.disciplineName}" itemValue="#{d.pkDiscipline}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Nome da Avaliação" styleClass="st-label" />
+                            <p:inputText id="txtNomeEdit" value="#{evaluationController.editDto.evaluationName}"
+                                required="true" requiredMessage="Nome da avaliação é obrigatório." style="width:100%;" />
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Tipo" styleClass="st-label" />
+                            <p:selectOneMenu id="selTipoEdit" value="#{evaluationController.editDto.evaluationType}"
+                                required="true" requiredMessage="Selecione o tipo de avaliação." style="width:100%;">
+                                <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{evaluationController.evaluationTypes}" var="et"
+                                    itemLabel="#{et}" itemValue="#{et}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Trimestre" styleClass="st-label" />
+                            <p:selectOneMenu id="selTrimestreEdit" value="#{evaluationController.editDto.trimester}"
+                                required="true" requiredMessage="Selecione o trimestre." style="width:100%;">
+                                <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{evaluationController.trimesters}" var="tr"
+                                    itemLabel="#{tr}" itemValue="#{tr}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Data" styleClass="st-label" />
+                            <p:datePicker value="#{evaluationController.editDto.evaluationDate}" 
+                                pattern="dd/MM/yyyy" showIcon="true" style="width:100%;" />
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Ano Letivo" styleClass="st-label" />
+                            <p:inputText value="#{evaluationController.editDto.anoLectivo}" style="width:100%;" />
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Observações" styleClass="st-label" />
+                            <p:inputTextarea value="#{evaluationController.editDto.obs}" rows="3" style="width:100%;" />
+                        </div>
+                    </div>
+                    <div class="stu-dialog-footer">
+                        <p:commandButton value="Cancelar" type="button" onclick="PF('editEvaluationDialog').hide()"
+                            styleClass="ui-button-outlined ui-button-secondary" />
+                        <p:commandButton value="Atualizar" icon="pi pi-save" styleClass="ui-button-success"
+                            action="#{evaluationController.saveUpdate}" process="@form"
+                            update=":evaluationEditForm :formAvaliacoes:dtAvaliacoes :formAvaliacoes:messages"
+                            oncomplete="if(!args.validationFailed){ PF('editEvaluationDialog').hide(); }" />
+                    </div>
+                </p:dialog>
+            </h:form>
+
+            <!-- DELETE CONFIRMATION -->
+            <h:form id="deleteEvaluationForm">
+                <p:dialog widgetVar="deleteEvaluationDialog" header="Confirmar Eliminação" modal="true" resizable="false"
+                    closable="true" responsive="true" fitViewport="true" style="max-width:420px;">
+                    <div style="padding:1rem; text-align:center;">
+                        <i class="pi pi-exclamation-triangle" style="font-size:2.5rem; color:var(--stu-red); margin-bottom:.8rem; display:block;"></i>
+                        <div style="font-size:1.05rem; font-weight:700; margin-bottom:.4rem;">
+                            Tem a certeza que deseja eliminar esta avaliação?
+                        </div>
+                        <div style="font-size:.85rem; color:var(--stu-muted);">
+                            Esta ação não pode ser desfeita.
+                        </div>
+                    </div>
+                    <div class="stu-dialog-footer">
+                        <p:commandButton value="Cancelar" type="button" onclick="PF('deleteEvaluationDialog').hide()"
+                            styleClass="ui-button-outlined ui-button-secondary" />
+                        <p:commandButton value="Eliminar" icon="pi pi-trash" styleClass="ui-button-danger"
+                            action="#{evaluationController.deleteEvaluation}"
+                            update=":formAvaliacoes:dtAvaliacoes :formAvaliacoes:messages"
+                            oncomplete="PF('deleteEvaluationDialog').hide()" process="@this" />
+                    </div>
+                </p:dialog>
+            </h:form>
+        </div>
+
+        <script>
+            function showScLoading() { document.getElementById('scLoadingOverlay').classList.add('active'); }
+            function hideScLoading() { document.getElementById('scLoadingOverlay').classList.remove('active'); }
+            if (window.PrimeFaces) {
+                PrimeFaces.ajax.Queue.originalAdd = PrimeFaces.ajax.Queue.add;
+                PrimeFaces.ajax.Queue.add = function (req) {
+                    req.originalOncomplete = req.onsuccess;
+                    req.onsuccess = function (xhr, status, args) { hideScLoading(); if (req.originalOncomplete) req.originalOncomplete(xhr, status, args); };
+                    req.originalOnerror = req.onerror;
+                    req.onerror = function (xhr, status, error) { hideScLoading(); if (req.originalOnerror) req.originalOnerror(xhr, status, error); };
+                    PrimeFaces.ajax.Queue.originalAdd(req);
+                };
+            }
+        </script>
+    </ui:define>
 </ui:composition>

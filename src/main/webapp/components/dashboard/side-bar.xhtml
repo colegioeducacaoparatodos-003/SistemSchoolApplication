@@ -450,7 +450,7 @@
                     <p:menuitem value="#{msg.evaluation}" action="#{evaluationController.load}"
                         icon="pi pi-check-circle"
                         rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.impress}" action="#{impressaoPedagogicaController.load}"
+                    <p:menuitem value="#{msg.trimesterResults}" action="#{trimesterResultController.load}"
                         icon="pi pi-print"
                         rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
 
@@ -475,7 +475,7 @@
                     <p:menuitem styleClass="sidebar-menu-header fw-bold"
                         value="#{msg.humanResources}" icon="pi pi-user-edit" disabled="true"
                         rendered="#{sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.teachers}" action="#{teacherController.loadTeachers}" 
+                    <p:menuitem value="#{msg.teachers}" action="#{teacherController.load}" 
                         icon="pi pi-user-edit"
                         rendered="#{sessionBean.isAdmin()}" />
                     <p:menuitem value="#{msg.users}" outcome="/settings/users.xhtml" 

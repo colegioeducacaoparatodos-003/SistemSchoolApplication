@@ -1,0 +1,1060 @@
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="titulo">Lançamento de Notas</ui:define>
+
+    <ui:define name="content">
+        <style type="text/css">
+            
+            @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&amp;family=DM+Mono:wght@400;500&amp;display=swap');
+
+            :root {
+                --enr-black: #141414;
+                --enr-red: #c8102e;
+                --enr-yellow: #f5b400;
+                --enr-blue: #1a5fb4;
+                --enr-green: #1e8e3e;
+                --enr-orange: #e65100;
+                --enr-surface: #ffffff;
+                --enr-surface-2: #f7f7f8;
+                --enr-surface-3: #f0f0f2;
+                --enr-border: #e6e6e8;
+                --enr-border-2: #d1d1d4;
+                --enr-text: #141414;
+                --enr-muted: #666a70;
+                --enr-radius: 14px;
+                --enr-radius-sm: 10px;
+                --enr-shadow: 0 1px 3px rgba(20, 20, 20, .04), 0 4px 20px rgba(20, 20, 20, .08);
+                --enr-shadow-lg: 0 4px 6px rgba(20, 20, 20, .04), 0 12px 40px rgba(20, 20, 20, .12);
+                --font: 'DM Sans', system-ui, -apple-system, sans-serif;
+                --font-mono: 'DM Mono', monospace;
+            }
+
+            body { background: var(--enr-surface-2); font-family: var(--font); }
+
+            .breadcrumb-pill {
+                display: inline-flex; align-items: center; gap: 6px;
+                background: linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%);
+                border: 1px solid rgba(245, 180, 0, .3);
+                color: #7a5c00; border-radius: 99px; padding: 4px 14px;
+                font-size: .72rem; font-weight: 700; letter-spacing: .02em;
+                box-shadow: 0 1px 2px rgba(245, 180, 0, .1);
+            }
+
+            .enr-page { padding: 1.2rem; max-width: 1400px; margin: 0 auto; }
+            @media(min-width:768px) { .enr-page { padding: 1.6rem 2rem 2.5rem; } }
+
+            .enr-header {
+                display: flex; align-items: flex-start; justify-content: space-between;
+                flex-wrap: wrap; gap: 1rem; margin-bottom: 1.6rem;
+            }
+            .enr-header-left { display: flex; align-items: center; gap: 1rem; }
+            .enr-header-icon {
+                width: 52px; height: 52px; border-radius: 14px;
+                background: linear-gradient(135deg, var(--enr-black) 0%, var(--enr-red) 60%, #e63946 100%);
+                display: flex; align-items: center; justify-content: center;
+                color: var(--enr-yellow); font-size: 1.3rem; flex-shrink: 0;
+                box-shadow: 0 6px 20px rgba(200, 16, 46, .25), 0 2px 6px rgba(20, 20, 20, .2);
+                transition: transform .2s, box-shadow .2s;
+            }
+            .enr-header-icon:hover { transform: scale(1.05) rotate(-3deg); }
+            .enr-header-title h1 { font-size: 1.45rem; font-weight: 800; margin: 0 0 .25rem; color: var(--enr-text); letter-spacing: -.02em; }
+            .enr-header-title p { font-size: .88rem; color: var(--enr-muted); margin: 0; font-weight: 400; }
+
+            .dirty-badge {
+                display: inline-flex; align-items: center; gap: 6px;
+                background: #fff3e0; color: var(--enr-orange);
+                border: 1px solid rgba(230, 81, 0, .2); border-radius: 99px;
+                padding: 3px 12px; font-size: .7rem; font-weight: 700;
+                animation: pulseBadge 2s ease-in-out infinite;
+            }
+            @keyframes pulseBadge { 0%, 100% { opacity: 1; } 50% { opacity: .6; } }
+
+            .info-badge {
+                display: inline-flex; align-items: center; gap: 6px;
+                background: #eaf1fb; color: var(--enr-blue);
+                border: 1px solid rgba(26, 95, 180, .2); border-radius: 99px;
+                padding: 4px 12px; font-size: .72rem; font-weight: 700;
+            }
+            .info-badge.creating { background: #fff8e1; color: #8a6400; border-color: rgba(245, 180, 0, .3); }
+            .info-badge.saved { background: #e8f6ec; color: var(--enr-green); border-color: rgba(30, 142, 62, .25); }
+
+            .enr-stats {
+                display: grid; grid-template-columns: repeat(1, 1fr); gap: 1rem; margin-bottom: 1.6rem;
+            }
+            @media(min-width:576px) { .enr-stats { grid-template-columns: repeat(2, 1fr); } }
+            @media(min-width:992px) { .enr-stats { grid-template-columns: repeat(5, 1fr); } }
+
+            .enr-stat {
+                background: var(--enr-surface); border: 1px solid var(--enr-border);
+                border-radius: var(--enr-radius); box-shadow: var(--enr-shadow);
+                padding: 1.2rem 1.3rem; display: flex; align-items: center; justify-content: space-between;
+                transition: all .25s cubic-bezier(.4, 0, .2, 1); position: relative; overflow: hidden;
+            }
+            .enr-stat::before {
+                content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+                background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow)); opacity: 0; transition: opacity .25s;
+            }
+            .enr-stat:hover { transform: translateY(-3px); box-shadow: var(--enr-shadow-lg); }
+            .enr-stat:hover::before { opacity: 1; }
+            .enr-stat-label { font-size: .7rem; color: var(--enr-muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+            .enr-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--enr-text); margin-top: .2rem; font-family: var(--font-mono); letter-spacing: -.02em; }
+            .enr-stat-value.small { font-size: 1.1rem; }
+            .enr-stat-icon {
+                width: 44px; height: 44px; border-radius: 12px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1.15rem; flex-shrink: 0; transition: transform .3s;
+            }
+            .enr-stat:hover .enr-stat-icon { transform: scale(1.1) rotate(5deg); }
+            .enr-stat-icon.dark { background: linear-gradient(135deg, var(--enr-black), #2a2a2a); color: var(--enr-yellow); box-shadow: 0 4px 12px rgba(20, 20, 20, .2); }
+            .enr-stat-icon.green { background: linear-gradient(135deg, #e8f6ec, #d4edda); color: var(--enr-green); box-shadow: 0 4px 12px rgba(30, 142, 62, .15); }
+            .enr-stat-icon.yellow { background: linear-gradient(135deg, #fff8e1, #ffecb3); color: #8a6400; box-shadow: 0 4px 12px rgba(245, 180, 0, .15); }
+            .enr-stat-icon.blue { background: linear-gradient(135deg, #eaf1fb, #d6e4f7); color: var(--enr-blue); box-shadow: 0 4px 12px rgba(26, 95, 180, .15); }
+            .enr-stat-icon.red { background: linear-gradient(135deg, #fde8e8, #f5c6cb); color: var(--enr-red); box-shadow: 0 4px 12px rgba(200, 16, 46, .15); }
+
+            .progress-fill-container { width: 100%; height: 6px; background: var(--enr-surface-3); border-radius: 99px; overflow: hidden; margin-top: .5rem; }
+            .progress-fill-bar { height: 100%; border-radius: 99px; transition: width .6s cubic-bezier(.4, 0, .2, 1); background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow)); }
+
+            .enr-card {
+                background: var(--enr-surface); border: 1px solid var(--enr-border);
+                border-radius: var(--enr-radius); box-shadow: var(--enr-shadow); overflow: hidden; transition: box-shadow .3s;
+            }
+            .enr-card:hover { box-shadow: var(--enr-shadow-lg); }
+            .enr-card + .enr-card { margin-top: 1.4rem; }
+
+            .enr-toolbar {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--enr-border);
+                gap: 1rem; flex-wrap: wrap; background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
+            }
+            .enr-toolbar-left { display: flex; flex-direction: column; gap: .2rem; }
+            .enr-toolbar-title { font-weight: 800; font-size: .95rem; color: var(--enr-text); letter-spacing: -.01em; }
+            .enr-toolbar-sub { font-size: .78rem; color: var(--enr-muted); font-weight: 500; }
+            .enr-toolbar-right { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; }
+
+            .enr-filters {
+                display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1.1rem; align-items: end; padding: 1.3rem 1.4rem;
+                background: linear-gradient(180deg, var(--enr-surface-2) 0%, #f0f0f2 100%);
+                border-bottom: 1px solid var(--enr-border);
+            }
+            .enr-filters .field-actions { display: flex; gap: .6rem; align-items: flex-end; }
+            .sc-label { font-size: .78rem; font-weight: 700; color: var(--enr-muted); display: block; margin-bottom: .35rem; letter-spacing: .02em; }
+            .sc-label .optional-tag { font-weight: 500; color: var(--enr-muted); opacity: .7; font-size: .68rem; text-transform: none; letter-spacing: 0; }
+            .sc-input, .sc-select {
+                width: 100%; padding: 9px 12px; border: 1.5px solid var(--enr-border); border-radius: 8px;
+                font-size: .88rem; background: #fff; outline: none; font-family: var(--font); transition: all .2s;
+            }
+            .sc-input:hover, .sc-select:hover { border-color: var(--enr-border-2); }
+            .sc-input:focus, .sc-select:focus { border-color: var(--enr-red); box-shadow: 0 0 0 4px rgba(200, 16, 46, .08); background: #fff; }
+
+            /* ── Botões: base compartilhada ── */
+            .enr-btn {
+                border: none; border-radius: 9px; font-family: var(--font); font-weight: 700;
+                cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+                transition: transform .15s ease, box-shadow .2s ease, filter .15s ease, opacity .15s ease;
+                position: relative; overflow: hidden; white-space: nowrap; letter-spacing: -.01em;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .enr-btn::after {
+                content: ''; position: absolute; inset: 0; border-radius: inherit;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+                transform: translateX(-120%); transition: transform .5s ease;
+            }
+            .enr-btn:hover:not(:disabled)::after { transform: translateX(120%); }
+            .enr-btn:active:not(:disabled) { transform: translateY(0) scale(.98); }
+            .enr-btn:focus-visible {
+                outline: none; box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--enr-red);
+            }
+            .enr-btn .pi { font-size: .92em; }
+            .enr-btn:disabled {
+                cursor: not-allowed; filter: grayscale(.25) brightness(1); opacity: .62;
+                box-shadow: none !important; transform: none !important;
+            }
+            .enr-btn:disabled::after { display: none; }
+
+            .btn-new {
+                background: linear-gradient(135deg, var(--enr-black) 0%, var(--enr-red) 100%); color: #fff;
+                padding: 9px 20px; font-size: .87rem;
+                box-shadow: 0 4px 14px rgba(200, 16, 46, .25);
+            }
+            .btn-new:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(200, 16, 46, .35); filter: brightness(1.05); }
+
+            .btn-ghost {
+                background: #fff; color: var(--enr-text); border: 1.5px solid var(--enr-border);
+                padding: 9px 16px; font-size: .87rem; font-weight: 600;
+            }
+            .btn-ghost:hover:not(:disabled) { background: var(--enr-surface-2); border-color: var(--enr-border-2); transform: translateY(-1px); }
+            .btn-ghost:active:not(:disabled) { background: var(--enr-surface-3); }
+
+            .btn-save-all {
+                background: linear-gradient(135deg, var(--enr-green) 0%, #166b30 100%); color: #fff;
+                padding: 11px 28px; font-size: .92rem; font-weight: 800;
+                box-shadow: 0 4px 14px rgba(30, 142, 62, .25);
+            }
+            .btn-save-all:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(30, 142, 62, .35); filter: brightness(1.05); }
+
+            .btn-draft {
+                background: linear-gradient(135deg, var(--enr-blue) 0%, #104a8e 100%); color: #fff;
+                padding: 11px 24px; font-size: .9rem; font-weight: 700;
+                box-shadow: 0 4px 14px rgba(26, 95, 180, .2);
+            }
+            .btn-draft:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26, 95, 180, .3); }
+
+            .btn-launch {
+                background: linear-gradient(135deg, var(--enr-red) 0%, #a00d24 100%); color: #fff;
+                padding: 8px 18px; font-size: .82rem; font-weight: 700;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .2);
+            }
+            .btn-launch:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(200, 16, 46, .3); filter: brightness(1.05); }
+
+            /* Spinner inline injetado via JS nos botões durante o envio */
+            .enr-btn.is-loading { pointer-events: none; }
+            .enr-btn.is-loading .ui-icon,
+            .enr-btn.is-loading .pi:not(.enr-btn-spinner-icon) { opacity: 0; width: 0; margin: 0; overflow: hidden; }
+            .enr-btn-spinner-icon {
+                display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+                border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+                animation: btnSpin .7s linear infinite; flex-shrink: 0; margin-right: 8px;
+            }
+            @keyframes btnSpin { to { transform: rotate(360deg); } }
+
+            /* ── Lista de Alunos (Cards) ── */
+            .students-grid {
+                display: grid;
+                grid-template-columns: repeat(1, 1fr);
+                gap: 1rem;
+                padding: 1.4rem;
+            }
+            @media(min-width:576px) { .students-grid { grid-template-columns: repeat(2, 1fr); } }
+            @media(min-width:992px) { .students-grid { grid-template-columns: repeat(3, 1fr); } }
+            @media(min-width:1200px) { .students-grid { grid-template-columns: repeat(4, 1fr); } }
+
+            .student-card {
+                background: var(--enr-surface);
+                border: 1.5px solid var(--enr-border);
+                border-radius: var(--enr-radius-sm);
+                padding: 1.2rem;
+                display: flex;
+                flex-direction: column;
+                gap: .8rem;
+                transition: all .25s cubic-bezier(.4, 0, .2, 1);
+                position: relative;
+                overflow: hidden;
+            }
+            .student-card::before {
+                content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+                background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow));
+                opacity: 0; transition: opacity .25s;
+            }
+            .student-card:hover {
+                transform: translateY(-3px);
+                box-shadow: var(--enr-shadow-lg);
+                border-color: var(--enr-border-2);
+            }
+            .student-card:hover::before { opacity: 1; }
+            .student-card.has-note { border-color: var(--enr-green); background: linear-gradient(180deg, #fff 0%, #f8fdf9 100%); }
+            .student-card.has-note::before { opacity: 1; background: var(--enr-green); }
+
+            .student-card-header {
+                display: flex; align-items: center; gap: .8rem;
+            }
+            .student-avatar {
+                width: 44px; height: 44px; border-radius: 12px;
+                background: linear-gradient(135deg, var(--enr-black), #2a2a2a);
+                display: flex; align-items: center; justify-content: center;
+                color: var(--enr-yellow); font-size: 1.1rem; font-weight: 700;
+                flex-shrink: 0; font-family: var(--font-mono);
+            }
+            .student-avatar.green { background: linear-gradient(135deg, var(--enr-green), #166b30); color: #fff; }
+            .student-avatar.yellow { background: linear-gradient(135deg, var(--enr-yellow), #d49a00); color: #fff; }
+            .student-avatar.red { background: linear-gradient(135deg, var(--enr-red), #a00d24); color: #fff; }
+
+            .student-info { flex: 1; min-width: 0; }
+            .student-name { font-weight: 700; font-size: .92rem; color: var(--enr-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .student-meta { font-size: .74rem; color: var(--enr-muted); font-weight: 500; margin-top: .15rem; }
+
+            .student-grade-preview {
+                display: flex; align-items: center; justify-content: center;
+                padding: .6rem; background: var(--enr-surface-2); border-radius: 8px;
+                font-family: var(--font-mono); font-size: 1.3rem; font-weight: 800;
+                color: var(--enr-muted); border: 1px dashed var(--enr-border);
+            }
+            .student-grade-preview.filled { background: #e8f6ec; color: var(--enr-green); border: 1px solid rgba(30,142,62,.2); }
+            .student-grade-preview.filled.yellow { background: #fff8e1; color: #8a6400; border-color: rgba(245,180,0,.2); }
+            .student-grade-preview.filled.red { background: #fde8e8; color: var(--enr-red); border-color: rgba(200,16,46,.2); }
+
+            .student-actions { display: flex; gap: .5rem; margin-top: auto; }
+            .student-actions .enr-btn { flex: 1; justify-content: center; }
+
+            .enr-empty { text-align: center; padding: 4rem 1.5rem; color: var(--enr-muted); background: linear-gradient(180deg, #fff 0%, var(--enr-surface-2) 100%); }
+            .enr-empty-icon-wrap { width: 80px; height: 80px; border-radius: 24px; background: linear-gradient(135deg, var(--enr-surface-2), #f0f0f2); border: 2px dashed var(--enr-border); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem; font-size: 2rem; color: var(--enr-border-2); transition: all .3s; }
+            .enr-empty:hover .enr-empty-icon-wrap { border-color: var(--enr-yellow); color: var(--enr-yellow); transform: scale(1.05) rotate(-5deg); }
+            .enr-empty-title { font-weight: 800; margin-bottom: .4rem; color: var(--enr-text); font-size: 1.1rem; }
+            .enr-empty-sub { font-size: .9rem; max-width: 400px; margin: 0 auto; line-height: 1.5; }
+
+            .enr-footer-actions { padding: 1.3rem 1.4rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; border-top: 1px solid var(--enr-border); flex-wrap: wrap; background: linear-gradient(180deg, #fafafa 0%, #fff 100%); }
+            .footer-left { display: flex; align-items: center; gap: .8rem; font-size: .85rem; color: var(--enr-muted); }
+            .footer-right { display: flex; gap: .7rem; flex-wrap: wrap; }
+
+            .quick-actions { position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; flex-direction: column; gap: .6rem; z-index: 100; }
+            .quick-btn { width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 4px 14px rgba(0,0,0,.15); transition: all .25s; color: #fff; }
+            .quick-btn:hover { transform: translateY(-3px) scale(1.1); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+            .quick-btn.top { background: linear-gradient(135deg, var(--enr-black), #333); }
+            .quick-btn.help { background: linear-gradient(135deg, var(--enr-blue), #104a8e); }
+
+            /* ── Modal de Lançamento ── */
+            .launch-modal-content { padding: .5rem; }
+            .launch-student-header {
+                display: flex; align-items: center; gap: 1rem;
+                padding: 1rem 1.2rem; background: linear-gradient(135deg, var(--enr-surface-2), #f0f0f2);
+                border-radius: var(--enr-radius-sm); margin-bottom: 1.2rem; border: 1px solid var(--enr-border);
+            }
+            .launch-student-avatar {
+                width: 56px; height: 56px; border-radius: 14px;
+                background: linear-gradient(135deg, var(--enr-black), #2a2a2a);
+                display: flex; align-items: center; justify-content: center;
+                color: var(--enr-yellow); font-size: 1.4rem; font-weight: 800;
+                font-family: var(--font-mono); flex-shrink: 0;
+            }
+            .launch-student-info h4 { margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--enr-text); }
+            .launch-student-info p { margin: .2rem 0 0; font-size: .82rem; color: var(--enr-muted); }
+
+            .launch-form-grid {
+                display: grid; gap: 1.2rem;
+            }
+            .launch-field { display: flex; flex-direction: column; gap: .4rem; }
+            .launch-field label { font-size: .8rem; font-weight: 700; color: var(--enr-muted); letter-spacing: .02em; }
+            .launch-nota-input {
+                width: 100%; padding: 12px 14px; border: 2px solid var(--enr-border); border-radius: 10px;
+                font-size: 1.4rem; text-align: center; font-family: var(--font-mono); font-weight: 800;
+                background: var(--enr-surface-2); transition: all .25s; outline: none;
+            }
+            .launch-nota-input:hover { border-color: var(--enr-border-2); }
+            .launch-nota-input:focus { border-color: var(--enr-red); box-shadow: 0 0 0 4px rgba(200, 16, 46, .08); background: #fff; }
+            .launch-nota-input.nota-empty { background: #fff9f9; }
+            .launch-nota-input.nota-green { border-color: var(--enr-green); background: #e8f6ec; color: var(--enr-green); box-shadow: 0 0 0 3px rgba(30, 142, 62, .1); }
+            .launch-nota-input.nota-yellow { border-color: var(--enr-yellow); background: #fff8e1; color: #8a6400; box-shadow: 0 0 0 3px rgba(245, 180, 0, .1); }
+            .launch-nota-input.nota-red { border-color: var(--enr-red); background: #fde8e8; color: var(--enr-red); box-shadow: 0 0 0 3px rgba(200, 16, 46, .1); }
+
+            .launch-obs-input {
+                width: 100%; padding: 10px 12px; border: 1.5px solid var(--enr-border); border-radius: 8px;
+                font-size: .9rem; background: var(--enr-surface-2); font-family: var(--font); transition: all .2s; outline: none; resize: vertical; min-height: 80px;
+            }
+            .launch-obs-input:focus { border-color: var(--enr-red); box-shadow: 0 0 0 4px rgba(200, 16, 46, .08); background: #fff; }
+
+            .launch-scale-hint {
+                display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .6rem;
+            }
+            .scale-tag {
+                padding: 4px 10px; border-radius: 6px; font-size: .72rem; font-weight: 700;
+            }
+            .scale-tag.green { background: #e8f6ec; color: var(--enr-green); }
+            .scale-tag.yellow { background: #fff8e1; color: #8a6400; }
+            .scale-tag.red { background: #fde8e8; color: var(--enr-red); }
+
+            .sc-loading-overlay {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: rgba(20, 20, 20, .88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+                z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                opacity: 0; visibility: hidden; transition: opacity .4s ease, visibility .4s ease;
+            }
+            .sc-loading-overlay.active { opacity: 1; visibility: visible; }
+            .sc-loading-box {
+                background: var(--enr-surface); border-radius: var(--enr-radius); padding: 2.5rem 3.5rem;
+                box-shadow: 0 24px 80px rgba(0,0,0,.5); display: flex; flex-direction: column;
+                align-items: center; gap: 1.3rem; border: 1px solid var(--enr-border); min-width: 280px;
+                transform: scale(.85) translateY(20px); transition: transform .4s cubic-bezier(.34, 1.56, .64, 1);
+            }
+            .sc-loading-overlay.active .sc-loading-box { transform: scale(1) translateY(0); }
+            .sc-loader-rings { position: relative; width: 72px; height: 72px; }
+            .sc-loader-rings::before, .sc-loader-rings::after { content: ''; position: absolute; border-radius: 50%; border: 3px solid transparent; }
+            .sc-loader-rings::before { top: 0; left: 0; width: 100%; height: 100%; border-top-color: var(--enr-red); border-right-color: var(--enr-yellow); animation: scSpin 1.2s linear infinite; }
+            .sc-loader-rings::after { top: 10px; left: 10px; width: calc(100% - 20px); height: calc(100% - 20px); border-bottom-color: var(--enr-black); border-left-color: #e63946; animation: scSpinReverse .9s linear infinite; }
+            .sc-loader-core { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; background: linear-gradient(135deg, var(--enr-red), var(--enr-yellow)); border-radius: 50%; animation: scPulse 1s ease-in-out infinite; box-shadow: 0 0 20px rgba(200, 16, 46, .5); }
+            @keyframes scSpin { 0% { transform: rotate(0) } 100% { transform: rotate(360deg) } }
+            @keyframes scSpinReverse { 0% { transform: rotate(0) } 100% { transform: rotate(-360deg) } }
+            @keyframes scPulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1 } 50% { transform: translate(-50%, -50%) scale(1.5); opacity: .6 } }
+            .sc-loading-text { font-family: var(--font); font-size: 1.05rem; font-weight: 700; color: var(--enr-text); text-align: center; }
+            .sc-loading-sub { font-size: .82rem; color: var(--enr-muted); text-align: center; margin-top: -.5rem; }
+            .sc-loading-dots::after { content: ''; animation: scDots 1.5s steps(4, end) infinite; }
+            @keyframes scDots { 0% { content: '' } 25% { content: '.' } 50% { content: '..' } 75% { content: '...' } 100% { content: '' } }
+            .sc-loading-progress { width: 100%; height: 4px; background: var(--enr-border); border-radius: 99px; overflow: hidden; margin-top: .2rem; }
+            .sc-loading-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow)); border-radius: 99px; animation: scProgress 2s ease-in-out infinite; }
+            @keyframes scProgress { 0% { width: 0%; margin-left: 0% } 50% { width: 60%; margin-left: 20% } 100% { width: 0%; margin-left: 100% } }
+
+            .enr-toast {
+                position: fixed; top: 1.5rem; right: 1.5rem; z-index: 10000; background: var(--enr-surface);
+                border-radius: var(--enr-radius-sm); box-shadow: var(--enr-shadow-lg); border: 1px solid var(--enr-border);
+                padding: 1rem 1.3rem; display: flex; align-items: center; gap: .8rem;
+                transform: translateX(150%); transition: transform .4s cubic-bezier(.34, 1.56, .64, 1); max-width: 380px;
+            }
+            .enr-toast.show { transform: translateX(0); }
+            .enr-toast.success { border-left: 4px solid var(--enr-green); }
+            .enr-toast.error { border-left: 4px solid var(--enr-red); }
+            .enr-toast.warn { border-left: 4px solid var(--enr-yellow); }
+            .toast-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+            .toast-icon.success { background: #e8f6ec; color: var(--enr-green); }
+            .toast-icon.error { background: #fde8e8; color: var(--enr-red); }
+            .toast-icon.warn { background: #fff8e1; color: #8a6400; }
+            .toast-content h4 { margin: 0 0 .15rem; font-size: .9rem; font-weight: 700; color: var(--enr-text); }
+            .toast-content p { margin: 0; font-size: .82rem; color: var(--enr-muted); }
+
+            .kbd { display: inline-block; padding: 2px 6px; background: var(--enr-surface-2); border: 1px solid var(--enr-border); border-radius: 4px; font-family: var(--font-mono); font-size: .7rem; font-weight: 600; color: var(--enr-muted); box-shadow: 0 1px 0 var(--enr-border); }
+
+            @media (max-width: 576px) {
+                .enr-header { flex-direction: column; align-items: stretch; }
+                .enr-header-left { width: 100%; }
+                .enr-toolbar { flex-direction: column; align-items: stretch; }
+                .enr-toolbar-right { width: 100%; }
+                .enr-toolbar-right .btn-new, .enr-toolbar-right .btn-ghost { width: 100%; justify-content: center; }
+                .enr-filters { grid-template-columns: 1fr; }
+                .enr-filters .field-actions { flex-direction: column; align-items: stretch; }
+                .enr-stat-value { font-size: 1.3rem; }
+                .enr-footer-actions { flex-direction: column; align-items: stretch; }
+                .footer-left { justify-content: center; text-align: center; }
+                .footer-right { width: 100%; }
+                .footer-right .btn-save-all, .footer-right .btn-draft { flex: 1 1 auto; justify-content: center; }
+                .sc-loading-box { padding: 2rem 1.5rem; min-width: 220px; margin: 0 1rem; }
+                .quick-actions { bottom: 1rem; right: 1rem; }
+                .quick-btn { width: 42px; height: 42px; font-size: 1rem; }
+                .students-grid { grid-template-columns: 1fr; padding: 1rem; }
+                .launch-student-header { flex-direction: column; text-align: center; }
+            }
+            
+        </style>
+
+        <!-- Toast -->
+        <div id="enrToast" class="enr-toast">
+            <div class="toast-icon" id="toastIcon"><i class="pi pi-check"></i></div>
+            <div class="toast-content">
+                <h4 id="toastTitle">Sucesso</h4>
+                <p id="toastMessage">Operação realizada com sucesso.</p>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="scLoadingOverlay" class="sc-loading-overlay">
+            <div class="sc-loading-box">
+                <div class="sc-loader-rings"><div class="sc-loader-core"></div></div>
+                <div class="sc-loading-text">A processar<span class="sc-loading-dots"></span></div>
+                <div class="sc-loading-sub">Por favor aguarde</div>
+                <div class="sc-loading-progress"><div class="sc-loading-progress-bar"></div></div>
+            </div>
+        </div>
+
+        <div class="enr-page">
+            <h:form id="formLancamento">
+                <p:growl id="messages" showDetail="true" life="4000"><p:autoUpdate /></p:growl>
+
+                <!-- Header -->
+                <div class="enr-header">
+                    <div class="enr-header-left">
+                        <div class="enr-header-icon"><i class="pi pi-pencil"></i></div>
+                        <div class="enr-header-title">
+                            <h1>Lançamento de Notas</h1>
+                            <p>Lançamento individual por aluno</p>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;">
+                        <span class="breadcrumb-pill">
+                            <i class="pi pi-home" style="font-size:.65rem"></i> Gestão &#8250; Pedagógico &#8250; Lançamento
+                        </span>
+                        <span id="dirtyBadge" class="dirty-badge" style="display:none;">
+                            <i class="pi pi-pencil" style="font-size:.6rem"></i> Alterações pendentes
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <h:panelGroup id="statsPanel" rendered="#{gradeLancamentoController.showTable}">
+                    <div class="enr-stats">
+                        <div class="enr-stat">
+                            <div>
+                                <div class="enr-stat-label">Alunos Carregados</div>
+                                <div class="enr-stat-value"><h:outputText id="statTotal" value="#{gradeLancamentoController.studentRows.size()}" /></div>
+                            </div>
+                            <div class="enr-stat-icon dark"><i class="pi pi-users"></i></div>
+                        </div>
+                        <div class="enr-stat">
+                            <div>
+                                <div class="enr-stat-label">Trimestre</div>
+                                <div class="enr-stat-value"><h:outputText value="#{gradeLancamentoController.selectedTrimester}" /></div>
+                            </div>
+                            <div class="enr-stat-icon blue"><i class="pi pi-calendar"></i></div>
+                        </div>
+                        <div class="enr-stat">
+                            <div>
+                                <div class="enr-stat-label">Tipo</div>
+                                <div class="enr-stat-value small"><h:outputText value="#{gradeLancamentoController.selectedEvaluationType.description}" /></div>
+                            </div>
+                            <div class="enr-stat-icon yellow"><i class="pi pi-file-edit"></i></div>
+                        </div>
+                        <div class="enr-stat">
+                            <div>
+                                <div class="enr-stat-label">Preenchidas</div>
+                                <div class="enr-stat-value" id="statFilled">0</div>
+                                <div class="progress-fill-container"><div class="progress-fill-bar" id="progressBar" style="width:0%"></div></div>
+                            </div>
+                            <div class="enr-stat-icon green"><i class="pi pi-check-circle"></i></div>
+                        </div>
+                        <div class="enr-stat">
+                            <div>
+                                <div class="enr-stat-label">Média da Turma</div>
+                                <div class="enr-stat-value" id="statMedia">—</div>
+                            </div>
+                            <div class="enr-stat-icon red"><i class="pi pi-chart-line"></i></div>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <!-- Filtros -->
+                <div class="enr-card">
+                    <div class="enr-toolbar">
+                        <div class="enr-toolbar-left">
+                            <span class="enr-toolbar-title"><i class="pi pi-sliders-h" style="color:var(--enr-red); margin-right:.4rem;"></i> Filtros</span>
+                            <span class="enr-toolbar-sub">Selecione turma, disciplina, trimestre e tipo de avaliação</span>
+                        </div>
+                    </div>
+                    <div class="enr-filters">
+                        <div>
+                            <label class="sc-label">Turma <span style="color:var(--enr-red)">*</span></label>
+                            <p:selectOneMenu value="#{gradeLancamentoController.selectedSchoolClassId}" styleClass="sc-select">
+                                <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{gradeLancamentoController.schoolClasses}" var="t" itemLabel="#{t.className}" itemValue="#{t.pkSchoolClass}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div>
+                            <label class="sc-label">Nível de Ensino <span class="optional-tag">(opcional — define a escala)</span></label>
+                            <p:selectOneMenu value="#{gradeLancamentoController.selectedEducationLevel}" styleClass="sc-select">
+                                <f:selectItem itemLabel="— Auto (I Ciclo, 0–20) —" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{gradeLancamentoController.educationLevels}" var="lvl" itemLabel="#{lvl eq 'PRIMARIO' ? 'Primário (0–10)' : 'I Ciclo (0–20)'}" itemValue="#{lvl}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div>
+                            <label class="sc-label">Disciplina <span style="color:var(--enr-red)">*</span></label>
+                            <p:selectOneMenu value="#{gradeLancamentoController.selectedDisciplineId}" styleClass="sc-select">
+                                <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{gradeLancamentoController.disciplines}" var="d" itemLabel="#{d.disciplineName}" itemValue="#{d.pkDiscipline}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div>
+                            <label class="sc-label">Horário <span class="optional-tag">(opcional — apenas referência)</span></label>
+                            <p:selectOneMenu value="#{gradeLancamentoController.selectedScheduleId}" styleClass="sc-select">
+                                <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{gradeLancamentoController.schedules}" var="sh" itemLabel="#{sh.weekDay}" itemValue="#{sh.pkSchedule}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div>
+                            <label class="sc-label">Trimestre <span style="color:var(--enr-red)">*</span></label>
+                            <p:selectOneMenu value="#{gradeLancamentoController.selectedTrimester}" styleClass="sc-select">
+                                <f:selectItems value="#{gradeLancamentoController.trimesters}" var="tr" itemLabel="#{tr}" itemValue="#{tr}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div>
+                            <label class="sc-label">Tipo <span style="color:var(--enr-red)">*</span></label>
+                            <p:selectOneMenu value="#{gradeLancamentoController.selectedEvaluationType}" styleClass="sc-select">
+                                <f:selectItems value="#{gradeLancamentoController.evaluationTypes}" var="tp" itemLabel="#{tp.description}" itemValue="#{tp}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div>
+                            <label class="sc-label">Título <span style="color:var(--enr-red)">*</span></label>
+                            <p:inputText value="#{gradeLancamentoController.evaluationTitle}" styleClass="sc-input" placeholder="Ex: AC, PT, Prova..." />
+                        </div>
+                        <div class="field-actions">
+                            <p:commandButton value="Carregar Alunos" icon="pi pi-users" styleClass="enr-btn btn-new" id="btnLoad"
+                                disabled="#{gradeLancamentoController.saving}"
+                                actionListener="#{gradeLancamentoController.loadStudents}"
+                                onstart="showScLoading()"
+                                oncomplete="hideScLoading(); initStudentCards();"
+                                update="@form" />
+                            <p:commandButton value="Limpar" icon="pi pi-filter-slash" styleClass="enr-btn btn-ghost" id="btnClear"
+                                disabled="#{gradeLancamentoController.saving}"
+                                actionListener="#{gradeLancamentoController.clear}"
+                                onstart="showScLoading()"
+                                oncomplete="hideScLoading(); resetFormState();"
+                                update="@form" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Alunos (Cards) -->
+                <h:panelGroup id="tablePanel" rendered="#{gradeLancamentoController.showTable}">
+                    <div class="enr-card">
+                        <div class="enr-toolbar">
+                            <div class="enr-toolbar-left">
+                                <span class="enr-toolbar-title">
+                                    <i class="pi pi-th-large" style="color:var(--enr-red); margin-right:.4rem;"></i>
+                                    #{gradeLancamentoController.evaluationTitle}
+                                </span>
+                                <span class="enr-toolbar-sub">
+                                    <h:outputText value="#{gradeLancamentoController.studentRows.size()}" /> aluno(s) ·
+                                    Escala <strong>#{gradeLancamentoController.escalaLabel}</strong>
+                                    <h:panelGroup rendered="#{gradeLancamentoController.educationLevel eq 'PRIMARIO'}">
+                                        · Notas <strong style="color:var(--enr-green)">0–4</strong> <strong style="color:var(--enr-yellow)">5–7</strong> <strong style="color:var(--enr-red)">8–10</strong>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{gradeLancamentoController.educationLevel ne 'PRIMARIO'}">
+                                        · Notas <strong style="color:var(--enr-green)">14–20</strong> <strong style="color:var(--enr-yellow)">10–13</strong> <strong style="color:var(--enr-red)">0–9</strong>
+                                    </h:panelGroup>
+                                </span>
+                            </div>
+                            <div class="enr-toolbar-right">
+                                <span class="info-badge#{gradeLancamentoController.creatingEvaluation ? ' creating' : ''}" id="infoBadge">
+                                    <i class="pi pi-info-circle"></i>
+                                    <h:outputText value="Nova Avaliação" rendered="#{gradeLancamentoController.creatingEvaluation}" />
+                                    <h:outputText value="Avaliação Existente" rendered="#{not gradeLancamentoController.creatingEvaluation}" />
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- data-* aqui refletem o estado real do servidor (escala/máximo), evitando parsing frágil de texto no JS -->
+                        <div class="students-grid" id="studentsGrid"
+                            data-max-nota="#{gradeLancamentoController.maxNota}"
+                            data-primario="#{gradeLancamentoController.educationLevel eq 'PRIMARIO'}">
+                            <ui:repeat value="#{gradeLancamentoController.studentRows}" var="row" varStatus="st">
+                                <div class="student-card" data-index="#{st.index}" data-nota="#{row.nota}" data-numero="#{row.numero}">
+                                    <div class="student-card-header">
+                                        <div class="student-avatar" id="avatar-#{st.index}">#{row.numero}</div>
+                                        <div class="student-info">
+                                            <div class="student-name"><h:outputText value="#{row.studentName}" /></div>
+                                            <div class="student-meta">
+                                                <i class="pi pi-id-card" style="font-size:.65rem;margin-right:.2rem;opacity:.6;"></i>
+                                                Matrícula: #{row.enrolmentNumber}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="student-grade-preview" id="preview-#{st.index}">
+                                        <h:outputText value="#{row.nota}" rendered="#{not empty row.nota}">
+                                            <f:convertNumber maxFractionDigits="1" />
+                                        </h:outputText>
+                                        <h:outputText value="—" rendered="#{empty row.nota}" />
+                                    </div>
+
+                                    <div class="student-actions">
+                                        <p:commandButton value="Lançar Nota" icon="pi pi-pencil" styleClass="enr-btn btn-launch"
+                                            disabled="#{gradeLancamentoController.saving}"
+                                            actionListener="#{gradeLancamentoController.prepareLaunch(row)}"
+                                            oncomplete="PF('launchDialog').show(); updateLaunchForm();"
+                                            update=":launchForm" />
+                                    </div>
+                                </div>
+                            </ui:repeat>
+                        </div>
+
+                        <div class="enr-footer-actions">
+                            <div class="footer-left">
+                                <i class="pi pi-keyboard" style="color:var(--enr-muted);font-size:.8rem;"></i>
+                                <span><span class="kbd">Ctrl</span> + <span class="kbd">S</span> Salvar</span>
+                            </div>
+                            <div class="footer-right">
+                                <p:commandButton value="Salvar Rascunho" icon="pi pi-save" styleClass="enr-btn btn-draft" id="btnSaveDraft"
+                                    disabled="#{gradeLancamentoController.saving}"
+                                    actionListener="#{gradeLancamentoController.saveDraft}"
+                                    onstart="showScLoading(); setBtnLoading('btnSaveDraft', true);"
+                                    oncomplete="hideScLoading(); setBtnLoading('btnSaveDraft', false); handleSaveComplete(xhr, status, args, 'Rascunho Salvo', 'Notas salvas como rascunho.');"
+                                    update="@form" />
+                                <p:commandButton value="Salvar Todas as Notas" icon="pi pi-check" styleClass="enr-btn btn-save-all" id="btnSaveAll"
+                                    disabled="#{gradeLancamentoController.saving}"
+                                    actionListener="#{gradeLancamentoController.saveAll}"
+                                    onstart="showScLoading(); setBtnLoading('btnSaveAll', true);"
+                                    oncomplete="hideScLoading(); setBtnLoading('btnSaveAll', false); handleSaveComplete(xhr, status, args, 'Notas Salvas', 'Todas as notas foram salvas com sucesso!');"
+                                    update="@form" />
+                            </div>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <!-- Empty State -->
+                <h:panelGroup rendered="#{not gradeLancamentoController.showTable}">
+                    <div class="enr-card enr-empty">
+                        <div class="enr-empty-icon-wrap"><i class="pi pi-pencil"></i></div>
+                        <div class="enr-empty-title">Configure o lançamento</div>
+                        <div class="enr-empty-sub">
+                            Selecione a turma, disciplina, trimestre e tipo de avaliação, informe o título e depois clique em <strong>"Carregar Alunos"</strong>.
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </h:form>
+
+            <!-- Modal de Lançamento Individual (form próprio, fora do formLancamento, sem appendTo) -->
+            <p:dialog widgetVar="launchDialog" modal="true" closable="true" closeOnEscape="true"
+                resizable="false" draggable="false" width="480" styleClass="launch-dialog"
+                header="Lançar Nota" showEffect="fade" hideEffect="fade">
+                <h:form id="launchForm">
+                    <div class="launch-modal-content">
+                        <h:panelGroup rendered="#{gradeLancamentoController.selectedStudentRow ne null}">
+                            <div class="launch-student-header">
+                                <div class="launch-student-avatar" id="launchAvatar">
+                                    <h:outputText value="#{gradeLancamentoController.selectedStudentRow.numero}" />
+                                </div>
+                                <div class="launch-student-info">
+                                    <h4><h:outputText value="#{gradeLancamentoController.selectedStudentRow.studentName}" /></h4>
+                                    <p>
+                                        <i class="pi pi-id-card" style="margin-right:.3rem;"></i>
+                                        Matrícula: <h:outputText value="#{gradeLancamentoController.selectedStudentRow.enrolmentNumber}" />
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="launch-form-grid">
+                                <div class="launch-field">
+                                    <label>Nota (0–<h:outputText value="#{gradeLancamentoController.maxNota}" />)</label>
+                                    <p:inputText id="launchNota" value="#{gradeLancamentoController.selectedStudentRow.nota}"
+                                        styleClass="launch-nota-input" onkeyup="handleLaunchNota(this)"
+                                        required="true" requiredMessage="Informe uma nota."
+                                        converterMessage="Nota inválida.">
+                                        <f:validateDoubleRange minimum="0" maximum="#{gradeLancamentoController.maxNota}" />
+                                    </p:inputText>
+                                    <div class="launch-scale-hint">
+                                        <h:panelGroup rendered="#{gradeLancamentoController.educationLevel eq 'PRIMARIO'}">
+                                            <span class="scale-tag green">0–4 Bom</span>
+                                            <span class="scale-tag yellow">5–7 Médio</span>
+                                            <span class="scale-tag red">8–10 Mau</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{gradeLancamentoController.educationLevel ne 'PRIMARIO'}">
+                                            <span class="scale-tag red">0–9 Insuficiente</span>
+                                            <span class="scale-tag yellow">10–13 Suficiente</span>
+                                            <span class="scale-tag green">14–20 Bom</span>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+
+                                <div class="launch-field">
+                                    <label>Observação</label>
+                                    <p:inputTextarea id="launchObs" value="#{gradeLancamentoController.selectedStudentRow.observation}"
+                                        styleClass="launch-obs-input"
+                                        placeholder="Observação opcional sobre o aluno..." />
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:.7rem; margin-top:1.2rem; padding-top:1rem; border-top:1px solid var(--enr-border);">
+                        <p:commandButton value="Cancelar" type="button" styleClass="enr-btn btn-ghost"
+                            onclick="PF('launchDialog').hide()" />
+                        <p:commandButton value="Salvar Nota" icon="pi pi-check" styleClass="enr-btn btn-save-all"
+                            actionListener="#{gradeLancamentoController.saveSingleStudent()}"
+                            onstart="showScLoading()"
+                            oncomplete="hideScLoading(); handleSingleSave(xhr, status, args);"
+                            update=":launchForm :formLancamento:tablePanel :formLancamento:statsPanel" />
+                    </div>
+                </h:form>
+            </p:dialog>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="quick-btn help" onclick="showShortcutsModal()" title="Atalhos"><i class="pi pi-keyboard"></i></button>
+            <button class="quick-btn top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Topo"><i class="pi pi-arrow-up"></i></button>
+        </div>
+
+        <!-- Shortcuts Modal -->
+        <div id="shortcutsModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(20,20,20,.6);backdrop-filter:blur(4px);z-index:9998;align-items:center;justify-content:center;" onclick="if(event.target===this)hideShortcutsModal()">
+            <div style="background:var(--enr-surface);border-radius:var(--enr-radius);padding:2rem;max-width:420px;width:90%;box-shadow:var(--enr-shadow-lg);border:1px solid var(--enr-border);animation:fadeInUp .3s;">
+                <h3 style="margin:0 0 1.2rem;font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:.5rem;"><i class="pi pi-keyboard" style="color:var(--enr-red);"></i> Atalhos</h3>
+                <div style="display:grid;gap:.7rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--enr-border);"><span style="font-size:.9rem;">Salvar tudo</span><span class="kbd">Ctrl</span> + <span class="kbd">S</span></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--enr-border);"><span style="font-size:.9rem;">Salvar no modal</span><span class="kbd">Ctrl</span> + <span class="kbd">Enter</span></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;"><span style="font-size:.9rem;">Fechar modal</span><span class="kbd">Esc</span></div>
+                </div>
+                <button onclick="hideShortcutsModal()" style="margin-top:1.2rem;width:100%;padding:.7rem;background:var(--enr-black);color:var(--enr-yellow);border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:var(--font);">Fechar</button>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            
+            var isDirty = false;
+
+            function showScLoading() {
+                var overlay = document.getElementById('scLoadingOverlay');
+                if (overlay) overlay.classList.add('active');
+            }
+            function hideScLoading() {
+                var overlay = document.getElementById('scLoadingOverlay');
+                if (overlay) overlay.classList.remove('active');
+            }
+
+            function setBtnLoading(idSuffix, isLoading) {
+                var btn = document.getElementById('formLancamento:' + idSuffix);
+                if (!btn) return;
+                if (isLoading) {
+                    btn.classList.add('is-loading');
+                    btn.setAttribute('disabled', 'disabled');
+                    if (!btn.querySelector('.enr-btn-spinner-icon')) {
+                        var spinner = document.createElement('span');
+                        spinner.className = 'enr-btn-spinner-icon';
+                        btn.insertBefore(spinner, btn.firstChild);
+                    }
+                } else {
+                    btn.classList.remove('is-loading');
+                    btn.removeAttribute('disabled');
+                    var existingSpinner = btn.querySelector('.enr-btn-spinner-icon');
+                    if (existingSpinner) existingSpinner.remove();
+                }
+            }
+
+            function showToast(type, title, message) {
+                var toast = document.getElementById('enrToast');
+                var icon = document.getElementById('toastIcon');
+                var toastTitle = document.getElementById('toastTitle');
+                var toastMessage = document.getElementById('toastMessage');
+                toast.className = 'enr-toast ' + type;
+                icon.className = 'toast-icon ' + type;
+                var icons = { success: 'pi-check', error: 'pi-times', warn: 'pi-exclamation-triangle' };
+                icon.innerHTML = '';
+                var icn = document.createElement('i');
+                icn.className = 'pi ' + icons[type];
+                icon.appendChild(icn);
+                toastTitle.textContent = title;
+                toastMessage.textContent = message;
+                toast.classList.add('show');
+                setTimeout(function () { toast.classList.remove('show'); }, 4000);
+            }
+
+            function markDirty() {
+                isDirty = true;
+                var badge = document.getElementById('dirtyBadge');
+                if (badge) badge.style.display = 'inline-flex';
+            }
+            function resetFormState() {
+                isDirty = false;
+                var badge = document.getElementById('dirtyBadge');
+                if (badge) badge.style.display = 'none';
+            }
+
+            window.addEventListener('beforeunload', function (e) {
+                if (isDirty) {
+                    e.preventDefault();
+                    e.returnValue = 'Existem alterações não salvas. Deseja realmente sair?';
+                }
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if ((e.ctrlKey || e.metaKey) &amp;&amp; e.key === 's') {
+                    e.preventDefault();
+                    var saveBtn = document.getElementById('formLancamento:btnSaveAll');
+                    if (saveBtn &amp;&amp; !saveBtn.disabled) saveBtn.click();
+                }
+            });
+
+            // Lê a escala/máximo diretamente do estado enviado pelo servidor (data-attributes),
+            // em vez de tentar interpretar o texto exibido na tela.
+            function getGridEl() {
+                return document.getElementById('studentsGrid');
+            }
+            function getMaxNota() {
+                var grid = getGridEl();
+                if (!grid) return 20;
+                var v = parseFloat(grid.getAttribute('data-max-nota'));
+                return isNaN(v) ? 20 : v;
+            }
+            function isPrimarioLevel() {
+                var grid = getGridEl();
+                return !!(grid &amp;&amp; grid.getAttribute('data-primario') === 'true');
+            }
+
+            function getColorClass(val, isPrimario) {
+                if (isPrimario) {
+                    if (val >= 8) return 'red';
+                    if (val >= 5) return 'yellow';
+                    return 'green';
+                } else {
+                    if (val >= 14) return 'green';
+                    if (val >= 10) return 'yellow';
+                    return 'red';
+                }
+            }
+
+            function initStudentCards() {
+                var cards = document.querySelectorAll('.student-card');
+                var isPrimario = isPrimarioLevel();
+
+                cards.forEach(function (card) {
+                    var notaVal = card.getAttribute('data-nota');
+                    var preview = card.querySelector('.student-grade-preview');
+                    var avatar = card.querySelector('.student-avatar');
+
+                    preview.classList.remove('filled', 'green', 'yellow', 'red');
+                    avatar.classList.remove('green', 'yellow', 'red');
+                    card.classList.remove('has-note');
+
+                    if (notaVal &amp;&amp; !isNaN(parseFloat(notaVal))) {
+                        var val = parseFloat(notaVal);
+                        var color = getColorClass(val, isPrimario);
+                        card.classList.add('has-note');
+                        preview.classList.add('filled', color);
+                        avatar.classList.add(color);
+                    }
+                });
+
+                updateStats();
+            }
+
+            function updateStats() {
+                var cards = document.querySelectorAll('.student-card');
+                var filled = 0, sum = 0, count = 0;
+                var isPrimario = isPrimarioLevel();
+                var max = getMaxNota();
+
+                cards.forEach(function (card) {
+                    var notaVal = card.getAttribute('data-nota');
+                    if (notaVal &amp;&amp; !isNaN(parseFloat(notaVal))) {
+                        var val = parseFloat(notaVal);
+                        if (val >= 0 &amp;&amp; val &lt;= max) {
+                            filled++; sum += val; count++;
+                        }
+                    }
+                });
+
+                var statFilled = document.getElementById('statFilled');
+                var statMedia = document.getElementById('statMedia');
+                var progressBar = document.getElementById('progressBar');
+                var total = cards.length;
+
+                if (statFilled) statFilled.textContent = filled + (total > 0 ? '/' + total : '');
+                if (statMedia) {
+                    if (count > 0) {
+                        var media = (sum / count).toFixed(1);
+                        statMedia.textContent = media;
+                        statMedia.style.color = isPrimario
+                            ? (media >= 5 ? 'var(--enr-green)' : 'var(--enr-red)')
+                            : (media >= 14 ? 'var(--enr-green)' : media >= 10 ? '#8a6400' : 'var(--enr-red)');
+                    } else {
+                        statMedia.textContent = '—';
+                        statMedia.style.color = '';
+                    }
+                }
+                if (progressBar &amp;&amp; total > 0) {
+                    progressBar.style.width = ((filled / total) * 100) + '%';
+                }
+            }
+
+            function updateLaunchForm() {
+                setTimeout(function () {
+                    var input = document.getElementById('launchForm:launchNota');
+                    if (input) {
+                        input.focus();
+                        input.select();
+                        handleLaunchNota(input);
+                    }
+                }, 300);
+            }
+
+            function handleLaunchNota(input) {
+                var val = parseFloat(input.value);
+                var isPrimario = isPrimarioLevel();
+                var max = getMaxNota();
+
+                input.classList.remove('nota-empty', 'nota-green', 'nota-yellow', 'nota-red');
+
+                if (isNaN(val) || input.value.trim() === '') {
+                    input.classList.add('nota-empty');
+                } else if (val &lt; 0 || val > max) {
+                    input.classList.add('nota-red');
+                } else {
+                    var color = getColorClass(val, isPrimario);
+                    input.classList.add('nota-' + color);
+                }
+            }
+
+            // Detecta se o p:growl renderizado contém alguma mensagem de erro
+            function hasGrowlError() {
+                return document.querySelector('.ui-growl-image-error') !== null
+                    || document.querySelector('.ui-growl-message-error') !== null
+                    || document.querySelector('.ui-growl-item-container .ui-growl-item.ui-growl-message-error') !== null;
+            }
+
+            function handleSaveComplete(xhr, status, args, successTitle, successMessage) {
+                if (args &amp;&amp; args.validationFailed) {
+                    showToast('error', 'Erro na Validação', 'Verifique os campos destacados em vermelho.');
+                    return;
+                }
+                if (hasGrowlError()) {
+                    showToast('error', 'Erro ao Salvar', 'Verifique a mensagem acima para mais detalhes.');
+                    return;
+                }
+                isDirty = false;
+                var badge = document.getElementById('dirtyBadge');
+                if (badge) badge.style.display = 'none';
+                showToast('success', successTitle, successMessage);
+                var infoBadge = document.getElementById('infoBadge');
+                if (infoBadge) {
+                    infoBadge.className = 'info-badge saved';
+                    infoBadge.innerHTML = '';
+                    var icn2 = document.createElement('i');
+                    icn2.className = 'pi pi-check-circle';
+                    infoBadge.appendChild(icn2);
+                    infoBadge.appendChild(document.createTextNode(' Notas Salvas'));
+                }
+                initStudentCards();
+            }
+
+            function handleSingleSave(xhr, status, args) {
+                if (args &amp;&amp; args.validationFailed) {
+                    showToast('error', 'Erro na Validação', 'Verifique a nota inserida.');
+                    return;
+                }
+                if (hasGrowlError()) {
+                    showToast('error', 'Erro ao Salvar', 'Verifique a mensagem acima para mais detalhes.');
+                    return;
+                }
+                if (window.PF &amp;&amp; PF('launchDialog')) {
+                    PF('launchDialog').hide();
+                }
+                markDirty();
+                showToast('success', 'Nota Lançada', 'A nota foi salva com sucesso!');
+                // Atualiza os cards após salvar (a nota mais recente já veio no update do :tablePanel)
+                setTimeout(function () { initStudentCards(); }, 150);
+            }
+
+            function showShortcutsModal() {
+                document.getElementById('shortcutsModal').style.display = 'flex';
+            }
+            function hideShortcutsModal() {
+                document.getElementById('shortcutsModal').style.display = 'none';
+            }
+
+            if (window.PrimeFaces) {
+                PrimeFaces.ajax.Queue.originalAdd = PrimeFaces.ajax.Queue.add;
+                PrimeFaces.ajax.Queue.add = function (req) {
+                    req.originalOncomplete = req.onsuccess;
+                    req.onsuccess = function (xhr, status, args) {
+                        hideScLoading();
+                        if (req.originalOncomplete) req.originalOncomplete(xhr, status, args);
+                    };
+                    req.originalOnerror = req.onerror;
+                    req.onerror = function (xhr, status, error) {
+                        hideScLoading();
+                        showToast('error', 'Erro de Conexão', 'Não foi possível completar a operação.');
+                        if (req.originalOnerror) req.originalOnerror(xhr, status, error);
+                    };
+                    PrimeFaces.ajax.Queue.originalAdd(req);
+                };
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var cards = document.querySelectorAll('.student-card');
+                if (cards.length > 0) {
+                    initStudentCards();
+                }
+            });
+
+            // Atalho Ctrl+Enter no modal para salvar
+            document.addEventListener('keydown', function (e) {
+                if ((e.ctrlKey || e.metaKey) &amp;&amp; e.key === 'Enter') {
+                    var dialogVisible = document.querySelector('.launch-dialog.ui-dialog-visible, .launch-dialog:not([style*="display: none"])');
+                    if (dialogVisible) {
+                        var saveBtn = document.querySelector('#launchForm .btn-save-all');
+                        if (saveBtn &amp;&amp; !saveBtn.disabled) saveBtn.click();
+                    }
+                }
+            });
+            
+        </script>
+    </ui:define>
+</ui:composition>

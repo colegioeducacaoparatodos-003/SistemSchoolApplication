@@ -1,6 +1,5 @@
 package com.SistemSchool.modulo_Recursoa_Humano.dto;
 
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -9,28 +8,36 @@ import com.SistemSchool.io.Gender;
 import com.SistemSchool.modulo_Recursoa_Humano.io.ContractType;
 import com.SistemSchool.modulo_Recursoa_Humano.io.QualificationLevel;
 import com.SistemSchool.modulo_Recursoa_Humano.io.TeacherStatus;
-import com.SistemSchool.modulo_Recursoa_Humano.model.Teacher;
 
 public class TeacherDTO {
 
     private Long pkTeacher;
     private String teacherNumber;
+
     private String fristName;
     private String lastName;
+
     private Gender gender;
     private QualificationLevel qualificationLivel;
     private ContractType contractType;
     private TeacherStatus status;
+
     private String photoPhath;
+
     private String biNumber;
     private LocalDate biExpiryDate;
+
     private String addressStreet;
     private String addressProvice;
+
     private BigDecimal baseSalary;
+
     private String email;
     private String phone;
     private String mobilePhone;
+
     private String obs;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -64,32 +71,21 @@ public class TeacherDTO {
         this.updatedAt = updatedAt;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // CONVERSÃO (Teacher → DTO)
-    // ─────────────────────────────────────────────────────────────
-
-    public static TeacherDTO fromEntity(Teacher teacher) {
-        return new TeacherDTO(
-                teacher.getPkTeacher(),
-                teacher.getTeacherNumber(),
-                teacher.getFristName(),
-                teacher.getLastName(),
-                teacher.getGender(),
-                teacher.getQualificationLivel(),
-                teacher.getContractType(),
-                teacher.getStatus(),
-                teacher.getPhotoPhath(),
-                teacher.getBiNumber(),
-                teacher.getBiExpiryDate(),
-                teacher.getAddressStreet(),
-                teacher.getAddressProvice(),
-                teacher.getBaseSalary(),
-                teacher.getEmail(),
-                teacher.getPhone(),
-                teacher.getMobilePhone(),
-                teacher.getObs(),
-                teacher.getCreatedAt(),
-                teacher.getUpdatedAt());
+    /** Construtor reduzido usado na listagem lazy (tabela de professores) e na exportação. */
+    public TeacherDTO(Long pkTeacher, String teacherNumber, String fristName, String lastName,
+            QualificationLevel qualificationLivel, ContractType contractType, TeacherStatus status,
+            String photoPhath, String email, String phone, LocalDateTime createdAt) {
+        this.pkTeacher = pkTeacher;
+        this.teacherNumber = teacherNumber;
+        this.fristName = fristName;
+        this.lastName = lastName;
+        this.qualificationLivel = qualificationLivel;
+        this.contractType = contractType;
+        this.status = status;
+        this.photoPhath = photoPhath;
+        this.email = email;
+        this.phone = phone;
+        this.createdAt = createdAt;
     }
 
     public Long getPkTeacher() {
@@ -250,113 +246,5 @@ public class TeacherDTO {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // HELPER
-    // ─────────────────────────────────────────────────────────────
-
-    public String getDisplayName() {
-        return this.fristName + " " + this.lastName;
-    }
-
-    public TeacherDTO pkTeacher(Long pkTeacher) {
-        setPkTeacher(pkTeacher);
-        return this;
-    }
-
-    public TeacherDTO teacherNumber(String teacherNumber) {
-        setTeacherNumber(teacherNumber);
-        return this;
-    }
-
-    public TeacherDTO fristName(String fristName) {
-        setFristName(fristName);
-        return this;
-    }
-
-    public TeacherDTO lastName(String lastName) {
-        setLastName(lastName);
-        return this;
-    }
-
-    public TeacherDTO gender(Gender gender) {
-        setGender(gender);
-        return this;
-    }
-
-    public TeacherDTO qualificationLivel(QualificationLevel qualificationLivel) {
-        setQualificationLivel(qualificationLivel);
-        return this;
-    }
-
-    public TeacherDTO contractType(ContractType contractType) {
-        setContractType(contractType);
-        return this;
-    }
-
-    public TeacherDTO status(TeacherStatus status) {
-        setStatus(status);
-        return this;
-    }
-
-    public TeacherDTO photoPhath(String photoPhath) {
-        setPhotoPhath(photoPhath);
-        return this;
-    }
-
-    public TeacherDTO biNumber(String biNumber) {
-        setBiNumber(biNumber);
-        return this;
-    }
-
-    public TeacherDTO biExpiryDate(LocalDate biExpiryDate) {
-        setBiExpiryDate(biExpiryDate);
-        return this;
-    }
-
-    public TeacherDTO addressStreet(String addressStreet) {
-        setAddressStreet(addressStreet);
-        return this;
-    }
-
-    public TeacherDTO addressProvice(String addressProvice) {
-        setAddressProvice(addressProvice);
-        return this;
-    }
-
-    public TeacherDTO baseSalary(BigDecimal baseSalary) {
-        setBaseSalary(baseSalary);
-        return this;
-    }
-
-    public TeacherDTO email(String email) {
-        setEmail(email);
-        return this;
-    }
-
-    public TeacherDTO phone(String phone) {
-        setPhone(phone);
-        return this;
-    }
-
-    public TeacherDTO mobilePhone(String mobilePhone) {
-        setMobilePhone(mobilePhone);
-        return this;
-    }
-
-    public TeacherDTO obs(String obs) {
-        setObs(obs);
-        return this;
-    }
-
-    public TeacherDTO createdAt(LocalDateTime createdAt) {
-        setCreatedAt(createdAt);
-        return this;
-    }
-
-    public TeacherDTO updatedAt(LocalDateTime updatedAt) {
-        setUpdatedAt(updatedAt);
-        return this;
     }
 }

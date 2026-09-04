@@ -17,6 +17,7 @@ public class GradeLazyModel extends LazyDataModel<GradeDTO> {
     private static final long serialVersionUID = 1L;
 
     private final GradeService gradeService;
+    private Map<String, Object> activeFilters = new HashMap<>();
 
     public GradeLazyModel(GradeService gradeService) {
         this.gradeService = gradeService;
@@ -37,7 +38,8 @@ public class GradeLazyModel extends LazyDataModel<GradeDTO> {
             sort = Sort.by(direction, sortMeta.getField());
         }
 
-        Page<GradeDTO> result = gradeService.findLazy(page, pageSize, sort, null);
+        activeFilters = extractFilters(filterBy);
+        Page<GradeDTO> result = gradeService.findLazy(page, pageSize, sort, activeFilters);
 
         setRowCount((int) result.getTotalElements());
 
@@ -46,17 +48,29 @@ public class GradeLazyModel extends LazyDataModel<GradeDTO> {
 
     @Override
     public int count(Map<String, FilterMeta> filterBy) {
-        Map<String, Object> filters = new HashMap<>();
-        if (filterBy != null) {
-            for (FilterMeta meta : filterBy.values()) {
-                Object value = meta.getFilterValue();
-                if (value != null && !value.toString().isBlank()) {
-                    filters.put(meta.getField(), value);
-                }
-            }
-        }
+        Map<String, Object> filters = extractFilters(filterBy);
         Page<GradeDTO> page = gradeService.findLazy(0, 1, Sort.unsorted(), filters);
         return (int) page.getTotalElements();
+    }
+
+    private Map<String, Object> extractFilters(Map<String, FilterMeta> filterBy) {
+        Map<String, Object> filters = new HashMap<>();
+        if (filterBy == null) {
+            return filters;
+        }
+
+        for (FilterMeta meta : filterBy.values()) {
+            Object value = meta.getFilterValue();
+            if (value != null && !value.toString().isBlank()) {
+                filters.put(meta.getField(), value);
+            }
+        }
+
+        return filters;
+    }
+
+    public void clearFilters() {
+        activeFilters = new HashMap<>();
     }
 
     @Override
@@ -73,15 +87,5 @@ public class GradeLazyModel extends LazyDataModel<GradeDTO> {
         return gradeDTO.getPkGrade() != null
                 ? gradeDTO.getPkGrade().toString()
                 : null;
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // Usado pelo botão "Limpar filtros" da toolbar
-    // ─────────────────────────────────────────────────────────────
-
-    public void clearFilters() {
-        // Como os filtros da tabela não são persistidos manualmente aqui,
-        // este método serve como hook para a p:dataTable reprocessar
-        // o load() sem filtros ativos (PrimeFaces reseta filterBy no componente).
     }
 }

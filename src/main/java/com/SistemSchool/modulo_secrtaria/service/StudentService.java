@@ -32,8 +32,14 @@ import java.util.Map;
 @Transactional
 public class StudentService {
 
-    /** Pasta (dentro da aplicação web) onde as fotos dos alunos são guardadas */
-    private static final String PASTA_FOTOS_ALUNOS = "alunosFotos";
+    /**
+     * Pasta (dentro da aplicação web) onde as fotos dos alunos são guardadas.
+     * IMPORTANTE: tem de coincidir com
+     * {@code PdfReportService.STUDENT_PHOTO_BASE_PATH} ("/student_img/"),
+     * pois é de lá que os relatórios em PDF (ficha de matrícula, cartão A6)
+     * carregam a foto do aluno via {@code ExternalContext.getRealPath(...)}.
+     */
+    private static final String PASTA_FOTOS_ALUNOS = "student_img";
 
     /** Prefixo usado na geração automática do número interno do aluno (ex: ALU-2026-0001) */
     private static final String PREFIXO_NUMERO_ALUNO = "ALU-";

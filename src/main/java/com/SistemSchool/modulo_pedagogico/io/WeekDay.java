@@ -1,21 +1,20 @@
 package com.SistemSchool.modulo_pedagogico.io;
 
 public enum WeekDay {
+    SEGUNDA("Segunda-feira"),
+    TERCA("Terça-feira"),
+    QUARTA("Quarta-feira"),
+    QUINTA("Quinta-feira"),
+    SEXTA("Sexta-feira"),
+    SABADO("Sábado");
 
-    MONDAY("Segunda-feira"),
-    TUESDAY("Terça-feira"),
-    WEDNESDAY("Quarta-feira"),
-    THURSDAY("Quinta-feira"),
-    FRIDAY("Sexta-feira"),
-    SATURDAY("Sábado");
+    private final String descricao;
 
-    private final String description;
-
-    WeekDay(String description){
-        this.description = description;
+    WeekDay(String descricao) {
+        this.descricao = descricao;
     }
 
-    public String getDescription(){
-        return description;
+    public String getDescricao() {
+        return descricao;
     }
 }

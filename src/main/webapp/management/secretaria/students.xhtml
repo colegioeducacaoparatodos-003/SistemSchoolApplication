@@ -875,11 +875,12 @@
                             <div style="display:flex; align-items:center; gap:.7rem;">
                                 <!--
                                     Avatar do aluno: traz sempre a foto real gravada na base de
-                                    dados (uploadPhoto). So quando o aluno nao tem foto e que
+                                    dados (uploadPhoto), lida a partir da pasta /student_img/
+                                    dentro do webapp. So quando o aluno nao tem foto e que
                                     aparece o icone generico no lugar da letra inicial.
                                 -->
                                 <div class="stu-avatar">
-                                    <h:graphicImage value="#{resource['uploads/alunosFotos']}/#{aluno.uploadPhoto}"
+                                    <h:graphicImage value="#{request.contextPath}/student_img/#{aluno.uploadPhoto}"
                                         rendered="#{not empty aluno.uploadPhoto}" alt="#{aluno.fullName}" />
                                     <i class="pi pi-user" rendered="#{empty aluno.uploadPhoto}"></i>
                                 </div>
@@ -1001,11 +1002,11 @@
                         <div style="text-align:center; margin-bottom:1.2rem;">
                             <!--
                                 Avatar grande: mesma logica de fallback (icone em vez de letra)
-                                usada na tabela.
+                                usada na tabela, lida a partir de /student_img/.
                             -->
                             <div class="stu-avatar stu-avatar-lg">
                                 <h:graphicImage
-                                    value="#{resource['uploads/alunosFotos']}/#{studentController.alunoSelecionado.uploadPhoto}"
+                                    value="#{request.contextPath}/student_img/#{studentController.alunoSelecionado.uploadPhoto}"
                                     rendered="#{not empty studentController.alunoSelecionado.uploadPhoto}"
                                     alt="#{studentController.alunoSelecionado.fullName}" />
                                 <i class="pi pi-user"

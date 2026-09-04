@@ -143,6 +143,9 @@ public class EnrolmentService {
         repository.deleteById(id);
     }
 
+    public List<Enrolment> findBySchoolClassId(Long schoolClassPk) {
+        return repository.findBySchoolClass_PkSchoolClassWithStudent(schoolClassPk);
+    }
     // ─────────────────────────────────────────────────────────────
     // BUSCAR TODOS (lista completa com DTO)
     // ─────────────────────────────────────────────────────────────

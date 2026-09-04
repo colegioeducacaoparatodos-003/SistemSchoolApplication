@@ -33,6 +33,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Geração centralizada de PDFs responsivos.
@@ -42,6 +44,8 @@ import java.util.List;
  *   • A6            → Cartão de matrícula pocket
  */
 public final class PdfReportService {
+
+    private static final Logger LOGGER = Logger.getLogger(PdfReportService.class.getName());
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -91,6 +95,15 @@ public final class PdfReportService {
     private static final Font F_A4_PHOTO   = FontFactory.getFont(FontFactory.HELVETICA, 12, BaseColor.GRAY);
 
     private static final String LOGO_PATH = "/resources/imgs/logo.jpg";
+
+    /**
+     * IMPORTANTE: esta pasta tem de ser EXATAMENTE a mesma usada em
+     * {@code StudentService.PASTA_FOTOS_ALUNOS} ("alunosFotos"), pois é lá
+     * que {@code FileImage.salvarArquivoSemMudarONome(...)} grava o
+     * ficheiro. Antes estava "/student_img/", por isso a foto nunca era
+     * encontrada e o PDF caía sempre no placeholder "FOTO 3x4".
+     */
+    private static final String STUDENT_PHOTO_BASE_PATH = "/alunosFotos/";
 
     private PdfReportService() {}
 
@@ -234,7 +247,7 @@ public final class PdfReportService {
 
     /* ═══════════════════════════════════════════════════════════════
        A4 PORTRAIT  →  Ficha Individual de Matrícula (única página)
-       Fonte Arial/Helvetica, tamanho mínimo 14
+       Fonte Arial/Helvetica, tamanho mínimo 14 — INCLUI FOTO DO ALUNO
        ═══════════════════════════════════════════════════════════════ */
     public static byte[] generateEnrolmentReport(EnrolmentDTO enrolment, StudentDTO student)
             throws DocumentException {
@@ -244,7 +257,7 @@ public final class PdfReportService {
         PdfWriter.getInstance(doc, baos);
 
         doc.open();
-        doc.add(buildFichaHeaderA4());
+        doc.add(buildFichaHeaderA4(student));
         doc.add(spacerSmallA4());
         doc.add(buildTopInfoTableA4(enrolment));
         doc.add(spacerSmallA4());
@@ -267,6 +280,7 @@ public final class PdfReportService {
 
     /* ═══════════════════════════════════════════════════════════════
        A6  →  Cartão de Matrícula Pocket (responsivo, compacto)
+       INCLUI FOTO DO ALUNO (com fallback para placeholder "FOTO 3x4")
        ═══════════════════════════════════════════════════════════════ */
     public static byte[] generateEnrolmentCardA6(EnrolmentDTO enrolment, StudentDTO student)
             throws DocumentException {
@@ -300,7 +314,15 @@ public final class PdfReportService {
         main.setWidths(new float[] { 1, 2 });
         main.setSpacingBefore(8);
 
-        PdfPCell photoCell = new PdfPCell(new Phrase("FOTO\n3x4", F_PHOTO));
+        // ── Foto do aluno (com fallback) ──
+        Image cardPhoto = tryLoadStudentPhoto(student.getUploadPhoto());
+        PdfPCell photoCell;
+        if (cardPhoto != null) {
+            cardPhoto.scaleToFit(50f, 50f);
+            photoCell = new PdfPCell(cardPhoto, false);
+        } else {
+            photoCell = new PdfPCell(new Phrase("FOTO\n3x4", F_PHOTO));
+        }
         photoCell.setBorder(Rectangle.BOX);
         photoCell.setBorderColor(BRAND_BLACK);
         photoCell.setFixedHeight(50f);
@@ -506,15 +528,15 @@ public final class PdfReportService {
        Fonte Arial/Helvetica, tamanho mínimo 14, uma única página
        ═══════════════════════════════════════════════════════════════ */
 
-    private static PdfPTable buildFichaHeaderA4() {
+    private static PdfPTable buildFichaHeaderA4(StudentDTO student) {
         PdfPTable header = new PdfPTable(3);
         header.setWidthPercentage(100);
         try { header.setWidths(new float[] { 18f, 57f, 25f }); } catch (DocumentException ignored) {}
 
+        // ── Logo ──
         Image logo = tryLoadLogo();
         PdfPCell logoCell;
         if (logo != null) {
-            // Logo reduzido para poupar altura vertical
             logo.scaleToFit(60f, 60f);
             logoCell = new PdfPCell(logo, false);
         } else {
@@ -526,6 +548,7 @@ public final class PdfReportService {
         logoCell.setPadding(3f);
         header.addCell(logoCell);
 
+        // ── Títulos ──
         PdfPCell titleCell = new PdfPCell();
         titleCell.setBorder(Rectangle.NO_BORDER);
         titleCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -541,10 +564,20 @@ public final class PdfReportService {
         titleCell.addElement(fichaTitle);
         header.addCell(titleCell);
 
-        PdfPCell photoCell = new PdfPCell(new Phrase("FOTO", F_A4_PHOTO));
+        // ── Foto do aluno (agora com o caminho correto) ──
+        Image studentPhoto = tryLoadStudentPhoto(student.getUploadPhoto());
+        PdfPCell photoCell;
+
+        if (studentPhoto != null) {
+            // scaleToFit preserva a proporção; centramos a célula para não distorcer
+            studentPhoto.scaleToFit(65f, 65f);
+            photoCell = new PdfPCell(studentPhoto, false);
+        } else {
+            photoCell = new PdfPCell(new Phrase("FOTO\n3x4", F_A4_PHOTO));
+        }
+
         photoCell.setBorder(Rectangle.BOX);
         photoCell.setBorderColor(BaseColor.BLACK);
-        // Altura reduzida (era 90f) para libertar espaço na página
         photoCell.setFixedHeight(65f);
         photoCell.setHorizontalAlignment(Element.ALIGN_CENTER);
         photoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -561,7 +594,41 @@ public final class PdfReportService {
             if (realPath == null) return null;
             File f = new File(realPath);
             return f.exists() ? Image.getInstance(realPath) : null;
-        } catch (Exception ex) { return null; }
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Não foi possível carregar o logo da escola", ex);
+            return null;
+        }
+    }
+
+    /**
+     * Tenta carregar a foto do aluno a partir da pasta "alunosFotos"
+     * (a mesma usada por {@code StudentService} para gravar o upload).
+     * Retorna null se não encontrar, se o FacesContext não estiver
+     * disponível, ou se o aluno não tiver foto associada — nesses casos o
+     * caller deve mostrar o placeholder "FOTO 3x4".
+     */
+    private static Image tryLoadStudentPhoto(String photoFileName) {
+        if (photoFileName == null || photoFileName.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            if (fc == null) return null;
+
+            String realPath = fc.getExternalContext().getRealPath(STUDENT_PHOTO_BASE_PATH + photoFileName);
+            if (realPath == null) return null;
+
+            File f = new File(realPath);
+            if (!f.exists()) {
+                LOGGER.log(Level.WARNING, "Foto do aluno não encontrada em: {0}", realPath);
+                return null;
+            }
+
+            return Image.getInstance(realPath);
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Erro ao carregar a foto do aluno (" + photoFileName + ")", ex);
+            return null;
+        }
     }
 
     /** Cabeçalho de informações — sem checkboxes de Matrícula/Confirmação */

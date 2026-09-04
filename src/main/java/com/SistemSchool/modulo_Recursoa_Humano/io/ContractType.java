@@ -2,30 +2,39 @@ package com.SistemSchool.modulo_Recursoa_Humano.io;
 
 public enum ContractType {
 
-    PERMANENT,
-    FIXED_TERM,
-    PART_TIME,
-    FREELANCE,
-    INTERN;
+    EFETIVO("Efetivo"),
+    TERMO_CERTO("Contrato a Termo Certo"),
+    TERMO_INCERTO("Contrato a Termo Incerto"),
+    PRESTACAO_SERVICOS("Prestação de Serviços"),
+    ESTAGIO("Estágio");
 
-    public boolean isPermanent() {
-        return this == PERMANENT;
+    private final String descricao;
+
+    ContractType(String descricao) {
+        this.descricao = descricao;
     }
 
-    public boolean isFixedTerm() {
-        return this == FIXED_TERM;
+    public String getDescricao() {
+        return descricao;
     }
 
-    public boolean isPartTime() {
-        return this == PART_TIME;
+    public boolean isEFETIVO() {
+        return this == EFETIVO;
     }
 
-    public boolean isFreelance() {
-        return this == FREELANCE;
+    public boolean isTERMO_CERTO() {
+        return this == TERMO_CERTO;
     }
 
-    public boolean isIntern() {
-        return this == INTERN;
+    public boolean isTERMO_INCERTO() {
+        return this == TERMO_INCERTO;
     }
 
+    public boolean isPRESTACAO_SERVICOS() {
+        return this == PRESTACAO_SERVICOS;
+    }
+
+    public boolean isESTAGIO() {
+        return this == ESTAGIO;
+    }
 }

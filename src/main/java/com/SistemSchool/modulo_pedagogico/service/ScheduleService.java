@@ -1,27 +1,23 @@
 package com.SistemSchool.modulo_pedagogico.service;
 
-import com.SistemSchool.modulo_Recursoa_Humano.model.Teacher;
-import com.SistemSchool.modulo_Recursoa_Humano.repository.TeacherRepository;
 import com.SistemSchool.modulo_pedagogico.dto.ScheduleDTO;
-import com.SistemSchool.modulo_pedagogico.interfaces.ScheduleTableProjection;
-import com.SistemSchool.modulo_pedagogico.io.WeekDay;
 import com.SistemSchool.modulo_pedagogico.model.Discipline;
 import com.SistemSchool.modulo_pedagogico.model.Schedule;
 import com.SistemSchool.modulo_pedagogico.repository.DisciplineRepository;
 import com.SistemSchool.modulo_pedagogico.repository.ScheduleRepository;
+import com.SistemSchool.modulo_Recursoa_Humano.model.Teacher;
+import com.SistemSchool.modulo_Recursoa_Humano.repository.TeacherRepository;
 import com.SistemSchool.modulo_secrtaria.model.SchoolClass;
 import com.SistemSchool.modulo_secrtaria.repository.SchoolClassRepository;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,18 +26,16 @@ import java.util.Map;
 public class ScheduleService {
 
     private final ScheduleRepository repository;
-    private final TeacherRepository teacherRepository;
     private final DisciplineRepository disciplineRepository;
     private final SchoolClassRepository schoolClassRepository;
+    private final TeacherRepository teacherRepository;
 
-    public ScheduleService(ScheduleRepository scheduleRepository,
-            TeacherRepository teacherRepository,
-            DisciplineRepository disciplineRepository,
-            SchoolClassRepository schoolClassRepository) {
-        this.repository = scheduleRepository;
-        this.teacherRepository = teacherRepository;
+    public ScheduleService(ScheduleRepository repository, DisciplineRepository disciplineRepository,
+                           SchoolClassRepository schoolClassRepository, TeacherRepository teacherRepository) {
+        this.repository = repository;
         this.disciplineRepository = disciplineRepository;
         this.schoolClassRepository = schoolClassRepository;
+        this.teacherRepository = teacherRepository;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -49,31 +43,28 @@ public class ScheduleService {
     // ─────────────────────────────────────────────────────────────
 
     public Schedule save(Schedule schedule) {
-        if (schedule.getTeacher() == null || schedule.getTeacher().getPkTeacher() == null) {
-            throw new RuntimeException("É necessário indicar o professor do horário.");
-        }
         if (schedule.getDiscipline() == null || schedule.getDiscipline().getPkDiscipline() == null) {
-            throw new RuntimeException("É necessário indicar a disciplina do horário.");
+            throw new RuntimeException("É necessário indicar a disciplina para o horário.");
         }
         if (schedule.getSchoolClass() == null || schedule.getSchoolClass().getPkSchoolClass() == null) {
-            throw new RuntimeException("É necessário indicar a turma do horário.");
-        }
-        if (repository.existsByTeacher_PkTeacherAndWeekDayAndStartTimeAndEndTime(
-                schedule.getTeacher().getPkTeacher(), schedule.getWeekDay(),
-                schedule.getStartTime(), schedule.getEndTime())) {
-            throw new RuntimeException("O professor já possui um horário marcado neste dia e período.");
+            throw new RuntimeException("É necessário indicar a turma para o horário.");
         }
 
-        Teacher teacher = teacherRepository.findById(schedule.getTeacher().getPkTeacher())
-                .orElseThrow(() -> new RuntimeException("Professor não encontrado."));
         Discipline discipline = disciplineRepository.findById(schedule.getDiscipline().getPkDiscipline())
-                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada."));
-        SchoolClass schoolClass = schoolClassRepository.findById(schedule.getSchoolClass().getPkSchoolClass())
-                .orElseThrow(() -> new RuntimeException("Turma não encontrada."));
-
-        schedule.setTeacher(teacher);
+                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada com id: " + schedule.getDiscipline().getPkDiscipline()));
         schedule.setDiscipline(discipline);
+
+        SchoolClass schoolClass = schoolClassRepository.findById(schedule.getSchoolClass().getPkSchoolClass())
+                .orElseThrow(() -> new RuntimeException("Turma não encontrada com id: " + schedule.getSchoolClass().getPkSchoolClass()));
         schedule.setSchoolClass(schoolClass);
+
+        if (schedule.getTeacher() != null && schedule.getTeacher().getPkTeacher() != null) {
+            Teacher teacher = teacherRepository.findById(schedule.getTeacher().getPkTeacher())
+                    .orElseThrow(() -> new RuntimeException("Professor não encontrado com id: " + schedule.getTeacher().getPkTeacher()));
+            schedule.setTeacher(teacher);
+        } else {
+            schedule.setTeacher(null);
+        }
 
         return repository.save(schedule);
     }
@@ -82,45 +73,41 @@ public class ScheduleService {
         Schedule schedule = repository.findById(dto.getPkSchedule())
                 .orElseThrow(() -> new RuntimeException("Horário não encontrado com id: " + dto.getPkSchedule()));
 
-        if (dto.getTeacherPk() != null
-                && !dto.getTeacherPk().equals(schedule.getTeacher().getPkTeacher())) {
-            Teacher teacher = teacherRepository.findById(dto.getTeacherPk())
-                    .orElseThrow(() -> new RuntimeException("Professor não encontrado."));
-            schedule.setTeacher(teacher);
-        }
-
-        if (dto.getDisciplinePk() != null
-                && !dto.getDisciplinePk().equals(schedule.getDiscipline().getPkDiscipline())) {
+        if (dto.getDisciplinePk() != null && !dto.getDisciplinePk().equals(schedule.getDiscipline().getPkDiscipline())) {
             Discipline discipline = disciplineRepository.findById(dto.getDisciplinePk())
-                    .orElseThrow(() -> new RuntimeException("Disciplina não encontrada."));
+                    .orElseThrow(() -> new RuntimeException("Disciplina não encontrada com id: " + dto.getDisciplinePk()));
             schedule.setDiscipline(discipline);
         }
 
-        if (dto.getSchoolClassPk() != null
-                && !dto.getSchoolClassPk().equals(schedule.getSchoolClass().getPkSchoolClass())) {
+        if (dto.getSchoolClassPk() != null && !dto.getSchoolClassPk().equals(schedule.getSchoolClass().getPkSchoolClass())) {
             SchoolClass schoolClass = schoolClassRepository.findById(dto.getSchoolClassPk())
-                    .orElseThrow(() -> new RuntimeException("Turma não encontrada."));
+                    .orElseThrow(() -> new RuntimeException("Turma não encontrada com id: " + dto.getSchoolClassPk()));
             schedule.setSchoolClass(schoolClass);
+        }
+
+        if (dto.getTeacherPk() != null) {
+            Teacher teacher = teacherRepository.findById(dto.getTeacherPk())
+                    .orElseThrow(() -> new RuntimeException("Professor não encontrado com id: " + dto.getTeacherPk()));
+            schedule.setTeacher(teacher);
+        } else {
+            schedule.setTeacher(null);
         }
 
         schedule.setWeekDay(dto.getWeekDay());
         schedule.setStartTime(dto.getStartTime());
         schedule.setEndTime(dto.getEndTime());
-        schedule.setClassroom(dto.getClassroom());
+        schedule.setAnoLectivo(dto.getAnoLectivo());
+        schedule.setObs(dto.getObs());
+        schedule.onUpdate();
 
         repository.save(schedule);
     }
 
     public void delete(Long id) {
-        try {
-            Schedule schedule = repository.findById(id)
-                    .orElseThrow(() -> new EntityNotFoundException("Avaliação não encontrada"));
-            repository.delete(schedule);
-            repository.flush(); // força o erro aqui, dentro do try
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalStateException(
-                    "Não é possível eliminar esta Schedule.");
+        if (!repository.existsById(id)) {
+            throw new RuntimeException("Horário não encontrado com id: " + id);
         }
+        repository.deleteById(id);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -136,44 +123,111 @@ public class ScheduleService {
     // ─────────────────────────────────────────────────────────────
 
     public Page<ScheduleDTO> findLazy(int page, int size, Sort sort, Map<String, Object> filters) {
-        Pageable pageable = PageRequest.of(page, size, sort);
+        List<ScheduleDTO> all = getAllSchedules();
+        List<ScheduleDTO> filtered = applyFilters(all, filters);
 
-        Page<ScheduleTableProjection> projections = repository.findAllForTable(pageable);
+        int fromIndex = Math.min(page * size, filtered.size());
+        int toIndex = Math.min(fromIndex + size, filtered.size());
 
-        return projections.map(p -> new ScheduleDTO(
-                p.getPkSchedule(),
-                p.getTeacherPk(),
-                p.getTeacherName(),
-                p.getDisciplinePk(),
-                p.getDisciplineName(),
-                p.getSchoolClassPk(),
-                p.getSchoolClassName(),
-                p.getWeekDay() != null ? WeekDay.valueOf(p.getWeekDay()) : null,
-                p.getStartTime(),
-                p.getEndTime(),
-                p.getClassroom(),
-                p.getCreatedAt(),
-                p.getUpdatedAt()));
+        List<ScheduleDTO> pageContent = filtered.subList(fromIndex, toIndex);
+        return new PageImpl<>(pageContent, PageRequest.of(page, size, sort), filtered.size());
+    }
+
+    private List<ScheduleDTO> applyFilters(List<ScheduleDTO> source, Map<String, Object> filters) {
+        if (filters == null || filters.isEmpty()) {
+            return source;
+        }
+
+        List<ScheduleDTO> filtered = new ArrayList<>();
+        String globalTerm = normalize(filters.get("global"));
+
+        for (ScheduleDTO dto : source) {
+            boolean matches = true;
+
+            if (!globalTerm.isEmpty()) {
+                matches = matchesGlobal(dto, globalTerm);
+            }
+
+            if (matches) {
+                for (Map.Entry<String, Object> entry : filters.entrySet()) {
+                    String field = entry.getKey();
+                    if ("global".equals(field)) {
+                        continue;
+                    }
+                    String expected = normalize(entry.getValue());
+                    if (expected.isEmpty()) {
+                        continue;
+                    }
+
+                    boolean fieldMatches = switch (field) {
+                        case "disciplineName" -> contains(dto.getDisciplineName(), expected);
+                        case "schoolclassnome" -> contains(dto.getSchoolClassName(), expected);
+                        case "schoolclasscode" -> contains(dto.getSchoolClassCode(), expected);
+                        case "teacherName" -> contains(dto.getTeacherName(), expected);
+                        case "weekDay" -> contains(dto.getWeekDay() != null ? dto.getWeekDay().name() : null, expected);
+                        case "anoLectivo" -> contains(dto.getAnoLectivo(), expected);
+                        default -> true;
+                    };
+
+                    if (!fieldMatches) {
+                        matches = false;
+                        break;
+                    }
+                }
+            }
+
+            if (matches) {
+                filtered.add(dto);
+            }
+        }
+
+        return filtered;
+    }
+
+    private boolean matchesGlobal(ScheduleDTO dto, String globalTerm) {
+        return contains(dto.getDisciplineName(), globalTerm)
+                || contains(dto.getSchoolClassName(), globalTerm)
+                || contains(dto.getSchoolClassCode(), globalTerm)
+                || contains(dto.getTeacherName(), globalTerm)
+                || contains(dto.getWeekDay() != null ? dto.getWeekDay().name() : null, globalTerm)
+                || contains(dto.getAnoLectivo(), globalTerm)
+                || contains(dto.getObs(), globalTerm);
+    }
+
+    private boolean contains(String value, String expected) {
+        return value != null && value.toLowerCase().contains(expected.toLowerCase());
+    }
+
+    private String normalize(Object value) {
+        return value == null ? "" : value.toString().trim();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // CONTAGEM
+    // ─────────────────────────────────────────────────────────────
+
+    public long count() {
+        return repository.count();
     }
 
     // ─────────────────────────────────────────────────────────────
     // QUERIES UTILITÁRIAS
     // ─────────────────────────────────────────────────────────────
 
-    public List<Schedule> getByTeacher(Long teacherPk) {
-        return repository.findByTeacher_PkTeacher(teacherPk);
+    public List<Schedule> getBySchoolClass(Long schoolClassPk) {
+        return repository.findBySchoolClass_PkSchoolClass(schoolClassPk);
     }
 
     public List<Schedule> getByDiscipline(Long disciplinePk) {
         return repository.findByDiscipline_PkDiscipline(disciplinePk);
     }
 
-    public List<Schedule> getBySchoolClass(Long schoolClassPk) {
-        return repository.findBySchoolClass_PkSchoolClass(schoolClassPk);
+    public List<Schedule> getByAnoLectivo(String anoLectivo) {
+        return repository.findByAnoLectivo(anoLectivo);
     }
 
-    public List<Schedule> getByWeekDay(WeekDay weekDay) {
-        return repository.findByWeekDay(weekDay);
+    public List<Schedule> getByTeacher(Long teacherPk) {
+        return repository.findByTeacher_PkTeacher(teacherPk);
     }
 
     public Schedule getById(Long id) {
@@ -184,5 +238,9 @@ public class ScheduleService {
     public Schedule findById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Horário não encontrado com id: " + id));
+    }
+
+    public List<Teacher> getAllActiveTeachers() {
+        return teacherRepository.findAll();
     }
 }

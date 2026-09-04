@@ -15,8 +15,9 @@ import java.util.Map;
 public class DisciplineLazyModel extends LazyDataModel<DisciplineDTO> {
 
     private static final long serialVersionUID = 1L;
-    
+
     private final DisciplineService disciplineService;
+    private Map<String, Object> activeFilters = new HashMap<>();
 
     public DisciplineLazyModel(DisciplineService disciplineService) {
         this.disciplineService = disciplineService;
@@ -37,7 +38,8 @@ public class DisciplineLazyModel extends LazyDataModel<DisciplineDTO> {
             sort = Sort.by(direction, sortMeta.getField());
         }
 
-        Page<DisciplineDTO> result = disciplineService.findLazy(page, pageSize, sort, null);
+        activeFilters = extractFilters(filterBy);
+        Page<DisciplineDTO> result = disciplineService.findLazy(page, pageSize, sort, activeFilters);
 
         setRowCount((int) result.getTotalElements());
 
@@ -46,17 +48,29 @@ public class DisciplineLazyModel extends LazyDataModel<DisciplineDTO> {
 
     @Override
     public int count(Map<String, FilterMeta> filterBy) {
-        Map<String, Object> filters = new HashMap<>();
-        if (filterBy != null) {
-            for (FilterMeta meta : filterBy.values()) {
-                Object value = meta.getFilterValue();
-                if (value != null && !value.toString().isBlank()) {
-                    filters.put(meta.getField(), value);
-                }
-            }
-        }
+        Map<String, Object> filters = extractFilters(filterBy);
         Page<DisciplineDTO> page = disciplineService.findLazy(0, 1, Sort.unsorted(), filters);
         return (int) page.getTotalElements();
+    }
+
+    private Map<String, Object> extractFilters(Map<String, FilterMeta> filterBy) {
+        Map<String, Object> filters = new HashMap<>();
+        if (filterBy == null) {
+            return filters;
+        }
+
+        for (FilterMeta meta : filterBy.values()) {
+            Object value = meta.getFilterValue();
+            if (value != null && !value.toString().isBlank()) {
+                filters.put(meta.getField(), value);
+            }
+        }
+
+        return filters;
+    }
+
+    public void clearFilters() {
+        activeFilters = new HashMap<>();
     }
 
     @Override

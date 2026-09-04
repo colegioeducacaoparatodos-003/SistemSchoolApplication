@@ -1,109 +1,38 @@
-<ui:composition template="/components/dashboard/dashboard-layout.xhtml" xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <ui:define name="titulo">#{msg['teachers']}</ui:define>
 
-    <h:outputStylesheet library="webjars" name="bootstrap/5.3.2/css/bootstrap.min.css" />
-    <h:outputStylesheet name="general.css" library="css" />
-    <h:outputScript name="general.js" library="js" />
-    <h:outputScript name="teacher.js" library="js" />
-
     <ui:define name="content">
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&amp;family=DM+Mono:wght@400;500&amp;display=swap');
-
+        <style type="text/css">
+            /* <![CDATA[ */
             :root {
-                --tch-black: #141414;
-                --tch-black-mid: #262626;
-                --tch-black-lt: #2c3033;
-                --tch-red: #c8102e;
-                --tch-red-lt: #e2233f;
-                --tch-red-pale: #fdecee;
-                --tch-yellow: #f5b400;
-                --tch-yellow-lt: #ffd93d;
-                --tch-yellow-pale: #fff8e1;
-                --tch-blue: #1a5fb4;
-                --tch-blue-pale: #eaf1fb;
-                --tch-white: #ffffff;
-                --tch-surface: #ffffff;
-                --tch-surface-2: #f7f7f8;
-                --tch-border: #e6e6e8;
-                --tch-border-dk: #cfcfd2;
-                --tch-text: #141414;
-                --tch-muted: #666a70;
-                --tch-faint: #a1a3a7;
-                --tch-radius-sm: 6px;
-                --tch-radius: 12px;
-                --tch-radius-lg: 14px;
-                --tch-shadow-sm: 0 1px 4px rgba(17, 19, 21, .07);
-                --tch-shadow: 0 4px 20px rgba(20, 20, 20, .10);
-                --font: 'DM Sans', system-ui, sans-serif;
+                --enr-black: #141414;
+                --enr-red: #c8102e;
+                --enr-yellow: #f5b400;
+                --enr-blue: #1a5fb4;
+                --enr-green: #1e8e3e;
+                --enr-surface: #ffffff;
+                --enr-surface-2: #f7f7f8;
+                --enr-border: #e6e6e8;
+                --enr-text: #141414;
+                --enr-muted: #666a70;
+                --enr-radius: 12px;
+                --enr-shadow: 0 4px 20px rgba(20, 20, 20, .10);
+                --black-mid: #262626;
+                --yellow: var(--enr-yellow);
                 --font-mono: 'DM Mono', monospace;
-            }
-
-            body {
-                background: var(--tch-surface-2);
-                font-family: var(--font);
-            }
-
-            .tch-page {
-                padding: 1.2rem;
-            }
-
-            @media(min-width:768px) {
-                .tch-page {
-                    padding: 1.6rem 2rem 2.5rem;
-                }
-            }
-
-            /* ── Page header ── */
-            .tch-header {
-                display: flex;
-                align-items: flex-start;
-                justify-content: space-between;
-                flex-wrap: wrap;
-                gap: 1rem;
-                margin-bottom: 1.4rem;
-            }
-
-            .tch-header-left {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
-            }
-
-            .tch-header-icon {
-                width: 46px;
-                height: 46px;
-                border-radius: 12px;
-                background: linear-gradient(135deg, var(--tch-black) 0%, var(--tch-red) 100%);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: var(--tch-yellow);
-                font-size: 1.2rem;
-                flex-shrink: 0;
-            }
-
-            .tch-header-title h1 {
-                font-size: 1.35rem;
-                font-weight: 800;
-                color: var(--tch-text);
-                margin: 0 0 .2rem;
-            }
-
-            .tch-header-title p {
-                font-size: .85rem;
-                color: var(--tch-muted);
-                margin: 0;
             }
 
             .breadcrumb-pill {
                 display: inline-flex;
                 align-items: center;
                 gap: 5px;
-                background: var(--tch-yellow-pale);
+                background: #fff8e1;
                 border: 1px solid rgba(245, 180, 0, .35);
                 color: #8a6400;
                 border-radius: 99px;
@@ -112,858 +41,424 @@
                 font-weight: 600;
             }
 
-            /* ── Stat cards ── */
-            .tch-stats {
-                display: grid;
-                grid-template-columns: repeat(1, 1fr);
-                gap: .9rem;
-                margin-bottom: 1.4rem;
-            }
-
-            @media(min-width:576px) {
-                .tch-stats {
-                    grid-template-columns: repeat(2, 1fr);
-                }
-            }
-
-            @media(min-width:992px) {
-                .tch-stats {
-                    grid-template-columns: repeat(4, 1fr);
-                }
-            }
-
-            .tch-stat {
-                background: var(--tch-surface);
-                border: 1px solid var(--tch-border);
-                border-radius: var(--tch-radius);
-                box-shadow: var(--tch-shadow-sm);
-                padding: 1.1rem 1.2rem;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                transition: box-shadow .2s, transform .2s;
-            }
-
-            .tch-stat:hover {
-                box-shadow: var(--tch-shadow);
-                transform: translateY(-2px);
-            }
-
-            .tch-stat-label {
-                font-size: .72rem;
-                color: var(--tch-muted);
-                text-transform: uppercase;
-                letter-spacing: .04em;
-                font-weight: 700;
-            }
-
-            .tch-stat-value {
-                font-size: 1.5rem;
-                font-weight: 800;
-                color: var(--tch-text);
-                margin-top: .15rem;
-            }
-
-            .tch-stat-icon {
-                width: 42px;
-                height: 42px;
-                border-radius: 10px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.1rem;
-            }
-
-            .tch-stat-icon.dark {
-                background: var(--tch-black);
-                color: var(--tch-yellow);
-            }
-
-            .tch-stat-icon.green {
-                background: #e8f6ec;
-                color: #1e8e3e;
-            }
-
-            .tch-stat-icon.yellow {
-                background: var(--tch-yellow-pale);
-                color: #8a6400;
-            }
-
-            .tch-stat-icon.red {
-                background: var(--tch-red-pale);
-                color: var(--tch-red);
-            }
-
-            /* ── Main card ── */
-            .tch-card {
-                background: var(--tch-surface);
-                border: 1px solid var(--tch-border);
-                border-radius: var(--tch-radius);
-                box-shadow: var(--tch-shadow);
-                overflow: hidden;
-            }
-
-            .tch-toolbar {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 1rem 1.2rem;
-                border-bottom: 1px solid var(--tch-border);
-                gap: 1rem;
-                flex-wrap: wrap;
-            }
-
-            .tch-toolbar-left {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
-                flex-wrap: wrap;
-                flex-grow: 1;
-            }
-
-            .tch-toolbar-right {
-                display: flex;
-                align-items: center;
-                gap: .6rem;
-                flex-wrap: wrap;
-            }
-
-            .tch-search-wrap {
-                position: relative;
-                display: flex;
-                align-items: center;
-            }
-
-            .tch-search-wrap .pi-search {
-                position: absolute;
-                left: 10px;
-                color: var(--tch-muted);
-                font-size: .8rem;
-            }
-
-            .tch-search-input {
-                padding: 7px 10px 7px 30px;
-                border: 1px solid var(--tch-border);
-                border-radius: 8px;
-                font-size: .85rem;
-                width: 100%;
-                background: var(--tch-surface-2);
-                outline: none;
-                font-family: var(--font);
-                color: var(--tch-text);
-                transition: border-color .2s, box-shadow .2s;
-            }
-
-            @media(min-width:768px) {
-                .tch-search-input {
-                    width: 260px;
-                }
-            }
-
-            .tch-search-input:focus {
-                border-color: var(--tch-red);
-                background: #fff;
-                box-shadow: 0 0 0 3px rgba(200, 16, 46, .1);
-            }
-
-            /* ── DataTable ── */
-            .tch-table.p-datatable .p-datatable-thead>tr>th {
-                background: var(--tch-black) !important;
-                color: var(--tch-yellow) !important;
-                font-family: var(--font) !important;
-                font-size: .7rem !important;
-                font-weight: 600 !important;
-                letter-spacing: .6px !important;
-                text-transform: uppercase !important;
-                border-color: var(--tch-black) !important;
-                padding: .7rem 1rem !important;
-                white-space: nowrap;
-            }
-
-            .tch-table.p-datatable .p-datatable-thead>tr>th .p-sortable-column-icon {
-                color: var(--tch-yellow) !important;
-                font-size: .65rem !important;
-            }
-
-            .tch-table.p-datatable .p-datatable-tbody>tr>td {
-                font-family: var(--font) !important;
-                font-size: .82rem !important;
-                color: var(--tch-text) !important;
-                border-bottom: 1px solid var(--tch-surface-2) !important;
-                padding: .72rem 1rem !important;
-                vertical-align: middle !important;
-            }
-
-            .tch-table.p-datatable .p-datatable-tbody>tr:nth-child(even)>td {
-                background: #fafafa !important;
-            }
-
-            .tch-table.p-datatable .p-datatable-tbody>tr:hover>td {
-                background: var(--tch-surface-2) !important;
-            }
-
-            .tch-table.p-datatable .p-paginator {
-                background: var(--tch-surface-2) !important;
-                border-top: 1px solid var(--tch-border) !important;
-                padding: .6rem 1rem !important;
-                font-size: .78rem !important;
-            }
-
-            .tch-table.p-datatable .p-paginator .p-paginator-page.p-highlight {
-                background: var(--tch-red) !important;
-                color: #fff !important;
-                border-radius: var(--tch-radius-sm) !important;
-            }
-
-            /* ── Cell components ── */
             .t-num {
                 display: inline-flex;
                 align-items: center;
                 gap: 4px;
-                background: var(--tch-black-mid);
-                color: var(--tch-yellow);
+                background: #262626;
+                color: var(--enr-yellow);
                 border-radius: 5px;
                 padding: 3px 9px;
-                font-family: var(--font-mono);
+                font-family: 'DM Mono', monospace;
                 font-size: .75rem;
-                font-weight: 600;
             }
 
-            .tch-avatar {
-                width: 36px;
-                height: 36px;
-                border-radius: 50%;
-                background: var(--tch-surface-2);
-                border: 1px solid var(--tch-border);
-                color: var(--tch-muted);
-                font-size: 1rem;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                flex-shrink: 0;
-                overflow: hidden;
-            }
+            .enr-page { padding: 1.2rem; }
+            @media(min-width:768px) { .enr-page { padding: 1.6rem 2rem 2.5rem; } }
 
-            .tch-avatar img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-
-            .t-name {
-                font-weight: 700;
-                font-size: .83rem;
-                color: var(--tch-text);
-            }
-
-            .t-spec {
-                font-size: .72rem;
-                color: var(--tch-muted);
-            }
-
-            .qual-pill {
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-                padding: 3px 10px;
-                border-radius: 99px;
-                font-size: .72rem;
-                font-weight: 700;
-                white-space: nowrap;
-                background: var(--tch-yellow-pale);
-                color: #8a6400;
-                border: 1px solid rgba(245, 180, 0, .35);
-            }
-
-            .tch-badge {
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-                padding: 3px 10px;
-                border-radius: 99px;
-                font-size: .72rem;
-                font-weight: 700;
-                white-space: nowrap;
-            }
-
-            .tch-badge::before {
-                content: '';
-                width: 6px;
-                height: 6px;
-                border-radius: 50%;
-                flex-shrink: 0;
-            }
-
-            .status-ACTIVE {
-                background: #e8f6ec;
-                color: #1e8e3e;
-            }
-
-            .status-ACTIVE::before {
-                background: #22a83e;
-                box-shadow: 0 0 4px #22a83e;
-            }
-
-            .status-ON_LEAVE {
-                background: var(--tch-yellow-pale);
-                color: #8a6400;
-            }
-
-            .status-ON_LEAVE::before {
-                background: var(--tch-yellow);
-            }
-
-            .status-SUSPENDED {
-                background: var(--tch-red-pale);
-                color: #8a0e21;
-            }
-
-            .status-SUSPENDED::before {
-                background: var(--tch-red);
-            }
-
-            .status-RESIGNED {
-                background: var(--tch-red-pale);
-                color: #8a0e21;
-            }
-
-            .status-RESIGNED::before {
-                background: var(--tch-red);
-            }
-
-            .status-RETIRED {
-                background: var(--tch-blue-pale);
-                color: var(--tch-blue);
-            }
-
-            .status-RETIRED::before {
-                background: var(--tch-blue);
-            }
-
-            .status-TERMINATED {
-                background: var(--tch-red-pale);
-                color: #8a0e21;
-            }
-
-            .status-TERMINATED::before {
-                background: var(--tch-red);
-            }
-
-            .status-DECEASED {
-                background: #ececed;
-                color: #47494b;
-            }
-
-            .status-DECEASED::before {
-                background: #6b6d71;
-            }
-
-            .tch-actions {
+            .enr-header {
                 display: flex;
-                align-items: center;
-                gap: 4px;
-                justify-content: center;
+                align-items: flex-start;
+                justify-content: space-between;
                 flex-wrap: wrap;
+                gap: 1rem;
+                margin-bottom: 1.4rem;
+            }
+            .enr-header-left { display: flex; align-items: center; gap: 1rem; }
+            .enr-header-icon {
+                width: 46px; height: 46px; border-radius: 12px;
+                background: linear-gradient(135deg, var(--enr-black) 0%, var(--enr-red) 100%);
+                display: flex; align-items: center; justify-content: center;
+                color: var(--enr-yellow); font-size: 1.2rem; flex-shrink: 0;
+            }
+            .enr-header-title h1 { font-size: 1.35rem; font-weight: 800; margin: 0 0 .2rem; color: var(--enr-text); }
+            .enr-header-title p { font-size: .85rem; color: var(--enr-muted); margin: 0; }
+
+            .enr-stats {
+                display: grid; grid-template-columns: repeat(1, 1fr); gap: .9rem; margin-bottom: 1.4rem;
+            }
+            @media(min-width:576px) { .enr-stats { grid-template-columns: repeat(2, 1fr); } }
+            @media(min-width:992px) { .enr-stats { grid-template-columns: repeat(4, 1fr); } }
+
+            .enr-stat {
+                background: var(--enr-surface); border: 1px solid var(--enr-border);
+                border-radius: var(--enr-radius); box-shadow: var(--enr-shadow);
+                padding: 1.1rem 1.2rem; display: flex; align-items: center; justify-content: space-between;
+                transition: transform .2s;
+            }
+            .enr-stat:hover { transform: translateY(-2px); }
+            .enr-stat-label { font-size: .72rem; color: var(--enr-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+            .enr-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--enr-text); margin-top: .15rem; font-family: var(--font-mono); }
+            .enr-stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+            .enr-stat-icon.dark { background: var(--enr-black); color: var(--enr-yellow); }
+            .enr-stat-icon.green { background: #e8f6ec; color: var(--enr-green); }
+            .enr-stat-icon.yellow { background: #fff8e1; color: #8a6400; }
+            .enr-stat-icon.blue { background: #eaf1fb; color: var(--enr-blue); }
+
+            .enr-card {
+                background: var(--enr-surface); border: 1px solid var(--enr-border);
+                border-radius: var(--enr-radius); box-shadow: var(--enr-shadow); overflow: hidden;
             }
 
-            .tch-act {
-                width: 30px;
-                height: 30px;
-                border-radius: 6px;
-                border: 1px solid var(--tch-border);
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                font-size: .8rem;
-                cursor: pointer;
-                transition: all .15s;
+            .enr-toolbar {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 1rem 1.2rem; border-bottom: 1px solid var(--enr-border);
+                gap: 1rem; flex-wrap: wrap;
+            }
+            .enr-toolbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+            .enr-toolbar-right { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+
+            .enr-filters {
+                display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+                padding: .8rem 1.2rem; background: var(--enr-surface-2);
+                border-bottom: 1px solid var(--enr-border);
+            }
+            .enr-filters .ui-inputfield, .enr-filters .ui-selectonemenu { min-width: 160px; }
+
+            .enr-table.p-datatable .p-datatable-thead tr th {
+                background: var(--enr-black) !important; color: var(--enr-yellow) !important;
+                font-size: .7rem !important; text-transform: uppercase !important;
+                padding: .7rem 1rem !important; border-color: var(--enr-black) !important;
+            }
+            .enr-table.p-datatable .p-datatable-tbody tr td {
+                font-size: .82rem !important; padding: .72rem 1rem !important;
+            }
+            .enr-table.p-datatable .p-datatable-tbody tr:hover { background: var(--enr-surface-2) !important; }
+
+            .enr-badge {
+                display: inline-flex; align-items: center; gap: 5px;
+                padding: 3px 10px; border-radius: 99px; font-size: .72rem; font-weight: 700;
+            }
+            .enr-badge.ACTIVE { background: #e8f6ec; color: var(--enr-green); border: 1px solid rgba(30, 142, 62, .25); }
+            .enr-badge.INACTIVE { background: #fdecee; color: var(--enr-red); border: 1px solid rgba(200, 16, 46, .25); }
+            .enr-badge.ON_LEAVE { background: #fff8e1; color: #8a6400; border: 1px solid rgba(245, 180, 0, .35); }
+            .enr-badge.SUSPENDED { background: #fdecee; color: var(--enr-red); border: 1px solid rgba(200, 16, 46, .25); }
+            .enr-badge.TERMINATED { background: #f1f1f2; color: var(--enr-muted); border: 1px solid var(--enr-border); }
+            .enr-badge.RETIRED { background: #eaf1fb; color: var(--enr-blue); border: 1px solid rgba(26, 95, 180, .25); }
+
+            .enr-avatar {
+                width: 38px; height: 38px; border-radius: 50%; object-fit: cover;
+                border: 1px solid var(--enr-border);
             }
 
-            .tch-act:hover {
-                transform: scale(1.08);
+            .enr-actions { display: flex; align-items: center; gap: 4px; justify-content: center; flex-wrap: wrap; }
+            .enr-act {
+                width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--enr-border);
+                display: inline-flex; align-items: center; justify-content: center;
+                font-size: .8rem; cursor: pointer; transition: all .15s;
             }
+            .enr-act:hover { transform: scale(1.08); }
+            .enr-act.view { color: var(--enr-blue); background: #eaf1fb; }
+            .enr-act.edit { color: #8a6400; background: #fff8e1; }
+            .enr-act.delete { color: var(--enr-red); background: #fdecee; }
 
-            .tch-act.edit {
-                color: #8a6400;
-                background: var(--tch-yellow-pale);
-            }
+            .enr-empty { text-align: center; padding: 3rem 1rem; color: var(--enr-muted); }
+            .enr-empty i { font-size: 2.5rem; opacity: .2; margin-bottom: .5rem; display: block; }
 
-            .tch-act.delete {
-                color: var(--tch-red);
-                background: var(--tch-red-pale);
-            }
+            .enr-dialog-footer { display: flex; justify-content: flex-end; gap: .6rem; margin-top: .5rem; flex-wrap: wrap; }
 
-            .tch-empty {
-                text-align: center;
-                padding: 3rem 1rem;
-                color: var(--tch-muted);
-            }
-
-            .tch-empty i {
-                font-size: 2.5rem;
-                opacity: .2;
-                margin-bottom: .5rem;
-                display: block;
-            }
-
-            .tch-dialog-footer {
-                display: flex;
-                justify-content: flex-end;
-                gap: .6rem;
-                margin-top: .5rem;
-                flex-wrap: wrap;
-            }
-
-            /* ===== LOADING OVERLAY (padrão igual ao módulo de alunos) ===== */
+            /* Loading Overlay */
             .sc-loading-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(20, 20, 20, .85);
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
-                z-index: 9999;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity .35s ease, visibility .35s ease;
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+                z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s ease;
             }
-
-            .sc-loading-overlay.active {
-                opacity: 1;
-                visibility: visible;
-            }
-
+            .sc-loading-overlay.active { opacity: 1; visibility: visible; }
             .sc-loading-box {
-                background: var(--tch-surface);
-                border-radius: var(--tch-radius);
-                padding: 2.5rem 3rem;
-                box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 1.2rem;
-                border: 1px solid var(--tch-border);
-                min-width: 260px;
-                transform: scale(.9);
-                transition: transform .35s cubic-bezier(.34, 1.56, .64, 1);
+                background: var(--enr-surface); border-radius: var(--enr-radius); padding: 2.5rem 3rem;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); display: flex; flex-direction: column;
+                align-items: center; gap: 1.2rem; border: 1px solid var(--enr-border); min-width: 260px;
+                transform: scale(0.9); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
-
-            .sc-loading-overlay.active .sc-loading-box {
-                transform: scale(1);
+            .sc-loading-overlay.active .sc-loading-box { transform: scale(1); }
+            .sc-loader-rings { position: relative; width: 72px; height: 72px; }
+            .sc-loader-rings::before, .sc-loader-rings::after {
+                content: ''; position: absolute; border-radius: 50%; border: 3px solid transparent;
             }
-
-            .sc-loader-rings {
-                position: relative;
-                width: 72px;
-                height: 72px;
-            }
-
-            .sc-loader-rings::before,
-            .sc-loader-rings::after {
-                content: '';
-                position: absolute;
-                border-radius: 50%;
-                border: 3px solid transparent;
-            }
-
             .sc-loader-rings::before {
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                border-top-color: var(--tch-red);
-                border-right-color: var(--tch-yellow);
+                top: 0; left: 0; width: 100%; height: 100%;
+                border-top-color: var(--enr-red); border-right-color: var(--enr-yellow);
                 animation: scSpin 1.2s linear infinite;
             }
-
             .sc-loader-rings::after {
-                top: 10px;
-                left: 10px;
-                width: calc(100% - 20px);
-                height: calc(100% - 20px);
-                border-bottom-color: var(--tch-black);
-                border-left-color: #e63946;
-                animation: scSpinReverse .9s linear infinite;
+                top: 10px; left: 10px; width: calc(100% - 20px); height: calc(100% - 20px);
+                border-bottom-color: var(--enr-black); border-left-color: #e63946;
+                animation: scSpinReverse 0.9s linear infinite;
             }
-
             .sc-loader-core {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 16px;
-                height: 16px;
-                background: linear-gradient(135deg, var(--tch-red), var(--tch-yellow));
-                border-radius: 50%;
-                animation: scPulse 1s ease-in-out infinite;
-                box-shadow: 0 0 15px rgba(200, 16, 46, .5);
+                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                width: 16px; height: 16px;
+                background: linear-gradient(135deg, var(--enr-red), var(--enr-yellow));
+                border-radius: 50%; animation: scPulse 1s ease-in-out infinite;
+                box-shadow: 0 0 15px rgba(200, 16, 46, 0.5);
             }
+            @keyframes scSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            @keyframes scSpinReverse { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+            @keyframes scPulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.7; } }
+            .sc-loading-text { font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 600; color: var(--enr-text); text-align: center; }
+            .sc-loading-sub { font-size: 0.78rem; color: var(--enr-muted); text-align: center; margin-top: -0.6rem; }
+            .sc-loading-dots::after { content: ''; animation: scDots 1.5s steps(4, end) infinite; }
+            @keyframes scDots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } 100% { content: ''; } }
+            .sc-loading-progress { width: 100%; height: 3px; background: var(--enr-border); border-radius: 99px; overflow: hidden; margin-top: 0.3rem; }
+            .sc-loading-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow)); border-radius: 99px; animation: scProgress 2s ease-in-out infinite; }
+            @keyframes scProgress { 0% { width: 0%; margin-left: 0%; } 50% { width: 60%; margin-left: 20%; } 100% { width: 0%; margin-left: 100%; } }
 
-            @keyframes scSpin {
-                0% {
-                    transform: rotate(0);
-                }
-
-                100% {
-                    transform: rotate(360deg);
-                }
-            }
-
-            @keyframes scSpinReverse {
-                0% {
-                    transform: rotate(0);
-                }
-
-                100% {
-                    transform: rotate(-360deg);
-                }
-            }
-
-            @keyframes scPulse {
-
-                0%,
-                100% {
-                    transform: translate(-50%, -50%) scale(1);
-                    opacity: 1;
-                }
-
-                50% {
-                    transform: translate(-50%, -50%) scale(1.4);
-                    opacity: .7;
-                }
-            }
-
-            .sc-loading-text {
-                font-family: var(--font);
-                font-size: 1rem;
-                font-weight: 600;
-                color: var(--tch-text);
-                text-align: center;
-            }
-
-            .sc-loading-sub {
-                font-size: .78rem;
-                color: var(--tch-muted);
-                text-align: center;
-                margin-top: -.6rem;
-            }
-
-            .sc-loading-dots::after {
-                content: '';
-                animation: scDots 1.5s steps(4, end) infinite;
-            }
-
-            @keyframes scDots {
-                0% {
-                    content: '';
-                }
-
-                25% {
-                    content: '.';
-                }
-
-                50% {
-                    content: '..';
-                }
-
-                75% {
-                    content: '...';
-                }
-
-                100% {
-                    content: '';
-                }
-            }
-
-            .sc-loading-progress {
-                width: 100%;
-                height: 3px;
-                background: var(--tch-border);
-                border-radius: 99px;
-                overflow: hidden;
-                margin-top: .3rem;
-            }
-
-            .sc-loading-progress-bar {
-                height: 100%;
-                width: 0%;
-                background: linear-gradient(90deg, var(--tch-red), var(--tch-yellow));
-                border-radius: 99px;
-                animation: scProgress 2s ease-in-out infinite;
-            }
-
-            @keyframes scProgress {
-                0% {
-                    width: 0%;
-                    margin-left: 0%;
-                }
-
-                50% {
-                    width: 60%;
-                    margin-left: 20%;
-                }
-
-                100% {
-                    width: 0%;
-                    margin-left: 100%;
-                }
-            }
-
-            /* ===== Responsividade ===== */
+            /* Mobile */
             @media (max-width: 576px) {
-                .tch-header {
-                    flex-direction: column;
-                    align-items: stretch;
-                }
-
-                .tch-header-left {
-                    width: 100%;
-                }
-
-                .tch-toolbar {
-                    flex-direction: column;
-                    align-items: stretch;
-                }
-
-                .tch-toolbar-left,
-                .tch-toolbar-right {
-                    width: 100%;
-                }
-
-                .tch-toolbar-right .ui-button {
-                    width: 100%;
-                }
-
-                .tch-search-input {
-                    width: 100% !important;
-                }
-
-                .tch-stat-value {
-                    font-size: 1.25rem;
-                }
-
-                .tch-act {
-                    width: 34px;
-                    height: 34px;
-                    font-size: .9rem;
-                }
-
-                .sc-loading-box {
-                    padding: 2rem 1.5rem;
-                    min-width: 220px;
-                    margin: 0 1rem;
-                }
+                .enr-header { flex-direction: column; align-items: stretch; }
+                .enr-header-left { width: 100%; }
+                .enr-toolbar { flex-direction: column; align-items: stretch; }
+                .enr-toolbar-left, .enr-toolbar-right { width: 100%; }
+                .enr-toolbar-right .ui-button, .enr-toolbar-right .ui-menubutton { width: 100%; }
+                .enr-filters { flex-direction: column; align-items: stretch; gap: .5rem; }
+                .enr-filters .ui-inputfield, .enr-filters .ui-selectonemenu, .enr-filters .ui-button { width: 100% !important; min-width: unset !important; }
+                .enr-stat-value { font-size: 1.25rem; }
+                .enr-actions { gap: 6px; }
+                .enr-act { width: 34px; height: 34px; font-size: .9rem; }
+                .enr-dialog-footer { justify-content: stretch; }
+                .enr-dialog-footer .ui-button { flex: 1 1 auto; }
+                .sc-loading-box { padding: 2rem 1.5rem; min-width: 220px; margin: 0 1rem; }
             }
+            /* ]]> */
         </style>
 
-        <!-- ===== LOADING OVERLAY ===== -->
         <div id="scLoadingOverlay" class="sc-loading-overlay">
             <div class="sc-loading-box">
-                <div class="sc-loader-rings">
-                    <div class="sc-loader-core"></div>
-                </div>
+                <div class="sc-loader-rings"><div class="sc-loader-core"></div></div>
                 <div class="sc-loading-text">#{msg.processing}<span class="sc-loading-dots"></span></div>
                 <div class="sc-loading-sub">#{msg.pleaseWait}</div>
-                <div class="sc-loading-progress">
-                    <div class="sc-loading-progress-bar"></div>
-                </div>
+                <div class="sc-loading-progress"><div class="sc-loading-progress-bar"></div></div>
             </div>
         </div>
 
-        <div class="tch-page">
+        <div class="enr-page">
             <h:form id="formTeachers">
-                <p:growl id="messages" showDetail="true" life="4000" sticky="false" />
+                <p:growl id="messages" showDetail="true" life="5000"><p:autoUpdate /></p:growl>
 
-                <!-- ── Page Header ── -->
-                <div class="tch-header">
-                    <div class="tch-header-left">
-                        <div class="tch-header-icon"><i class="pi pi-users" /></div>
-                        <div class="tch-header-title">
-                            <h1>#{msg.teachers}</h1>
-                            <p>#{msg.manageTeachers}</p>
+                <div class="enr-header">
+                    <div class="enr-header-left">
+                        <div class="enr-header-icon"><i class="pi pi-users"></i></div>
+                        <div class="enr-header-title">
+                            <h1>#{msg['teachers']}</h1>
+                            <p>#{msg.teacherManagement}</p>
                         </div>
                     </div>
                     <span class="breadcrumb-pill">
-                        <i class="pi pi-home" style="font-size:.65rem" />#{msg.management} › #{msg.teachers}
+                        <i class="pi pi-home" style="font-size:.65rem"></i> #{msg.management} &#8250; #{msg['teachers']}
                     </span>
                 </div>
 
-                <!-- ── Stat Cards ── -->
-                <div class="tch-stats">
-                    <div class="tch-stat">
+                <div class="enr-stats">
+                    <div class="enr-stat">
                         <div>
-                            <div class="tch-stat-label">#{msg.totalTeachers}</div>
-                            <div class="tch-stat-value">
-                                <h:outputText value="#{teacherController.totalTeacherCount}">
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputText>
+                            <div class="enr-stat-label">#{msg.totalTeachers}</div>
+                            <div class="enr-stat-value">
+                                <h:outputText value="#{teacherController.totalTeacherCount}"><f:convertNumber pattern="#,##0" /></h:outputText>
                             </div>
                         </div>
-                        <div class="tch-stat-icon dark"><i class="pi pi-users" /></div>
+                        <div class="enr-stat-icon dark"><i class="pi pi-list"></i></div>
                     </div>
-                    <div class="tch-stat">
+                    <div class="enr-stat">
                         <div>
-                            <div class="tch-stat-label">#{msg.activeTeachers}</div>
-                            <div class="tch-stat-value">
-                                <h:outputText value="#{teacherController.activeTeacherCount}">
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputText>
+                            <div class="enr-stat-label">#{msg.activeTeachers}</div>
+                            <div class="enr-stat-value">
+                                <h:outputText value="#{teacherController.activeTeacherCount}"><f:convertNumber pattern="#,##0" /></h:outputText>
                             </div>
                         </div>
-                        <div class="tch-stat-icon green"><i class="pi pi-check-circle" /></div>
+                        <div class="enr-stat-icon green"><i class="pi pi-check-circle"></i></div>
                     </div>
-                    <div class="tch-stat">
+                    <div class="enr-stat">
                         <div>
-                            <div class="tch-stat-label">#{msg.teachersOnLeave}</div>
-                            <div class="tch-stat-value">
-                                <h:outputText value="#{teacherController.onLeaveTeacherCount}">
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputText>
+                            <div class="enr-stat-label">#{msg.newTeachersThisMonth}</div>
+                            <div class="enr-stat-value">
+                                <h:outputText value="#{teacherController.newTeacherCountThisMonth}"><f:convertNumber pattern="#,##0" /></h:outputText>
                             </div>
                         </div>
-                        <div class="tch-stat-icon yellow"><i class="pi pi-clock" /></div>
+                        <div class="enr-stat-icon yellow"><i class="pi pi-calendar-plus"></i></div>
                     </div>
-                    <div class="tch-stat">
+                    <div class="enr-stat">
                         <div>
-                            <div class="tch-stat-label">#{msg.newTeachersLast30Days}</div>
-                            <div class="tch-stat-value">
-                                <h:outputText value="#{teacherController.newTeacherCount}">
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputText>
+                            <div class="enr-stat-label">#{msg.totalBaseSalary}</div>
+                            <div class="enr-stat-value">
+                                <h:outputText value="#{teacherController.totalBaseSalary}"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText>
                             </div>
                         </div>
-                        <div class="tch-stat-icon red"><i class="pi pi-user-plus" /></div>
+                        <div class="enr-stat-icon blue"><i class="pi pi-wallet"></i></div>
                     </div>
                 </div>
 
-                <!-- ── Main Card ── -->
-                <div class="tch-card">
-                    <div class="tch-toolbar">
-                        <div class="tch-toolbar-left">
-                            <span style="font-weight:700; font-size:.9rem; color:var(--tch-text);">
-                                <i class="pi pi-list" style="color:var(--tch-red); margin-right:.4rem;" />
-                                Lista de Professores
+                <div class="enr-card">
+                    <div class="enr-toolbar">
+                        <div class="enr-toolbar-left">
+                            <span style="font-weight:700; font-size:.9rem; color:var(--enr-text);">
+                                <i class="pi pi-list" style="color:var(--enr-red); margin-right:.4rem;"></i> #{msg.registration}
                             </span>
                         </div>
+                        <div class="enr-toolbar-right">
+                            <p:menuButton value="#{msg.exportPrint}" icon="pi pi-file-export" styleClass="ui-button-outlined">
+                                <p:menuitem value="PDF #{msg.teacherList}" icon="pi pi-file-pdf" action="#{teacherController.exportTeacherListPdf}" ajax="false" />
+                                <p:menuitem value="Excel (XLSX)" icon="pi pi-file-excel">
+                                    <p:dataExporter type="xlsx" target="dtTeachers" fileName="professores_#{teacherController.totalTeacherCount}" />
+                                </p:menuitem>
+                                <p:menuitem value="CSV" icon="pi pi-file-o">
+                                    <p:dataExporter type="csv" target="dtTeachers" fileName="professores_#{teacherController.totalTeacherCount}" />
+                                </p:menuitem>
+                                <p:divider />
+                                <p:menuitem value="#{msg.printPage}" icon="pi pi-print" onclick="window.print(); return false;" />
+                            </p:menuButton>
 
-                        <div class="tch-toolbar-right">
                             <p:commandButton value="#{msg.newTeacher}" icon="pi pi-plus"
-                                actionListener="#{teacherController.prepareNewTeacher}" update="teacherCreateForm"
-                                oncomplete="PF('createTeacherDialog').show()" />
+                                actionListener="#{teacherController.prepareNewTeacher}" onstart="showScLoading()"
+                                oncomplete="hideScLoading(); PF('createTeacherDialog').show()"
+                                update=":createTeacherForm" process="@this" styleClass="ui-button-success" />
                         </div>
                     </div>
 
-                    <p:dataTable id="dtTeachers" widgetVar="dtTeachers" var="teacher"
-                        value="#{teacherController.teachers}" styleClass="tch-table" paginator="true" rows="10"
-                        paginatorPosition="bottom" reflow="true"
-                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                        currentPageReportTemplate="A mostrar {startRecord}–{endRecord} de {totalRecords} professores"
-                        rowsPerPageTemplate="5,10,15,25" emptyMessage=" ">
+                    <div class="enr-filters">
+                        <p:inputText value="#{teacherController.filterTeacherNumber}" placeholder="#{msg.teacherNumber}..." style="min-width:140px;">
+                            <p:ajax event="keyup" delay="400" listener="#{teacherController.applyFilters}" update="dtTeachers messages" process="@this" />
+                        </p:inputText>
 
-                        <p:column headerText="#{msg.teacher}" sortBy="#{teacher.fristName}" style="min-width:220px">
-                            <div style="display:flex; align-items:center; gap:.7rem;">
-                                <div class="tch-avatar">
-                                    <img src="#{teacher.photoPhath}" alt="#{teacher.fristName}"
-                                        rendered="#{not empty teacher.photoPhath}" />
-                                    <i class="pi pi-user" rendered="#{empty teacher.photoPhath}"></i>
-                                </div>
-                                <div>
-                                    <div class="t-name">
-                                        <h:outputText value="#{teacher.fristName} #{teacher.lastName}" />
-                                    </div>
-                                    <div class="t-spec">
-                                        <span class="t-num">
-                                            <i class="pi pi-hashtag"
-                                                style="font-size:.65rem; color:var(--tch-yellow)" />
-                                            <h:outputText value="#{teacher.teacherNumber}" />
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                        <p:inputText value="#{teacherController.filterName}" placeholder="#{msg.name}..." style="min-width:160px;">
+                            <p:ajax event="keyup" delay="400" listener="#{teacherController.applyFilters}" update="dtTeachers messages" process="@this" />
+                        </p:inputText>
+
+                        <p:selectOneMenu value="#{teacherController.filterStatus}" placeholder="#{msg.status}" style="min-width:160px;">
+                            <f:selectItem itemLabel="#{msg.allStatuses}" itemValue="" />
+                            <f:selectItems value="#{teacherController.statuses}" var="st" itemLabel="#{msg['teacherStatus.'.concat(st)]}" itemValue="#{st}" />
+                            <p:ajax event="change" listener="#{teacherController.applyFilters}" update="dtTeachers messages" process="@this" />
+                        </p:selectOneMenu>
+
+                        <p:commandButton icon="pi pi-filter" value="#{msg.apply}" action="#{teacherController.applyFilters}" update="dtTeachers messages" styleClass="ui-button-primary" />
+                        <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}" action="#{teacherController.clearFilters}" update="@form" styleClass="ui-button-outlined ui-button-secondary" />
+                    </div>
+
+                    <p:dataTable id="dtTeachers" widgetVar="dtTeachers" styleClass="enr-table" var="teacher"
+                        value="#{teacherController.lazyModel}" lazy="true" paginator="true" rows="10" reflow="true"
+                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
+                        rowsPerPageTemplate="5,10,20,50" emptyMessage="#{msg.noTeacherFound}">
+
+                        <p:column headerText="#{msg.photo}" style="width:70px" exportable="false">
+                            <p:graphicImage value="/teacher_img/#{teacher.photoPhath}" styleClass="enr-avatar" />
                         </p:column>
 
-                        <p:column headerText="#{msg.qualificationLevel}" sortBy="#{teacher.qualificationLivel}"
-                            style="width:150px">
-                            <span class="qual-pill">
-                                <h:outputText
-                                    value="#{teacherController.qualificationLabel(teacher.qualificationLivel)}" />
-                            </span>
+                        <p:column headerText="#{msg.teacherNumber}" sortBy="#{teacher.teacherNumber}" style="width:140px">
+                            <span class="t-num"><i class="pi pi-hashtag" style="font-size:.65rem"></i> <h:outputText value="#{teacher.teacherNumber}" /></span>
+                        </p:column>
+
+                        <p:column headerText="#{msg.name}" sortBy="#{teacher.fristName}">
+                            <h:outputText value="#{teacher.fristName} #{teacher.lastName}" />
+                        </p:column>
+
+                        <p:column headerText="#{msg.qualification}" sortBy="#{teacher.qualificationLivel}">
+                            <h:outputText value="#{teacher.qualificationLivel.descricao}" rendered="#{not empty teacher.qualificationLivel}" />
+                        </p:column>
+
+                        <p:column headerText="#{msg.contractType}" sortBy="#{teacher.contractType}">
+                            <h:outputText value="#{teacher.contractType.descricao}" rendered="#{not empty teacher.contractType}" />
+                        </p:column>
+
+                        <p:column headerText="#{msg.status}" sortBy="#{teacher.status}" style="width:120px; text-align:center">
+                            <span class="enr-badge #{teacher.status}"><h:outputText value="#{msg['teacherStatus.'.concat(teacher.status.name())]}" /></span>
                         </p:column>
 
                         <p:column headerText="#{msg.email}" sortBy="#{teacher.email}">
                             <h:outputText value="#{teacher.email}" />
                         </p:column>
 
-                        <p:column headerText="#{msg.phone1}" sortBy="#{teacher.phone}" style="width:140px">
-                            <h:outputText value="#{teacher.phone}" />
-                        </p:column>
-
-                        <p:column headerText="#{msg.status}" sortBy="#{teacher.status}"
-                            style="width:130px; text-align:center">
-                            <span class="tch-badge status-#{teacher.status}">
-                                <h:outputText value="#{teacherController.statusLabel(teacher.status)}" />
-                            </span>
-                        </p:column>
-
-                        <p:column headerText="#{msg.actions}" style="width:100px;text-align:center" exportable="false">
-                            <div class="tch-actions">
-                                <p:commandButton icon="pi pi-pencil" title="#{msg.edit}" styleClass="tch-act edit"
-                                    actionListener="#{teacherController.setSelectedId(teacher.pkTeacher)}"
-                                    action="#{teacherController.openEditDialog}" onstart="showScLoading()"
-                                    oncomplete="hideScLoading(); PF('editTeacherDialog').show()"
-                                    update=":teacherEditForm" process="@this" />
-                                <p:commandButton icon="pi pi-trash" title="#{msg.delete}" styleClass="tch-act delete"
-                                    actionListener="#{teacherController.setSelectedId(teacher.pkTeacher)}"
-                                    oncomplete="PF('deleteTeacherDialog').show()" process="@this"
-                                    update=":formTeachers:confirmDeleteForm" />
+                        <p:column headerText="#{msg.actions}" style="width:130px; text-align:center" exportable="false">
+                            <div class="enr-actions">
+                                <p:commandButton styleClass="enr-act view" icon="pi pi-eye" title="#{msg.view}"
+                                    actionListener="#{teacherController.viewTeacherDetails(teacher.pkTeacher)}" onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('viewTeacherDialog').show()" update=":teacherViewForm" process="@this" />
+                                <p:commandButton styleClass="enr-act edit" icon="pi pi-pencil" title="#{msg.edit}"
+                                    actionListener="#{teacherController.openEditDialog(teacher.pkTeacher)}" onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('editTeacherDialog').show()" process="@this" update=":editTeacherForm" />
+                                <p:commandButton styleClass="enr-act delete" icon="pi pi-trash" title="#{msg.delete}"
+                                    actionListener="#{teacherController.delete(teacher.pkTeacher)}" process="@this" update="dtTeachers messages">
+                                    <p:confirm header="#{msg.confirmDeletion}" message="#{msg.deleteTeacher}" icon="pi pi-exclamation-triangle" />
+                                </p:commandButton>
                             </div>
                         </p:column>
 
                         <f:facet name="emptyMessage">
-                            <div class="tch-empty">
-                                <i class="pi pi-users" />
-                                <div>#{msg.noTeacherFound}</div>
-                            </div>
+                            <div class="enr-empty"><i class="pi pi-users"></i><div>#{msg.noTeacherFound}</div></div>
                         </f:facet>
                     </p:dataTable>
                 </div>
-
-                <!-- Diálogo de confirmação de exclusão -->
-                <p:confirmDialog id="deleteTeacherDialog" widgetVar="deleteTeacherDialog"
-                    message="#{msg.confirmDeleteTeacher}" header="#{msg.confirmDeletion}" severity="warn">
-
-                    <h:form id="confirmDeleteForm">
-
-                        <p:commandButton value="#{msg.no}" icon="pi pi-times" type="button"
-                            styleClass="ui-button-outlined" onclick="PF('deleteTeacherDialog').hide()" />
-
-                        <p:commandButton value="#{msg.yes}" icon="pi pi-check" styleClass="ui-button-danger" ajax="true"
-                            action="#{teacherController.delete}" oncomplete="PF('deleteTeacherDialog').hide()"
-                            update=":formTeachers:dtTeachers :formTeachers:messages" />
-
-                    </h:form>
-                </p:confirmDialog>
             </h:form>
+
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" styleClass="sc-confirm-dialog" width="380" appendTo="@(body)">
+                <p:commandButton value="#{msg.no}" type="button" styleClass="ui-confirmdialog-no" icon="pi pi-times" />
+                <p:commandButton value="#{msg.yes}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+            </p:confirmDialog>
+
+            <h:form id="teacherViewForm">
+                <p:dialog widgetVar="viewTeacherDialog" modal="true" resizable="false" header="#{msg.teacherDetails}"
+                    style="width: 90vw; max-width: 560px;" closable="true" responsive="true" fitViewport="true">
+                    <div style="padding: .5rem 0;">
+                        <div style="text-align:center; margin-bottom:1.2rem;">
+                            <p:graphicImage value="/teacher_img/#{teacherController.selectedTeacher.photoPhath}"
+                                style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin:0 auto .6rem; display:block;" />
+                            <div style="font-size:1.15rem; font-weight:700;">#{teacherController.selectedTeacher.fristName} #{teacherController.selectedTeacher.lastName}</div>
+                            <div style="font-size:.85rem; color:var(--enr-muted);">#{teacherController.selectedTeacher.teacherNumber}</div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; font-size:.9rem;">
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.qualification}</div>
+                                <div style="font-weight:700;">#{teacherController.selectedTeacher.qualificationLivel.descricao}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.contractType}</div>
+                                <div style="font-weight:700;">#{teacherController.selectedTeacher.contractType.descricao}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.status}</div>
+                                <div style="font-weight:700;"><span class="enr-badge #{teacherController.selectedTeacher.status}"><h:outputText value="#{msg['teacherStatus.'.concat(teacherController.selectedTeacher.status.name())]}" /></span></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.baseSalary}</div>
+                                <div style="font-weight:700;"><h:outputText value="#{teacherController.selectedTeacher.baseSalary}"><f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" /></h:outputText></div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.email}</div>
+                                <div>#{teacherController.selectedTeacher.email}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.mobilePhone}</div>
+                                <div>#{teacherController.selectedTeacher.mobilePhone}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.address}</div>
+                                <div>#{teacherController.selectedTeacher.addressStreet}, #{teacherController.selectedTeacher.addressProvice}</div>
+                            </div>
+                            <h:panelGroup layout="block" style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;" rendered="#{not empty teacherController.selectedTeacher.obs}">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.observation}</div>
+                                <div>#{teacherController.selectedTeacher.obs}</div>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+                    <div class="enr-dialog-footer">
+                        <p:commandButton value="#{msg.close}" type="button" onclick="PF('viewTeacherDialog').hide()" styleClass="ui-button-outlined" />
+                    </div>
+                </p:dialog>
+            </h:form>
+
+            <ui:include src="teachers/teacher-create.xhtml" />
+            <ui:include src="teachers/teacher-edit.xhtml" />
         </div>
 
-        <ui:include src="teachers/teacher-create.xhtml" />
-        <ui:include src="teachers/teacher-edit.xhtml" />
-
-        <!-- ===== LOADING SCRIPTS (padrão igual ao módulo de alunos) ===== -->
-        <script>
+        <script type="text/javascript">
+            // <![CDATA[
             function showScLoading() {
                 var overlay = document.getElementById('scLoadingOverlay');
-                if (overlay) { overlay.classList.add('active'); }
+                if (overlay) overlay.classList.add('active');
             }
             function hideScLoading() {
                 var overlay = document.getElementById('scLoadingOverlay');
-                if (overlay) { overlay.classList.remove('active'); }
+                if (overlay) overlay.classList.remove('active');
             }
             if (window.PrimeFaces) {
                 PrimeFaces.ajax.Queue.originalAdd = PrimeFaces.ajax.Queue.add;
@@ -971,17 +466,17 @@
                     req.originalOncomplete = req.onsuccess;
                     req.onsuccess = function (xhr, status, args) {
                         hideScLoading();
-                        if (req.originalOncomplete) { req.originalOncomplete(xhr, status, args); }
+                        if (req.originalOncomplete) req.originalOncomplete(xhr, status, args);
                     };
                     req.originalOnerror = req.onerror;
                     req.onerror = function (xhr, status, error) {
                         hideScLoading();
-                        if (req.originalOnerror) { req.originalOnerror(xhr, status, error); }
+                        if (req.originalOnerror) req.originalOnerror(xhr, status, error);
                     };
                     PrimeFaces.ajax.Queue.originalAdd(req);
                 };
             }
+            // ]]>
         </script>
     </ui:define>
-
 </ui:composition>

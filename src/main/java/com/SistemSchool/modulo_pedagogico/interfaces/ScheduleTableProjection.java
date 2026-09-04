@@ -4,30 +4,19 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public interface ScheduleTableProjection {
-
     Long getPkSchedule();
-
-    Long getTeacherPk();
-
-    String getTeacherName();
-
     Long getDisciplinePk();
-
     String getDisciplineName();
-
-    Long getSchoolClassPk();
-
-    String getSchoolClassName();
-
+    Long getSchoolclassPk();
+    String getSchoolclassnome();
+    String getSchoolclasscode();
+    Long getTeacherPk();
+    String getTeacherName();
     String getWeekDay();
-
     LocalTime getStartTime();
-
     LocalTime getEndTime();
-
-    String getClassroom();
-
+    String getAnoLectivo();
+    String getObs();
     LocalDateTime getCreatedAt();
-
     LocalDateTime getUpdatedAt();
 }

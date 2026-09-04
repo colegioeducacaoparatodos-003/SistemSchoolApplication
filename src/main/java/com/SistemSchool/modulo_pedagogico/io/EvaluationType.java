@@ -1,32 +1,21 @@
 package com.SistemSchool.modulo_pedagogico.io;
 
 public enum EvaluationType {
+    CONTINUA("Avaliação Contínua"),
+    PROVA_TRIMESTRAL("Prova Trimestral");
 
-    CONTINUOUS_ASSESSMENT("MAC – Média Avaliação Contínua"),
-    TEACHER_TEST("NPP – Nota Prova do Professor"),
-    FINAL_TEST("NPT – Nota Prova Trimestral"),
-    TEST("Teste"),
-    EXAM("Prova"),
-    WORK("Trabalho"),
-    PROJECT("Projeto"),
-    PARTICIPATION("Participação");
+    private final String descricao;
 
-    private final String description;
-
-    EvaluationType(String description) {
-        this.description = description;
+    EvaluationType(String descricao) {
+        this.descricao = descricao;
     }
 
+    public String getDescricao() {
+        return descricao;
+    }
+
+    // Alias para compatibilidade com a view (EL chama getDescription())
     public String getDescription() {
-        return description;
-    }
-
-    /**
-     * Tipos que compõem a média trimestral (MT) no sistema angolano.
-     */
-    public static boolean isTrimesterComponent(EvaluationType type) {
-        return type == CONTINUOUS_ASSESSMENT
-            || type == TEACHER_TEST
-            || type == FINAL_TEST;
+        return descricao;
     }
 }

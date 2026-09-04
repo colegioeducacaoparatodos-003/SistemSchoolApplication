@@ -1,77 +1,55 @@
 package com.SistemSchool.modulo_Recursoa_Humano.lazy;
 
-import com.SistemSchool.modulo_Recursoa_Humano.dto.TeacherDTO;
-import com.SistemSchool.modulo_Recursoa_Humano.service.TeacherService;
-import org.primefaces.model.LazyDataModel;
-import org.primefaces.model.SortMeta;
-import org.primefaces.model.FilterMeta;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
-
-import java.util.HashMap;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public class TeacherLazyModel extends LazyDataModel<TeacherDTO> {
+import org.primefaces.model.FilterMeta;
+import org.primefaces.model.LazyDataModel;
+import org.primefaces.model.SortMeta;
+import org.primefaces.model.SortOrder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+
+import com.SistemSchool.modulo_Recursoa_Humano.controller.TeacherController;
+import com.SistemSchool.modulo_Recursoa_Humano.dto.TeacherDTO;
+
+public class TeacherLazyModel extends LazyDataModel<TeacherDTO> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final TeacherService teacherService;
+    private final TeacherController controller;
 
-    public TeacherLazyModel(TeacherService teacherService) {
-        this.teacherService = teacherService;
+    public TeacherLazyModel(TeacherController controller) {
+        this.controller = controller;
     }
 
     @Override
     public List<TeacherDTO> load(int first, int pageSize, Map<String, SortMeta> sortBy,
             Map<String, FilterMeta> filterBy) {
-        int page = first / pageSize;
 
-        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        int page = pageSize > 0 ? first / pageSize : 0;
 
+        Sort sort = Sort.by(Direction.DESC, "createdAt");
         if (sortBy != null && !sortBy.isEmpty()) {
-            SortMeta sortMeta = sortBy.values().iterator().next();
-            Sort.Direction direction = sortMeta.getOrder().isAscending()
-                    ? Sort.Direction.ASC
-                    : Sort.Direction.DESC;
-            sort = Sort.by(direction, sortMeta.getField());
+            SortMeta meta = sortBy.values().iterator().next();
+            Direction direction = meta.getOrder() == SortOrder.ASCENDING ? Direction.ASC : Direction.DESC;
+            sort = Sort.by(direction, meta.getField());
         }
 
-        Page<TeacherDTO> result = teacherService.findLazy(page, pageSize, sort, null);
+        Page<TeacherDTO> result = controller.getTeacherService().findLazy(page, pageSize, sort,
+                controller.getFilterTeacherNumber(), controller.getFilterName(), controller.getFilterStatus());
 
-        setRowCount((int) result.getTotalElements());
+        this.setRowCount((int) result.getTotalElements());
 
         return result.getContent();
     }
 
     @Override
     public int count(Map<String, FilterMeta> filterBy) {
-        Map<String, Object> filters = new HashMap<>();
-        if (filterBy != null) {
-            for (FilterMeta meta : filterBy.values()) {
-                Object value = meta.getFilterValue();
-                if (value != null && !value.toString().isBlank()) {
-                    filters.put(meta.getField(), value);
-                }
-            }
-        }
-        Page<TeacherDTO> page = teacherService.findLazy(0, 1, Sort.unsorted(), filters);
-        return (int) page.getTotalElements();
+        return (int) controller.getTeacherService().countFiltered(
+                controller.getFilterTeacherNumber(), controller.getFilterName(), controller.getFilterStatus());
     }
 
-    @Override
-    public TeacherDTO getRowData(String rowKey) {
-        return teacherService.getAllTeachers()
-                .stream()
-                .filter(t -> t.getPkTeacher().toString().equals(rowKey))
-                .findFirst()
-                .orElse(null);
-    }
-
-    @Override
-    public String getRowKey(TeacherDTO teacherDTO) {
-        return teacherDTO.getPkTeacher() != null
-                ? teacherDTO.getPkTeacher().toString()
-                : null;
-    }
 }

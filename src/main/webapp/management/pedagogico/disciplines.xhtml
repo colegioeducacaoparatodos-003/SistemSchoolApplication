@@ -1,0 +1,919 @@
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="titulo">#{msg.disciplines}</ui:define>
+
+    <ui:define name="content">
+        <style>
+            :root {
+                --stu-black: #141414;
+                --stu-red: #c8102e;
+                --stu-yellow: #f5b400;
+                --stu-green: #1e8e3e;
+                --stu-blue: #1a5fb4;
+                --stu-surface: #ffffff;
+                --stu-surface-2: #f7f7f8;
+                --stu-border: #e6e6e8;
+                --stu-text: #141414;
+                --stu-muted: #666a70;
+                --stu-radius: 12px;
+                --stu-shadow: 0 4px 20px rgba(20, 20, 20, .10);
+                --font-mono: 'DM Mono', monospace;
+            }
+
+            .breadcrumb-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: #fff8e1;
+                border: 1px solid rgba(245, 180, 0, .35);
+                color: #8a6400;
+                border-radius: 99px;
+                padding: 3px 12px;
+                font-size: .72rem;
+                font-weight: 600;
+            }
+
+            .stu-page {
+                padding: 1.2rem;
+            }
+
+            @media(min-width:768px) {
+                .stu-page {
+                    padding: 1.6rem 2rem 2.5rem;
+                }
+            }
+
+            .stu-header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 1rem;
+                margin-bottom: 1.4rem;
+            }
+
+            .stu-header-left {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .stu-header-icon {
+                width: 46px;
+                height: 46px;
+                border-radius: 12px;
+                background: linear-gradient(135deg, var(--stu-black) 0%, var(--stu-red) 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--stu-yellow);
+                font-size: 1.2rem;
+                flex-shrink: 0;
+            }
+
+            .stu-header-title h1 {
+                font-size: 1.35rem;
+                font-weight: 800;
+                margin: 0 0 .2rem;
+                color: var(--stu-text);
+            }
+
+            .stu-header-title p {
+                font-size: .85rem;
+                color: var(--stu-muted);
+                margin: 0;
+            }
+
+            .stu-stats {
+                display: grid;
+                grid-template-columns: repeat(1, 1fr);
+                gap: .9rem;
+                margin-bottom: 1.4rem;
+            }
+
+            @media(min-width:576px) {
+                .stu-stats {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+
+            .stu-stat {
+                background: var(--stu-surface);
+                border: 1px solid var(--stu-border);
+                border-radius: var(--stu-radius);
+                box-shadow: var(--stu-shadow);
+                padding: 1.1rem 1.2rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                transition: transform .2s;
+            }
+
+            .stu-stat:hover {
+                transform: translateY(-2px);
+            }
+
+            .stu-stat-label {
+                font-size: .72rem;
+                color: var(--stu-muted);
+                text-transform: uppercase;
+                letter-spacing: .04em;
+                font-weight: 700;
+            }
+
+            .stu-stat-value {
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: var(--stu-text);
+                margin-top: .15rem;
+            }
+
+            .stu-stat-icon {
+                width: 42px;
+                height: 42px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.1rem;
+            }
+
+            .stu-stat-icon.dark {
+                background: var(--stu-black);
+                color: var(--stu-yellow);
+            }
+
+            .stu-stat-icon.green {
+                background: #e8f6ec;
+                color: var(--stu-green);
+            }
+
+            .stu-stat-icon.red {
+                background: #fdecee;
+                color: var(--stu-red);
+            }
+
+            .stu-card {
+                background: var(--stu-surface);
+                border: 1px solid var(--stu-border);
+                border-radius: var(--stu-radius);
+                box-shadow: var(--stu-shadow);
+                overflow: hidden;
+            }
+
+            .stu-toolbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 1rem 1.2rem;
+                border-bottom: 1px solid var(--stu-border);
+                gap: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .stu-toolbar-left {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                flex-wrap: wrap;
+                flex-grow: 1;
+            }
+
+            .stu-toolbar-right {
+                display: flex;
+                align-items: center;
+                gap: .6rem;
+                flex-wrap: wrap;
+            }
+
+            .stu-filters {
+                display: flex;
+                align-items: center;
+                gap: .6rem;
+                flex-wrap: wrap;
+                padding: .8rem 1.2rem;
+                background: var(--stu-surface-2);
+                border-bottom: 1px solid var(--stu-border);
+            }
+
+            .stu-filters .ui-inputfield,
+            .stu-filters .ui-selectonemenu {
+                min-width: 160px;
+            }
+
+            .stu-search-wrap {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+
+            .stu-search-wrap .pi-search {
+                position: absolute;
+                left: 10px;
+                color: var(--stu-muted);
+                font-size: .8rem;
+            }
+
+            .stu-search-input {
+                padding: 7px 10px 7px 30px;
+                border: 1px solid var(--stu-border);
+                border-radius: 8px;
+                font-size: .85rem;
+                width: 100%;
+                background: var(--stu-surface-2);
+                outline: none;
+            }
+
+            @media(min-width:768px) {
+                .stu-search-input {
+                    width: 260px;
+                }
+            }
+
+            .stu-search-input:focus {
+                border-color: var(--stu-red);
+                box-shadow: 0 0 0 3px rgba(200, 16, 46, .1);
+            }
+
+            .stu-table.p-datatable .p-datatable-thead>tr>th {
+                background: var(--stu-black) !important;
+                color: var(--stu-yellow) !important;
+                font-size: .7rem !important;
+                text-transform: uppercase !important;
+                padding: .7rem 1rem !important;
+                border-color: var(--stu-black) !important;
+            }
+
+            .stu-table.p-datatable .p-datatable-tbody>tr>td {
+                font-size: .82rem !important;
+                padding: .72rem 1rem !important;
+            }
+
+            .stu-table.p-datatable .p-datatable-tbody>tr:hover {
+                background: var(--stu-surface-2) !important;
+            }
+
+            .stu-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 3px 10px;
+                border-radius: 99px;
+                font-size: .72rem;
+                font-weight: 700;
+            }
+
+            .stu-badge.status-active {
+                background: #e8f6ec;
+                color: var(--stu-green);
+                border: 1px solid rgba(30, 142, 62, .3);
+            }
+
+            .stu-badge.status-inactive {
+                background: #fdecee;
+                color: var(--stu-red);
+                border: 1px solid rgba(200, 16, 46, .3);
+            }
+
+            .stu-actions {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .stu-act {
+                width: 30px;
+                height: 30px;
+                border-radius: 6px;
+                border: 1px solid var(--stu-border);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: .8rem;
+                cursor: pointer;
+                transition: all .15s;
+            }
+
+            .stu-act:hover {
+                transform: scale(1.08);
+            }
+
+            .stu-act.view {
+                color: var(--stu-blue);
+                background: #eaf1fb;
+            }
+
+            .stu-act.edit {
+                color: #8a6400;
+                background: #fff8e1;
+            }
+
+            .stu-act.delete {
+                color: var(--stu-red);
+                background: #fdecee;
+            }
+
+            .stu-act.print {
+                color: #059669;
+                background: #d1fae5;
+            }
+
+            .stu-empty {
+                text-align: center;
+                padding: 3rem 1rem;
+                color: var(--stu-muted);
+            }
+
+            .stu-empty i {
+                font-size: 2.5rem;
+                opacity: .2;
+                margin-bottom: .5rem;
+                display: block;
+            }
+
+            .stu-dialog-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: .6rem;
+                margin-top: .5rem;
+                flex-wrap: wrap;
+            }
+
+            .sc-loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(20, 20, 20, 0.85);
+                -webkit-backdrop-filter: blur(8px);
+                backdrop-filter: blur(8px);
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity .35s ease, visibility .35s ease;
+            }
+
+            .sc-loading-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .sc-loading-box {
+                background: var(--stu-surface);
+                border-radius: var(--stu-radius);
+                padding: 2.5rem 3rem;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 1.2rem;
+                border: 1px solid var(--stu-border);
+                min-width: 260px;
+                transform: scale(0.9);
+                transition: transform .35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+            .sc-loading-overlay.active .sc-loading-box {
+                transform: scale(1);
+            }
+
+            .sc-loader-rings {
+                position: relative;
+                width: 72px;
+                height: 72px;
+            }
+
+            .sc-loader-rings::before,
+            .sc-loader-rings::after {
+                content: '';
+                position: absolute;
+                border-radius: 50%;
+                border: 3px solid transparent;
+            }
+
+            .sc-loader-rings::before {
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border-top-color: var(--stu-red);
+                border-right-color: var(--stu-yellow);
+                animation: scSpin 1.2s linear infinite;
+            }
+
+            .sc-loader-rings::after {
+                top: 10px;
+                left: 10px;
+                width: calc(100% - 20px);
+                height: calc(100% - 20px);
+                border-bottom-color: var(--stu-black);
+                border-left-color: #e63946;
+                animation: scSpinReverse .9s linear infinite;
+            }
+
+            .sc-loader-core {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 16px;
+                height: 16px;
+                background: linear-gradient(135deg, var(--stu-red), var(--stu-yellow));
+                border-radius: 50%;
+                animation: scPulse 1s ease-in-out infinite;
+                box-shadow: 0 0 15px rgba(200, 16, 46, 0.5);
+            }
+
+            @keyframes scSpin {
+                0% {
+                    transform: rotate(0deg)
+                }
+
+                100% {
+                    transform: rotate(360deg)
+                }
+            }
+
+            @keyframes scSpinReverse {
+                0% {
+                    transform: rotate(0deg)
+                }
+
+                100% {
+                    transform: rotate(-360deg)
+                }
+            }
+
+            @keyframes scPulse {
+
+                0%,
+                100% {
+                    transform: translate(-50%, -50%) scale(1);
+                    opacity: 1
+                }
+
+                50% {
+                    transform: translate(-50%, -50%) scale(1.4);
+                    opacity: .7
+                }
+            }
+
+            .sc-loading-text {
+                font-family: 'DM Sans', system-ui, sans-serif;
+                font-size: 1rem;
+                font-weight: 600;
+                color: var(--stu-text);
+                text-align: center;
+            }
+
+            .sc-loading-sub {
+                font-size: .78rem;
+                color: var(--stu-muted);
+                text-align: center;
+                margin-top: -.6rem;
+            }
+
+            .sc-loading-dots::after {
+                content: '';
+                animation: scDots 1.5s steps(4, end) infinite;
+            }
+
+            @keyframes scDots {
+                0% {
+                    content: ''
+                }
+
+                25% {
+                    content: '.'
+                }
+
+                50% {
+                    content: '..'
+                }
+
+                75% {
+                    content: '...'
+                }
+
+                100% {
+                    content: ''
+                }
+            }
+
+            .sc-loading-progress {
+                width: 100%;
+                height: 3px;
+                background: var(--stu-border);
+                border-radius: 99px;
+                overflow: hidden;
+                margin-top: .3rem;
+            }
+
+            .sc-loading-progress-bar {
+                height: 100%;
+                width: 0%;
+                background: linear-gradient(90deg, var(--stu-red), var(--stu-yellow));
+                border-radius: 99px;
+                animation: scProgress 2s ease-in-out infinite;
+            }
+
+            @keyframes scProgress {
+                0% {
+                    width: 0%;
+                    margin-left: 0%
+                }
+
+                50% {
+                    width: 60%;
+                    margin-left: 20%
+                }
+
+                100% {
+                    width: 0%;
+                    margin-left: 100%
+                }
+            }
+
+            @media (max-width: 576px) {
+                .stu-header {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .stu-toolbar {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .stu-toolbar-right .ui-button {
+                    width: 100%;
+                }
+
+                .stu-filters {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .stu-filters .ui-inputfield,
+                .stu-filters .ui-selectonemenu,
+                .stu-filters .ui-button {
+                    width: 100% !important;
+                    min-width: unset !important;
+                }
+
+                .stu-dialog-footer {
+                    justify-content: stretch;
+                }
+
+                .stu-dialog-footer .ui-button {
+                    flex: 1 1 auto;
+                }
+            }
+        </style>
+
+        <div id="scLoadingOverlay" class="sc-loading-overlay">
+            <div class="sc-loading-box">
+                <div class="sc-loader-rings">
+                    <div class="sc-loader-core"></div>
+                </div>
+                <div class="sc-loading-text">A processar<span class="sc-loading-dots"></span></div>
+                <div class="sc-loading-sub">Por favor aguarde</div>
+                <div class="sc-loading-progress">
+                    <div class="sc-loading-progress-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stu-page">
+            <h:form id="formDisciplinas">
+                <p:growl id="messages" showDetail="true" life="5000">
+                    <p:autoUpdate />
+                </p:growl>
+
+                <div class="stu-header">
+                    <div class="stu-header-left">
+                        <div class="stu-header-icon"><i class="pi pi-book" /></div>
+                        <div class="stu-header-title">
+                            <h1>Disciplinas</h1>
+                            <p>Gestão do catálogo de disciplinas do sistema</p>
+                        </div>
+                    </div>
+                    <span class="breadcrumb-pill"><i class="pi pi-home" style="font-size:.65rem" /> Gestão › Pedagógico
+                        › Disciplinas</span>
+                </div>
+
+                <div class="stu-stats">
+                    <div class="stu-stat">
+                        <div>
+                            <div class="stu-stat-label">Total</div>
+                            <div class="stu-stat-value">
+                                <h:outputText value="#{disciplineController.totalDisciplineCount}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </div>
+                        </div>
+                        <div class="stu-stat-icon dark"><i class="pi pi-book" /></div>
+                    </div>
+                    <div class="stu-stat">
+                        <div>
+                            <div class="stu-stat-label">Ativas</div>
+                            <div class="stu-stat-value">
+                                <h:outputText value="#{disciplineController.activeCount}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </div>
+                        </div>
+                        <div class="stu-stat-icon green"><i class="pi pi-check-circle" /></div>
+                    </div>
+                    <div class="stu-stat">
+                        <div>
+                            <div class="stu-stat-label">Inativas</div>
+                            <div class="stu-stat-value">
+                                <h:outputText value="#{disciplineController.inactiveCount}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </div>
+                        </div>
+                        <div class="stu-stat-icon red"><i class="pi pi-times-circle" /></div>
+                    </div>
+                </div>
+
+                <div class="stu-card">
+                    <div class="stu-toolbar">
+                        <div class="stu-toolbar-left">
+                            <span style="font-weight:700; font-size:.9rem; color:var(--stu-text);"><i class="pi pi-list"
+                                    style="color:var(--stu-red); margin-right:.4rem;" /> Registos</span>
+                        </div>
+                        <div class="stu-toolbar-right">
+                            <p:menuButton value="Exportar" icon="pi pi-file-export" styleClass="ui-button-outlined">
+                                <p:menuitem value="PDF" icon="pi pi-file-pdf" action="#{disciplineController.exportPdf}"
+                                    ajax="false" />
+                                <p:menuitem value="Excel" icon="pi pi-file-excel">
+                                    <p:dataExporter type="xlsx" target="dtDisciplinas" fileName="disciplinas" />
+                                </p:menuitem>
+                                <p:menuitem value="CSV" icon="pi pi-file-o">
+                                    <p:dataExporter type="csv" target="dtDisciplinas" fileName="disciplinas" />
+                                </p:menuitem>
+                                <p:divider />
+                                <p:menuitem value="Imprimir" icon="pi pi-print"
+                                    onclick="window.print(); return false;" />
+                            </p:menuButton>
+                            <p:commandButton value="Nova Disciplina" icon="pi pi-plus" styleClass="ui-button-success"
+                                actionListener="#{disciplineController.prepareNewDiscipline}" onstart="showScLoading()"
+                                oncomplete="hideScLoading(); PF('createDisciplineDialog').show()"
+                                update=":disciplineCreateForm" process="@this" />
+                        </div>
+                    </div>
+
+                    <div class="stu-filters">
+                        <p:inputText value="#{disciplineController.filterDisciplineCode}" placeholder="Código..."
+                            styleClass="stu-search-input" />
+                        <p:inputText value="#{disciplineController.filterDisciplineName}" placeholder="Nome..."
+                            styleClass="stu-search-input" />
+                        <p:selectOneMenu value="#{disciplineController.filterStatus}" placeholder="Status">
+                            <f:selectItem itemLabel="Todos os status" itemValue="" />
+                            <f:selectItems value="#{disciplineController.statuses}" var="st" itemLabel="#{st}"
+                                itemValue="#{st}" />
+                        </p:selectOneMenu>
+                        <p:commandButton icon="pi pi-filter" value="Aplicar"
+                            action="#{disciplineController.applyFilters}" update="dtDisciplinas messages"
+                            styleClass="ui-button-primary" />
+                        <p:commandButton icon="pi pi-filter-slash" value="Limpar"
+                            action="#{disciplineController.clearFilters}" update="@form"
+                            styleClass="ui-button-outlined ui-button-secondary" />
+                    </div>
+
+                    <p:dataTable id="dtDisciplinas" widgetVar="dtDisciplinas" styleClass="stu-table" var="d"
+                        value="#{disciplineController.filteredDisciplines}" paginator="true" rows="10" reflow="true"
+                        paginatorPosition="bottom"
+                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
+                        rowsPerPageTemplate="5,10,20,50" emptyMessage="Nenhuma disciplina encontrada.">
+
+                        <p:column headerText="Código" sortBy="#{d.disciplineCode}" style="width:140px">
+                            <span style="font-family:var(--font-mono); font-weight:600;">#{d.disciplineCode}</span>
+                        </p:column>
+                        <p:column headerText="Nome" sortBy="#{d.disciplineName}">
+                            <div style="font-weight:700; color:var(--stu-text);">#{d.disciplineName}</div>
+                            <div style="font-size:.75rem; color:var(--stu-muted);">#{d.description}</div>
+                        </p:column>
+                        <p:column headerText="Status" sortBy="#{d.status}" style="width:120px; text-align:center">
+                            <span class="stu-badge status-#{d.status.toString().toLowerCase()}">#{d.status}</span>
+                        </p:column>
+                        <p:column headerText="Criado em" sortBy="#{d.createdAt}" style="width:140px; text-align:center">
+                            <h:outputText value="#{d.createdAt}">
+                                <f:convertDateTime pattern="dd/MM/yyyy" type="localDateTime" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Ações" style="width:140px; text-align:center" exportable="false">
+                            <div class="stu-actions">
+                                <p:commandButton styleClass="stu-act view" icon="pi pi-eye" title="Ver"
+                                    action="#{disciplineController.viewDisciplineDetails(d.pkDiscipline)}"
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('viewDisciplineDialog').show()"
+                                    update=":viewDisciplineForm" process="@this" />
+                                <p:commandButton styleClass="stu-act edit" icon="pi pi-pencil" title="Editar"
+                                    action="#{disciplineController.openEditDialog(d.pkDiscipline)}"
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('editDisciplineDialog').show()"
+                                    update=":disciplineEditForm" process="@this" />
+                                <p:commandButton styleClass="stu-act delete" icon="pi pi-trash" title="Eliminar"
+                                    onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); PF('deleteDisciplineDialog').show()"
+                                    update=":deleteDisciplineForm" process="@this">
+                                    <f:setPropertyActionListener value="#{d.pkDiscipline}"
+                                        target="#{disciplineController.selectedId}" />
+                                </p:commandButton>
+                            </div>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+            </h:form>
+
+            <!-- DELETE -->
+            <h:form id="deleteDisciplineForm">
+                <p:dialog widgetVar="deleteDisciplineDialog" modal="true" resizable="false"
+                    header="Confirmar Eliminação" style="width:90vw; max-width:420px;" closable="true" responsive="true"
+                    fitViewport="true">
+                    <div style="padding:.8rem 0 1.2rem; display:flex; gap:1rem; align-items:flex-start;">
+                        <i class="pi pi-exclamation-triangle"
+                            style="color:var(--stu-red); font-size:1.8rem; flex-shrink:0;" />
+                        <div>
+                            <div style="font-weight:700; margin-bottom:.3rem;">Tem a certeza?</div>
+                            <div style="font-size:.88rem; color:var(--stu-muted);">Esta ação não pode ser desfeita.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stu-dialog-footer">
+                        <p:commandButton value="Cancelar" type="button" onclick="PF('deleteDisciplineDialog').hide()"
+                            styleClass="ui-button-outlined ui-button-secondary" />
+                        <p:commandButton value="Sim, eliminar" icon="pi pi-trash" styleClass="ui-button-danger"
+                            action="#{disciplineController.deleteDiscipline}" process="@this"
+                            oncomplete="PF('deleteDisciplineDialog').hide()"
+                            update=":formDisciplinas:dtDisciplinas :formDisciplinas:messages" />
+                    </div>
+                </p:dialog>
+            </h:form>
+
+            <!-- VIEW -->
+            <h:form id="viewDisciplineForm">
+                <p:dialog widgetVar="viewDisciplineDialog" modal="true" resizable="false"
+                    header="Detalhes da Disciplina" style="width:90vw; max-width:500px;" closable="true"
+                    responsive="true" fitViewport="true">
+                    <div style="padding:.5rem 0;">
+                        <div style="text-align:center; margin-bottom:1.2rem;">
+                            <div
+                                style="width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg, var(--stu-black), var(--stu-red)); color:var(--stu-yellow); display:flex; align-items:center; justify-content:center; font-size:1.6rem; margin:0 auto .6rem;">
+                                <i class="pi pi-book"></i>
+                            </div>
+                            <div style="font-size:1.15rem; font-weight:700;">
+                                #{disciplineController.selectedDiscipline.disciplineName}</div>
+                            <div style="font-size:.85rem; color:var(--stu-muted);">
+                                #{disciplineController.selectedDiscipline.disciplineCode}</div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.8rem; font-size:.9rem;">
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                    Código</div>
+                                <div style="font-weight:700;">#{disciplineController.selectedDiscipline.disciplineCode}
+                                </div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                    Status</div>
+                                <div style="font-weight:700;">#{disciplineController.selectedDiscipline.status}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                    Descrição</div>
+                                <div>#{disciplineController.selectedDiscipline.description}</div>
+                            </div>
+                            <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;"
+                                rendered="#{not empty disciplineController.selectedDiscipline.obs}">
+                                <div
+                                    style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
+                                    Observações</div>
+                                <div>#{disciplineController.selectedDiscipline.obs}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stu-dialog-footer">
+                        <p:commandButton value="Fechar" type="button" onclick="PF('viewDisciplineDialog').hide()"
+                            styleClass="ui-button-outlined" />
+                    </div>
+                </p:dialog>
+            </h:form>
+            <!-- CREATE -->
+            <h:form id="disciplineCreateForm">
+                <p:dialog widgetVar="createDisciplineDialog" header="Nova Disciplina" modal="true" showEffect="fade"
+                    hideEffect="fade" closeOnEscape="true" dynamic="true" resizable="false"
+                    styleClass="st-dialog-create" responsive="true" fitViewport="true">
+                    <p:messages showDetail="true" closable="true" />
+                    <div style="padding:1rem;">
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Código" styleClass="st-label" />
+                            <div
+                                style="padding:9px 12px; border:1px dashed var(--stu-border); border-radius:8px; background:var(--stu-surface-2); color:var(--stu-muted); font-family:var(--font-mono); font-size:.85rem;">
+                                Gerado automaticamente ao guardar (DISC-#{java.time.Year.now()}-#####)
+                            </div>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel for="dName" value="Nome" styleClass="st-label" />
+                            <p:inputText id="dName" value="#{disciplineController.discipline.disciplineName}"
+                                required="true" style="width:100%;" />
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel for="dDesc" value="Descrição" styleClass="st-label" />
+                            <p:inputTextarea id="dDesc" value="#{disciplineController.discipline.description}" rows="3"
+                                autoResize="false" style="width:100%;" />
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel for="dStatus" value="Status" styleClass="st-label" />
+                            <p:selectOneMenu id="dStatus" value="#{disciplineController.discipline.status}"
+                                style="width:100%;">
+                                <f:selectItems value="#{disciplineController.statuses}" var="s" itemLabel="#{s}"
+                                    itemValue="#{s}" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="stu-dialog-footer">
+                        <p:commandButton value="Cancelar" type="button" onclick="PF('createDisciplineDialog').hide()"
+                            styleClass="ui-button-outlined ui-button-secondary" />
+                        <p:commandButton value="Guardar" icon="pi pi-save" styleClass="ui-button-success"
+                            action="#{disciplineController.saveDiscipline}" process="@form"
+                            update=":disciplineCreateForm :formDisciplinas:dtDisciplinas :formDisciplinas:messages"
+                            oncomplete="if(!args.validationFailed){ PF('createDisciplineDialog').hide(); }" />
+                    </div>
+                </p:dialog>
+            </h:form> 
+            
+            <!-- EDIT -->
+            <h:form id="disciplineEditForm">
+                <p:dialog widgetVar="editDisciplineDialog" header="Editar Disciplina" modal="true" showEffect="fade"
+                    hideEffect="fade" closeOnEscape="true" dynamic="true" resizable="false"
+                    styleClass="st-dialog-create" responsive="true" fitViewport="true">
+                    <p:messages showDetail="true" closable="true" />
+                    <div style="padding:1rem;">
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Código" styleClass="st-label" />
+                            <p:inputText value="#{disciplineController.editDto.disciplineCode}" disabled="true"
+                                style="width:100%;" />
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Nome" styleClass="st-label" />
+                            <p:inputText value="#{disciplineController.editDto.disciplineName}" required="true"
+                                style="width:100%;" />
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Descrição" styleClass="st-label" />
+                            <p:inputTextarea value="#{disciplineController.editDto.description}" rows="3"
+                                autoResize="false" style="width:100%;" />
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <p:outputLabel value="Status" styleClass="st-label" />
+                            <p:selectOneMenu value="#{disciplineController.editDto.status}" style="width:100%;">
+                                <f:selectItems value="#{disciplineController.statuses}" var="s" itemLabel="#{s}"
+                                    itemValue="#{s}" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <div class="stu-dialog-footer">
+                        <p:commandButton value="Cancelar" type="button" onclick="PF('editDisciplineDialog').hide()"
+                            styleClass="ui-button-outlined ui-button-secondary" />
+                        <p:commandButton value="Atualizar" icon="pi pi-save" styleClass="ui-button-success"
+                            action="#{disciplineController.saveUpdate}" process="@form"
+                            update=":disciplineEditForm :formDisciplinas:dtDisciplinas :formDisciplinas:messages"
+                            oncomplete="if(!args.validationFailed){ PF('editDisciplineDialog').hide(); }" />
+                    </div>
+                </p:dialog>
+            </h:form>
+        </div>
+
+        <script>
+            function showScLoading() { document.getElementById('scLoadingOverlay').classList.add('active'); }
+            function hideScLoading() { document.getElementById('scLoadingOverlay').classList.remove('active'); }
+            if (window.PrimeFaces) {
+                PrimeFaces.ajax.Queue.originalAdd = PrimeFaces.ajax.Queue.add;
+                PrimeFaces.ajax.Queue.add = function (req) {
+                    req.originalOncomplete = req.onsuccess;
+                    req.onsuccess = function (xhr, status, args) { hideScLoading(); if (req.originalOncomplete) req.originalOncomplete(xhr, status, args); };
+                    req.originalOnerror = req.onerror;
+                    req.onerror = function (xhr, status, error) { hideScLoading(); if (req.originalOnerror) req.originalOnerror(xhr, status, error); };
+                    PrimeFaces.ajax.Queue.originalAdd(req);
+                };
+            }
+        </script>
+    </ui:define>
+</ui:composition>

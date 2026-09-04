@@ -107,6 +107,29 @@ public interface EnrolmentRepository extends JpaRepository<Enrolment, Long> {
                      ORDER BY e.student.fullName
                      """)
        List<EnrolmentDTO> findAllEnrolmentsDTOBySchoolClass(@Param("schoolClassPk") Long schoolClassPk);
+
+       @Query("""
+                     SELECT e
+                     FROM Enrolment e
+                     JOIN FETCH e.student
+                     JOIN FETCH e.schoolClass
+                     WHERE e.schoolClass.pkSchoolClass = :schoolClassPk
+                     ORDER BY e.student.fullName
+                     """)
+       List<Enrolment> findBySchoolClass_PkSchoolClassWithStudent(@Param("schoolClassPk") Long schoolClassPk);
+
+       // NOVO: usado pelo BoletimController para listar as matrículas de um aluno
+       // sem cair em LazyInitializationException. Não faz JOIN FETCH de e.student
+       // porque o Student já é conhecido pelo chamador (evita fetch duplicado).
+       @Query("""
+                     SELECT e
+                     FROM Enrolment e
+                     JOIN FETCH e.schoolClass
+                     WHERE e.student.pkStudent = :studentPk
+                     ORDER BY e.enrolmentData DESC
+                     """)
+       List<Enrolment> findByStudent_PkStudentWithSchoolClass(@Param("studentPk") Long studentPk);
+
        // -------------------------------
        // Queries utilitárias
        // -------------------------------

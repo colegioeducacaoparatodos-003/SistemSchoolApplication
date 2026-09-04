@@ -1,278 +1,264 @@
-<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:ui="jakarta.faces.facelets"
+    xmlns:p="primefaces">
 
-    <p:dialog id="editTeacherDialog" widgetVar="editTeacherDialog" header="#{msg.editTeacher}" modal="true"
-        showEffect="fade" hideEffect="fade" closeOnEscape="true" styleClass="te-dialog-edit" dynamic="true"
-        resizable="false" appendTo="@(body)" responsive="true" fitViewport="true">
+    <p:dialog id="editTeacherDialog" widgetVar="editTeacherDialog"
+        header="Editar Professor" modal="true" showEffect="fade" hideEffect="fade"
+        closeOnEscape="true" styleClass="tc-dialog-edit" dynamic="true"
+        resizable="false" responsive="true" fitViewport="true" width="720">
 
-        <h:form id="teacherEditForm" styleClass="ui-fluid" enctype="multipart/form-data">
-            <p:messages id="msgsEdit" showDetail="true" closable="true" globalOnly="true" />
+        <!-- Sem appendTo, pelo mesmo motivo indicado em teacherCreateDialog.xhtml -->
+        <h:form id="editTeacherForm" enctype="multipart/form-data" styleClass="ui-fluid">
 
-            <div class="te-dialog-body">
+            <p:messages id="msgsEdit" showDetail="false" closable="true" globalOnly="true" />
 
-                <!-- 1 · IDENTIFICAÇÃO DO PROFESSOR -->
-                <div class="te-section">
-                    <div class="te-section-title"><i class="pi pi-user"></i> #{msg.teacherIdentification}</div>
+            <div class="tc-dialog-body">
+
+                <!-- ====================================================
+                     SECCAO 1 – IDENTIFICACAO
+                     ==================================================== -->
+                <div class="tc-section">
+                    <div class="tc-section-title"><i class="pi pi-id-card"></i> Identificação</div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="teacherNumber" value="#{msg.teacherNumber}"
-                            styleClass="tc-label tc-label-col" />
+                        <p:outputLabel value="Nº Professor" styleClass="tc-label tc-label-col" />
                         <div class="tc-field-col">
-                            <p:inputText id="teacherNumber" value="#{teacherController.teacher.teacherNumber}"
-                                readonly="true" styleClass="tc-readonly-field"
-                                placeholder="PROF-2026-0001" />
+                            <h:outputText value="#{teacherController.selectedId}" styleClass="tc-readonly-field" />
                         </div>
                     </div>
 
-                    <div class="te-field-row">
-                        <p:outputLabel for="firstName" value="#{msg.firstName}"
-                            styleClass="te-label te-label-col req" />
-                        <div class="te-field-col">
-                            <p:inputText id="firstName" value="#{teacherController.editDto.fristName}"
-                                required="true" />
-                            <p:message for="firstName" display="text" styleClass="te-field-msg" />
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editFristName" value="Primeiro Nome" styleClass="tc-label tc-label-col req" />
+                        <div class="tc-field-col">
+                            <p:inputText id="editFristName" value="#{teacherController.editDto.fristName}" required="true"
+                                requiredMessage="O primeiro nome é obrigatório" style="width:100%;" />
+                            <p:message for="editFristName" display="text" styleClass="tc-field-msg" />
                         </div>
                     </div>
 
-                    <div class="te-field-row">
-                        <p:outputLabel for="lastName" value="#{msg.lastName}" styleClass="te-label te-label-col req" />
-                        <div class="te-field-col">
-                            <p:inputText id="lastName" value="#{teacherController.editDto.lastName}" required="true" />
-                            <p:message for="lastName" display="text" styleClass="te-field-msg" />
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editLastName" value="Último Nome" styleClass="tc-label tc-label-col req" />
+                        <div class="tc-field-col">
+                            <p:inputText id="editLastName" value="#{teacherController.editDto.lastName}" required="true"
+                                requiredMessage="O último nome é obrigatório" style="width:100%;" />
+                            <p:message for="editLastName" display="text" styleClass="tc-field-msg" />
                         </div>
                     </div>
 
-                    <div class="te-field-row">
-                        <p:outputLabel for="gender" value="#{msg.gender}" styleClass="te-label te-label-col req" />
-                        <div class="te-field-col">
-                            <p:selectOneMenu id="gender" value="#{teacherController.editDto.gender}" required="true">
-                                <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
-                                    noSelectionOption="true" />
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editGender" value="Género" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:selectOneMenu id="editGender" value="#{teacherController.editDto.gender}" style="width:100%;">
+                                <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true" />
                                 <f:selectItems value="#{teacherController.genders}" var="g"
-                                    itemLabel="#{teacherController.genderLabel(g)}" itemValue="#{g}" />
-                            </p:selectOneMenu>
-                            <p:message for="gender" display="text" styleClass="te-field-msg" />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2 · QUALIFICAÇÃO E VÍNCULO -->
-                <div class="te-section">
-                    <div class="te-section-title"><i class="pi pi-briefcase"></i> #{msg.professionalQualification}</div>
-
-                    <div class="te-field-row">
-                        <p:outputLabel for="qualification" value="#{msg.qualificationLevel}"
-                            styleClass="te-label te-label-col req" />
-                        <div class="te-field-col">
-                            <p:selectOneMenu id="qualification" value="#{teacherController.editDto.qualificationLivel}"
-                                required="true">
-                                <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
-                                    noSelectionOption="true" />
-                                <f:selectItems value="#{teacherController.qualificationLevels}" var="q"
-                                    itemLabel="#{teacherController.qualificationLabel(q)}" itemValue="#{q}" />
+                                    itemLabel="#{g.descricao}" itemValue="#{g}" />
                             </p:selectOneMenu>
                         </div>
                     </div>
-
-                    <div class="te-field-row">
-                        <p:outputLabel for="contractType" value="#{msg.contractType}"
-                            styleClass="te-label te-label-col req" />
-                        <div class="te-field-col">
-                            <p:selectOneMenu id="contractType" value="#{teacherController.editDto.contractType}"
-                                required="true">
-                                <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
-                                    noSelectionOption="true" />
-                                <f:selectItems value="#{teacherController.contractTypes}" var="c"
-                                    itemLabel="#{teacherController.contractTypeLabel(c)}" itemValue="#{c}" />
-                            </p:selectOneMenu>
-                        </div>
-                    </div>
-
-                    <div class="te-field-row">
-                        <p:outputLabel for="baseSalary" value="#{msg.baseSalary}" styleClass="te-label te-label-col" />
-                        <div class="te-field-col">
-                            <p:inputNumber id="baseSalary" value="#{teacherController.editDto.baseSalary}" symbol=" Kz"
-                                symbolPosition="s" decimalPlaces="2" thousandSeparator="." decimalSeparator="," />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3 · DOCUMENTOS E CONTACTO -->
-                <div class="te-section">
-                    <div class="te-section-title"><i class="pi pi-id-card"></i> #{msg.documentsAndContact}</div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="biNumber" value="#{msg.idCardNumber}" styleClass="tc-label tc-label-col" />
+                        <p:outputLabel for="editQualificationLivel" value="Nível de Qualificação"
+                            styleClass="tc-label tc-label-col req" />
                         <div class="tc-field-col">
-                            <p:inputText id="biNumber" value="#{teacherController.teacher.biNumber}"
-                                validator="#{teacherController.validateBI}" />
-                            <p:message for="biNumber" display="text" styleClass="tc-field-msg" />
-                        </div>
-                    </div>
-
-                    <div class="te-field-row">
-                        <p:outputLabel for="biExpiry" value="#{msg.idCardExpiryDate}"
-                            styleClass="te-label te-label-col" />
-                        <div class="te-field-col">
-                            <p:datePicker id="biExpiry" value="#{teacherController.editDto.biExpiryDate}"
-                                pattern="dd/MM/yyyy" showIcon="true" monthNavigator="true" yearNavigator="true"
-                                yearRange="2020:2050" locale="pt" />
-                        </div>
-                    </div>
-
-                    <div class="te-field-row">
-                        <p:outputLabel for="email" value="#{msg.email}" styleClass="te-label te-label-col" />
-                        <div class="te-field-col">
-                            <p:inputText id="email" value="#{teacherController.editDto.email}"
-                                placeholder="professor@escola.ao" />
-                        </div>
-                    </div>
-
-                    <div class="te-field-row">
-                        <p:outputLabel for="phone" value="#{msg.phone1}" styleClass="te-label te-label-col" />
-                        <div class="te-field-col">
-                            <p:inputMask id="phone" value="#{teacherController.editDto.phone}" mask="999 999 999" />
-                        </div>
-                    </div>
-
-                    <div class="te-field-row">
-                        <p:outputLabel for="mobilePhone" value="#{msg.phone2}" styleClass="te-label te-label-col" />
-                        <div class="te-field-col">
-                            <p:inputMask id="mobilePhone" value="#{teacherController.editDto.mobilePhone}"
-                                mask="999 999 999" />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4 · MORADA -->
-                <div class="te-section">
-                    <div class="te-section-title"><i class="pi pi-map-marker"></i> #{msg.residentialAddress}</div>
-
-                    <div class="te-field-row">
-                        <p:outputLabel for="addressStreet" value="#{msg.addressStreet}"
-                            styleClass="te-label te-label-col" />
-                        <div class="te-field-col">
-                            <p:inputText id="addressStreet" value="#{teacherController.editDto.addressStreet}" />
-                        </div>
-                    </div>
-
-                    <div class="te-field-row">
-                        <p:outputLabel for="province" value="#{msg.province}" styleClass="te-label te-label-col" />
-                        <div class="te-field-col">
-                            <p:inputText id="province" value="#{teacherController.editDto.addressProvice}" />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 5 · FOTO -->
-                <div class="te-section">
-                    <div class="te-section-title"><i class="pi pi-image"></i> #{msg.teacherPhoto}</div>
-
-                    <div class="te-photo-row">
-                        <div class="te-photo-preview">
-                            <img id="tePhotoPreviewImg" src="#{teacherController.editDto.photoPhath}"
-                                class="#{empty teacherController.editDto.photoPhath ? 'te-photo-preview-img te-hidden' : 'te-photo-preview-img'}"
-                                alt="" />
-                            <i id="tePhotoPlaceholderIcon"
-                                class="#{empty teacherController.editDto.photoPhath ? 'pi pi-user te-photo-placeholder-icon' : 'pi pi-user te-photo-placeholder-icon te-hidden'}"></i>
-                        </div>
-                        <div class="te-photo-upload-control">
-                            <p:fileUpload id="photo" value="#{teacherController.uploadedPhoto}" mode="simple"
-                                skinSimple="true" label="#{msg.changePhoto}" styleClass="p-button-sm"
-                                allowTypes="/(\.|\/)(jpe?g|png|webp)$/i"
-                                onchange="tePreviewSimpleFile(this,'tePhotoPreviewImg','tePhotoPlaceholderIcon')" />
-                        </div>
-                    </div>
-                    <div class="text-muted small mt-1">JPG, PNG ou WEBP (Máx 2MB)</div>
-                </div>
-
-                <!-- 6 · STATUS E NOTAS -->
-                <div class="te-section">
-                    <div class="te-section-title"><i class="pi pi-check-circle"></i> #{msg.registrationFinalization}
-                    </div>
-
-                    <div class="te-field-row">
-                        <p:outputLabel for="status" value="#{msg.status}" styleClass="te-label te-label-col req" />
-                        <div class="te-field-col">
-                            <p:selectOneMenu id="status" value="#{teacherController.editDto.status}" required="true">
-                                <f:selectItem itemLabel="— #{msg.select} —" itemValue="#{null}"
-                                    noSelectionOption="true" />
-                                <f:selectItems value="#{teacherController.teacherStatuses}" var="s"
-                                    itemLabel="#{teacherController.statusLabel(s)}" itemValue="#{s}" />
+                            <p:selectOneMenu id="editQualificationLivel" value="#{teacherController.editDto.qualificationLivel}"
+                                required="true" requiredMessage="Selecione o nível de qualificação" style="width:100%;">
+                                <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{teacherController.qualificationLevels}" var="q"
+                                    itemLabel="#{q.descricao}" itemValue="#{q}" />
                             </p:selectOneMenu>
+                            <p:message for="editQualificationLivel" display="text" styleClass="tc-field-msg" />
                         </div>
                     </div>
 
-                    <div class="te-field-row">
-                        <p:outputLabel for="notes" value="#{msg.notes}" styleClass="te-label te-label-col" />
-                        <div class="te-field-col">
-                            <p:inputTextarea id="notes" value="#{teacherController.editDto.obs}" rows="3"
-                                placeholder="#{msg.additionalNotesPlaceholder}" />
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editContractType" value="Tipo de Vínculo" styleClass="tc-label tc-label-col req" />
+                        <div class="tc-field-col">
+                            <p:selectOneMenu id="editContractType" value="#{teacherController.editDto.contractType}"
+                                required="true" requiredMessage="Selecione o tipo de vínculo" style="width:100%;">
+                                <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{teacherController.contractTypes}" var="c"
+                                    itemLabel="#{c.descricao}" itemValue="#{c}" />
+                            </p:selectOneMenu>
+                            <p:message for="editContractType" display="text" styleClass="tc-field-msg" />
+                        </div>
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editStatus" value="Estado" styleClass="tc-label tc-label-col req" />
+                        <div class="tc-field-col">
+                            <p:selectOneMenu id="editStatus" value="#{teacherController.editDto.status}"
+                                required="true" requiredMessage="Selecione o estado" style="width:100%;">
+                                <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{teacherController.teacherStatuses}" var="s"
+                                    itemLabel="#{s.descricao}" itemValue="#{s}" />
+                            </p:selectOneMenu>
+                            <p:message for="editStatus" display="text" styleClass="tc-field-msg" />
+                        </div>
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editBiNumber" value="Número do BI" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputText id="editBiNumber" value="#{teacherController.editDto.biNumber}" style="width:100%;" />
+                        </div>
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editBiExpiryDate" value="Validade do BI" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:datePicker id="editBiExpiryDate" value="#{teacherController.editDto.biExpiryDate}"
+                                pattern="dd/MM/yyyy" showIcon="true" monthNavigator="true" yearNavigator="true"
+                                yearRange="1950:2030" locale="pt" style="width:100%;" />
                         </div>
                     </div>
                 </div>
 
+                <!-- ====================================================
+                     SECCAO 2 – FOTO
+                     ==================================================== -->
+                <div class="tc-section">
+                    <div class="tc-section-title"><i class="pi pi-image"></i> Fotografia</div>
+
+                    <div class="tc-photo-row">
+                        <div class="tc-photo-preview">
+                            <p:graphicImage value="/resources/images/default-avatar.png"
+                                styleClass="tc-photo-preview-img" />
+                        </div>
+
+                        <div class="tc-photo-upload-control">
+                            <p:fileUpload id="editPhotoUpload"
+                                mode="simple"
+                                value="#{teacherController.uploadedPhoto}"
+                                allowTypes="/(\.|\/)(gif|jpe?g|png)$/"
+                                auto="false"
+                                label="Escolher nova foto"
+                                skinSimple="true" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====================================================
+                     SECCAO 3 – MORADA
+                     ==================================================== -->
+                <div class="tc-section">
+                    <div class="tc-section-title"><i class="pi pi-map-marker"></i> Endereço</div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editAddressStreet" value="Endereço" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputText id="editAddressStreet" value="#{teacherController.editDto.addressStreet}"
+                                style="width:100%;" />
+                        </div>
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editAddressProvice" value="Província" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputText id="editAddressProvice" value="#{teacherController.editDto.addressProvice}"
+                                style="width:100%;" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====================================================
+                     SECCAO 4 – CONTACTOS E REMUNERACAO
+                     ==================================================== -->
+                <div class="tc-section">
+                    <div class="tc-section-title"><i class="pi pi-phone"></i> Contactos e Remuneração</div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editEmail" value="Email" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputText id="editEmail" value="#{teacherController.editDto.email}" style="width:100%;">
+                                <f:validateRegex pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$" />
+                            </p:inputText>
+                        </div>
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editPhone" value="Telefone Fixo" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputText id="editPhone" value="#{teacherController.editDto.phone}" style="width:100%;" />
+                        </div>
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editMobilePhone" value="Telemóvel" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputText id="editMobilePhone" value="#{teacherController.editDto.mobilePhone}"
+                                style="width:100%;" />
+                        </div>
+                    </div>
+
+                    <div class="tc-field-row">
+                        <p:outputLabel for="editBaseSalary" value="Salário Base" styleClass="tc-label tc-label-col" />
+                        <div class="tc-field-col">
+                            <p:inputNumber id="editBaseSalary" value="#{teacherController.editDto.baseSalary}"
+                                symbol=" Kz" symbolPosition="s" decimalPlaces="2" style="width:100%;" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====================================================
+                     SECCAO 5 – OBSERVACOES
+                     ==================================================== -->
+                <div class="tc-section">
+                    <div class="tc-section-title"><i class="pi pi-file-edit"></i> Observações</div>
+                    <p:inputTextarea id="editObs" value="#{teacherController.editDto.obs}" rows="3" autoResize="false"
+                        style="width:100%;" />
+                </div>
+
             </div>
 
-            <div class="te-dialog-footer">
-                <p:commandButton value="#{msg.cancel}" icon="pi pi-times"
-                    styleClass="ui-button-outlined ui-button-secondary" type="button"
-                    onclick="PF('editTeacherDialog').hide()" />
-
-                <p:commandButton value="#{msg.save}" icon="pi pi-save" styleClass="ui-button-success"
-                    action="#{teacherController.saveUpdate}" ajax="false" />
+            <div class="tc-dialog-footer">
+                <p:commandButton value="Cancelar" icon="pi pi-times" type="button"
+                    onclick="PF('editTeacherDialog').hide()" styleClass="ui-button-outlined ui-button-secondary"
+                    process="@this" />
+                <p:commandButton value="Guardar Alterações" icon="pi pi-save" styleClass="ui-button-success"
+                    action="#{teacherController.saveUpdate}"
+                    update=":editTeacherForm:msgsEdit :formTeachers:dtTeachers :formTeachers:messages"
+                    oncomplete="if(!args.validationFailed) PF('editTeacherDialog').hide()"
+                    process="@form" />
             </div>
+
         </h:form>
-
-        <script type="text/javascript">
-            /* <![CDATA[ */
-            // Pré-visualização client-side da nova foto escolhida (upload simples).
-            function tePreviewSimpleFile(input, imgId, iconId) {
-                if (input.files && input.files[0]) {
-                    var reader = new FileReader();
-                    reader.onload = function (e) {
-                        var img = document.getElementById(imgId);
-                        var icon = document.getElementById(iconId);
-                        if (img) { img.src = e.target.result; img.classList.remove('te-hidden'); }
-                        if (icon) { icon.classList.add('te-hidden'); }
-                    };
-                    reader.readAsDataURL(input.files[0]);
-                }
-            }
-            /* ]]> */
-        </script>
 
         <style type="text/css">
             /* ============================================================
-               VARIAVEIS
+               VARIAVEIS (identicas ao dialog de criacao)
                ============================================================ */
-            .te-dialog-edit {
-                --te-primary: #c8102e;
-                --te-text-main: #374151;
-                --te-border: #e5e7eb;
-                --te-bg-body: #f9fafb;
+            .tc-dialog-edit {
+                --tc-primary: #c8102e;
+                --tc-text-main: #374151;
+                --tc-border: #e5e7eb;
+                --tc-bg-body: #f9fafb;
             }
 
-            .te-dialog-edit .ui-dialog {
+            /* ============================================================
+               DIALOG – ALTURA TOTAL DO VIEWPORT
+               ============================================================ */
+            .tc-dialog-edit .ui-dialog {
                 display: flex !important;
                 flex-direction: column !important;
                 margin: 0 auto !important;
                 border-radius: 8px !important;
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, .1), 0 10px 10px -5px rgba(0, 0, 0, .04) !important;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
             }
 
-            .te-dialog-edit .ui-dialog-titlebar {
+            .tc-dialog-edit .ui-dialog-titlebar {
                 background: #fff !important;
-                border-bottom: 1px solid var(--te-border) !important;
+                border-bottom: 1px solid var(--tc-border) !important;
                 padding: 1rem 1.25rem !important;
                 font-size: 1.1rem !important;
                 font-weight: 700 !important;
-                color: var(--te-text-main) !important;
+                color: var(--tc-text-main) !important;
             }
 
-            .te-dialog-edit .ui-dialog-content {
-                background: var(--te-bg-body) !important;
+            .tc-dialog-edit .ui-dialog-content {
+                background: var(--tc-bg-body) !important;
                 padding: 0 !important;
                 flex: 1 1 auto !important;
                 overflow: hidden !important;
@@ -280,192 +266,198 @@
                 flex-direction: column !important;
             }
 
-            .te-dialog-body {
+            /* ============================================================
+               CORPO COM SCROLL INTERNO
+               ============================================================ */
+            .tc-dialog-body {
                 flex: 1 1 auto !important;
                 overflow-y: auto !important;
                 padding: 1rem 1.25rem !important;
             }
 
-            .te-dialog-body::-webkit-scrollbar {
-                width: 5px;
-            }
-
-            .te-dialog-body::-webkit-scrollbar-track {
-                background: transparent;
-            }
-
-            .te-dialog-body::-webkit-scrollbar-thumb {
-                background: #d1d5db;
-                border-radius: 99px;
-            }
-
-            .te-section {
+            /* ============================================================
+               SECCOES
+               ============================================================ */
+            .tc-section {
                 background: #fff;
                 border-radius: 8px;
                 padding: 1rem 1.25rem;
                 margin-bottom: 1rem;
-                border: 1px solid var(--te-border);
+                border: 1px solid var(--tc-border);
             }
 
-            .te-section:last-child {
+            .tc-section:last-child {
                 margin-bottom: 0;
             }
 
-            .te-section-title {
-                font-size: .95rem;
+            .tc-section-title {
+                font-size: 0.95rem;
                 font-weight: 700;
-                color: var(--te-text-main);
+                color: var(--tc-text-main);
                 margin-bottom: 1rem;
                 display: flex;
                 align-items: center;
-                gap: .5rem;
-                padding-bottom: .5rem;
-                border-bottom: 1px solid var(--te-border);
+                gap: 0.5rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 1px solid var(--tc-border);
             }
 
-            .te-section-title i {
-                color: var(--te-primary);
+            .tc-section-title i {
+                color: var(--tc-primary);
                 font-size: 1.1rem;
             }
 
-            .te-field-row {
+            /* ============================================================
+               LINHAS DE CAMPO – TITULO A ESQUERDA, CAMPO A DIREITA
+               ============================================================ */
+            .tc-field-row {
                 display: flex;
                 align-items: flex-start;
                 gap: 1rem;
                 margin-bottom: 1rem;
             }
 
-            .te-field-row:last-child {
+            .tc-field-row:last-child {
                 margin-bottom: 0;
             }
 
-            .te-label-col {
+            .tc-label-col {
                 flex: 0 0 150px;
                 max-width: 150px;
-                padding-top: .6rem;
+                padding-top: 0.6rem;
                 margin-bottom: 0 !important;
             }
 
-            .te-field-col {
+            .tc-field-col {
                 flex: 1 1 auto;
                 min-width: 0;
             }
 
-            .te-label {
-                font-size: .88rem;
+            /* ============================================================
+               LABELS
+               ============================================================ */
+            .tc-label {
+                font-size: 0.88rem;
                 font-weight: 600;
-                color: var(--te-text-main);
+                color: var(--tc-text-main);
                 display: block;
             }
 
-            .te-label.req::after {
+            .tc-label.req::after {
                 content: " *";
                 color: #dc2626;
             }
 
-            .te-readonly-field.ui-state-disabled,
-            .te-readonly-field[readonly] {
-                background: #f3f4f6 !important;
-                opacity: .85 !important;
-                color: #6b7280 !important;
-                cursor: not-allowed;
+            /* ============================================================
+               CAMPO SOMENTE LEITURA (numero de professor)
+               ============================================================ */
+            .tc-readonly-field {
+                display: inline-flex;
+                align-items: center;
+                min-height: 2.35rem;
+                padding: 0 0.75rem;
+                width: 100%;
+                background: #f3f4f6;
+                border: 1px solid var(--tc-border);
+                border-radius: 6px;
+                color: #6b7280;
+                opacity: 0.85;
+                box-sizing: border-box;
             }
 
-            .te-field-msg {
+            /* ============================================================
+               MENSAGENS DE VALIDACAO
+               ============================================================ */
+            .tc-field-msg {
                 display: block;
                 margin-top: 4px;
-                font-size: .8rem;
+                font-size: 0.8rem;
             }
 
-            .te-field-msg.ui-message-error {
+            .tc-field-msg.ui-message-error {
                 color: #dc2626;
             }
 
-            .te-dialog-edit .ui-inputfield,
-            .te-dialog-edit .ui-selectonemenu {
+            /* ============================================================
+               INPUTS
+               ============================================================ */
+            .tc-dialog-edit .ui-inputfield,
+            .tc-dialog-edit .ui-selectonemenu {
                 width: 100% !important;
             }
 
-            .te-photo-row {
+            /* ============================================================
+               FOTO – CARTAO DE PRE-VISUALIZACAO + BOTAO A DIREITA
+               ============================================================ */
+            .tc-photo-row {
                 display: flex;
                 align-items: center;
                 gap: 1.25rem;
             }
 
-            .te-photo-preview {
+            .tc-photo-preview {
                 flex: 0 0 84px;
                 width: 84px;
                 height: 84px;
                 border-radius: 10px;
-                border: 2px dashed var(--te-border);
-                background: var(--te-bg-body);
+                border: 2px dashed var(--tc-border);
+                background: var(--tc-bg-body);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 overflow: hidden;
             }
 
-            .te-photo-preview-img {
+            .tc-photo-preview-img {
                 width: 100% !important;
                 height: 100% !important;
-                object-fit: cover;
+                object-fit: cover !important;
             }
 
-            .te-photo-placeholder-icon {
-                font-size: 1.8rem;
-                color: #9ca3af;
-            }
-
-            .te-hidden {
-                display: none !important;
-            }
-
-            .te-photo-upload-control {
+            .tc-photo-upload-control {
                 flex: 1 1 auto;
                 min-width: 0;
                 display: flex;
                 justify-content: flex-end;
             }
 
-            .te-photo-upload-control .ui-fileupload {
+            .tc-photo-upload-control .ui-fileupload {
                 width: 100%;
                 border: none;
                 background: transparent;
             }
 
-            .te-photo-upload-control .ui-fileupload-choose {
-                width: 100%;
-                display: flex;
-                justify-content: center;
-            }
-
-            .tc-readonly-field.ui-state-disabled,
-            .tc-readonly-field[readonly] {
-                background: #f3f4f6 !important;
-                opacity: .85 !important;
-                color: #6b7280 !important;
-                cursor: not-allowed;
-            }
-
-            .te-dialog-footer {
+            .tc-photo-upload-control .ui-fileupload-buttonbar {
                 display: flex;
                 justify-content: flex-end;
-                gap: .6rem;
-                padding: 1rem 1.25rem;
-                background: #fff;
-                border-top: 1px solid var(--te-border);
-                flex-wrap: wrap;
-            }
-
-            .te-dialog-footer .ui-button {
-                min-width: 120px;
+                gap: 0.5rem;
+                border: none;
+                background: transparent;
+                padding: 0;
             }
 
             /* ============================================================
-               RESPONSIVO
+               FOOTER
+               ============================================================ */
+            .tc-dialog-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: 0.6rem;
+                padding: 1rem 1.25rem;
+                background: #fff;
+                border-top: 1px solid var(--tc-border);
+                flex-wrap: wrap;
+            }
+
+            .tc-dialog-body::-webkit-scrollbar { width: 5px; }
+            .tc-dialog-body::-webkit-scrollbar-track { background: transparent; }
+            .tc-dialog-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+
+            /* ============================================================
+               RESPONSIVO – DESKTOP (min 1024 px) – margens topo/direita/esquerda/baixo
                ============================================================ */
             @media (min-width: 1024px) {
-                .te-dialog-edit .ui-dialog {
+                .tc-dialog-edit .ui-dialog {
                     top: 1.5rem !important;
                     left: 1.5rem !important;
                     right: 1.5rem !important;
@@ -476,13 +468,16 @@
                     max-height: calc(100vh - 3rem) !important;
                 }
 
-                .te-dialog-body {
+                .tc-dialog-body {
                     max-height: calc(100vh - 200px) !important;
                 }
             }
 
+            /* ============================================================
+               RESPONSIVO – TABLET (768 a 1023 px) – margens topo/direita/esquerda/baixo
+               ============================================================ */
             @media (min-width: 768px) and (max-width: 1023px) {
-                .te-dialog-edit .ui-dialog {
+                .tc-dialog-edit .ui-dialog {
                     top: 1rem !important;
                     left: 1rem !important;
                     right: 1rem !important;
@@ -493,22 +488,25 @@
                     max-height: calc(100vh - 2rem) !important;
                 }
 
-                .te-dialog-body {
+                .tc-dialog-body {
                     max-height: calc(100vh - 180px) !important;
                 }
 
-                .te-label-col {
+                .tc-label-col {
                     flex-basis: 130px;
                     max-width: 130px;
                 }
             }
 
+            /* ============================================================
+               RESPONSIVO – MOBILE (max 767 px) – margens topo/direita/esquerda/baixo
+               ============================================================ */
             @media (max-width: 767px) {
-                .te-dialog-edit .ui-dialog {
-                    top: .5rem !important;
-                    left: .5rem !important;
-                    right: .5rem !important;
-                    bottom: .5rem !important;
+                .tc-dialog-edit .ui-dialog {
+                    top: 0.5rem !important;
+                    left: 0.5rem !important;
+                    right: 0.5rem !important;
+                    bottom: 0.5rem !important;
                     width: auto !important;
                     height: auto !important;
                     max-width: none !important;
@@ -517,90 +515,88 @@
                     border-radius: 6px !important;
                 }
 
-                .te-dialog-body {
-                    padding: .75rem !important;
+                .tc-dialog-body {
+                    padding: 0.75rem !important;
                     max-height: calc(100vh - 150px) !important;
                 }
 
-                .te-section {
-                    padding: .75rem;
+                .tc-section {
+                    padding: 0.75rem;
                 }
 
-                .te-label-col {
+                .tc-label-col {
                     flex-basis: 110px;
                     max-width: 110px;
-                    padding-top: .5rem;
+                    padding-top: 0.5rem;
                 }
 
-                .te-field-row {
-                    gap: .6rem;
+                .tc-field-row {
+                    gap: 0.6rem;
                 }
 
-                .te-dialog-footer {
-                    padding: .75rem;
-                    gap: .5rem;
+                .tc-dialog-footer {
+                    padding: 0.75rem;
+                    gap: 0.5rem;
                 }
 
-                .te-dialog-footer .ui-button {
+                .tc-dialog-footer .ui-button {
                     flex: 1 1 auto;
                     min-width: 0;
                 }
 
-                .te-section-title {
-                    font-size: .9rem;
-                }
-
-                .te-label {
-                    font-size: .8rem;
-                }
+                .tc-section-title { font-size: 0.9rem; }
+                .tc-label { font-size: 0.8rem; }
             }
 
+            /* ============================================================
+               RESPONSIVO – MOBILE PEQUENO (max 576 px) – margens topo/direita/esquerda/baixo
+               ============================================================ */
             @media (max-width: 576px) {
-                .te-dialog-edit .ui-dialog {
-                    top: .25rem !important;
-                    left: .25rem !important;
-                    right: .25rem !important;
-                    bottom: .25rem !important;
-                    max-height: calc(100vh - .5rem) !important;
+                .tc-dialog-edit .ui-dialog {
+                    top: 0.25rem !important;
+                    left: 0.25rem !important;
+                    right: 0.25rem !important;
+                    bottom: 0.25rem !important;
+                    max-height: calc(100vh - 0.5rem) !important;
                     border-radius: 4px !important;
                 }
 
-                .te-dialog-body {
-                    padding: .5rem !important;
+                .tc-dialog-body {
+                    padding: 0.5rem !important;
                     max-height: calc(100vh - 140px) !important;
                 }
 
-                .te-section {
-                    padding: .6rem;
-                    margin-bottom: .6rem;
+                .tc-section {
+                    padding: 0.6rem;
+                    margin-bottom: 0.6rem;
                 }
 
-                .te-section-title {
-                    font-size: .9rem;
-                    margin-bottom: .75rem;
+                .tc-section-title {
+                    font-size: 0.9rem;
+                    margin-bottom: 0.75rem;
                 }
 
-                .te-label-col {
+                .tc-label-col {
                     flex-basis: 92px;
                     max-width: 92px;
                 }
 
-                .te-photo-row {
-                    gap: .75rem;
+                .tc-photo-row {
+                    gap: 0.75rem;
                 }
 
-                .te-photo-preview {
+                .tc-photo-preview {
                     flex-basis: 64px;
                     width: 64px;
                     height: 64px;
                 }
 
-                .te-dialog-footer {
+                .tc-dialog-footer {
                     flex-direction: column-reverse;
-                    padding: .6rem;
+                    padding: 0.6rem;
                 }
 
-                .te-dialog-footer .ui-button {
+                .tc-dialog-footer .ui-button {
                     width: 100%;
                 }
             }

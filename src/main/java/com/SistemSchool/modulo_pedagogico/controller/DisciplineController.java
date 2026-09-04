@@ -14,70 +14,45 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Named;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Named
 @ViewScoped
 public class DisciplineController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
     private static final Logger LOGGER = Logger.getLogger(DisciplineController.class.getName());
 
-    // ─────────────────────────────────────────────────────────────
-    // MODELOS
-    // ─────────────────────────────────────────────────────────────
-
+    // ── MODELOS ──
     private Discipline discipline = new Discipline();
-
     private DisciplineDTO editDto = new DisciplineDTO();
     private DisciplineDTO selectedDiscipline = new DisciplineDTO();
     private Long selectedId;
 
-    // ─────────────────────────────────────────────────────────────
-    // ESTATÍSTICAS
-    // ─────────────────────────────────────────────────────────────
+    // ── FILTROS AVANÇADOS ──
+    private String filterDisciplineCode;
+    private String filterDisciplineName;
+    private String filterStatus;
 
+    // ── ESTATÍSTICAS ──
     private long totalDisciplineCount;
-    private long activeDisciplineCount;
-    private long inactiveDisciplineCount;
-    private int totalWorkloadCount;
+    private long activeCount;
+    private long inactiveCount;
 
-    // ─────────────────────────────────────────────────────────────
-    // SERVIÇOS
-    // ─────────────────────────────────────────────────────────────
-
+    // ── SERVIÇOS ──
     @Inject
     private DisciplineService disciplineService;
-
     private transient DisciplineLazyModel lazyModel;
-
-    // ─────────────────────────────────────────────────────────────
-    // INICIALIZAÇÃO E NAVEGAÇÃO
-    // ─────────────────────────────────────────────────────────────
 
     @PostConstruct
     public void init() {
         lazyModel = new DisciplineLazyModel(disciplineService);
         computeStatistics();
-    }
-
-    private void computeStatistics() {
-        try {
-            totalDisciplineCount = disciplineService.getTotalDisciplineCount();
-            activeDisciplineCount = disciplineService.getActiveDisciplineCount();
-            inactiveDisciplineCount = disciplineService.getInactiveDisciplineCount();
-            totalWorkloadCount = disciplineService.getTotalWorkloadCount();
-        } catch (Exception e) {
-            totalDisciplineCount = 0;
-            activeDisciplineCount = 0;
-            inactiveDisciplineCount = 0;
-            totalWorkloadCount = 0;
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao calcular estatísticas", e.getMessage());
-            LOGGER.log(Level.SEVERE, "Erro ao calcular estatísticas de disciplinas", e);
-        }
     }
 
     public String load() {
@@ -87,90 +62,128 @@ public class DisciplineController implements Serializable {
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao carregar disciplinas", e.getMessage());
             LOGGER.log(Level.SEVERE, "Erro ao carregar a listagem de disciplinas", e);
         }
-        return "/management/pedagogico/discipline.xhtml?faces-redirect=true";
+        return "/management/pedagogico/disciplines.xhtml?faces-redirect=true";
     }
 
-    public DisciplineLazyModel getLazyModel() {
-        return lazyModel;
+    // ═══════════════════════════════════════════════════════════════
+    // FILTROS
+    // ═══════════════════════════════════════════════════════════════
+
+    public void applyFilters() {
+        computeStatistics();
+        addMessage(FacesMessage.SEVERITY_INFO, "Filtros aplicados", "");
     }
 
-    // ─────────────────────────────────────────────────────────────
+    public void clearFilters() {
+        filterDisciplineCode = null;
+        filterDisciplineName = null;
+        filterStatus = null;
+        if (lazyModel != null) {
+            lazyModel.clearFilters();
+        }
+        computeStatistics();
+        addMessage(FacesMessage.SEVERITY_INFO, "Filtros limpos", "");
+    }
+
+    public List<DisciplineDTO> getFilteredDisciplines() {
+        List<DisciplineDTO> all = disciplineService.getAllDisciplines();
+
+        return all.stream()
+                .filter(d -> filterDisciplineCode == null || filterDisciplineCode.isBlank() ||
+                        (d.getDisciplineCode() != null
+                                && d.getDisciplineCode().toLowerCase().contains(filterDisciplineCode.toLowerCase())))
+                .filter(d -> filterDisciplineName == null || filterDisciplineName.isBlank() ||
+                        (d.getDisciplineName() != null
+                                && d.getDisciplineName().toLowerCase().contains(filterDisciplineName.toLowerCase())))
+                .filter(d -> filterStatus == null || filterStatus.isBlank() ||
+                        (d.getStatus() != null && d.getStatus().toString().equalsIgnoreCase(filterStatus)))
+                .collect(Collectors.toList());
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // ESTATÍSTICAS
+    // ═══════════════════════════════════════════════════════════════
+
+    private void computeStatistics() {
+        try {
+            List<DisciplineDTO> all = getFilteredDisciplines();
+            totalDisciplineCount = all.size();
+            activeCount = all.stream().filter(d -> d.getStatus() == DisciplineStatus.ATIVO).count();
+            inactiveCount = all.stream().filter(d -> d.getStatus() == DisciplineStatus.INATIVO).count();
+        } catch (Exception e) {
+            totalDisciplineCount = 0;
+            activeCount = 0;
+            inactiveCount = 0;
+            LOGGER.log(Level.SEVERE, "Erro ao calcular estatísticas", e);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // CRUD
-    // ─────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════
+
+    public void prepareNewDiscipline() {
+        discipline = new Discipline();
+    }
 
     public String saveDiscipline() {
         try {
+            if (discipline.getDisciplineName() == null || discipline.getDisciplineName().isBlank()) {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Disciplina", "Preencha todos os campos obrigatórios.");
+                return null;
+            }
             disciplineService.save(discipline);
-
             discipline = new Discipline();
             init();
-
-            FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .getFlash()
-                    .setKeepMessages(true);
-
-            addMessage(FacesMessage.SEVERITY_INFO, "Disciplina", "Disciplina registada com sucesso");
-
-            return "/management/pedagogico/discipline.xhtml?faces-redirect=true";
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Disciplina registada com sucesso");
+            return "/management/pedagogico/disciplines.xhtml?faces-redirect=true";
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erro ao gravar disciplina", e);
-            addMessage(FacesMessage.SEVERITY_ERROR, "Disciplina", e.getMessage());
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
             return null;
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // EDIT / UPDATE / DELETE
-    // ─────────────────────────────────────────────────────────────
-
-    public void openEditDialog() {
-        if (selectedId == null) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Nenhuma disciplina selecionada!", "");
+    public void openEditDialog(Long id) {
+        if (id == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhuma disciplina selecionada");
             return;
         }
-
-        DisciplineDTO dto = disciplineService.getAllDisciplines()
-                .stream()
-                .filter(d -> selectedId.equals(d.getPkDiscipline()))
-                .findFirst()
-                .orElse(null);
-
+        this.selectedId = id;
+        DisciplineDTO dto = disciplineService.getAllDisciplines().stream()
+                .filter(d -> id.equals(d.getPkDiscipline())).findFirst().orElse(null);
         if (dto != null) {
             mapDtoFields(dto, editDto = new DisciplineDTO());
             mapDtoFields(dto, selectedDiscipline);
         } else {
-            addMessage(FacesMessage.SEVERITY_WARN, "Disciplina não encontrada", "");
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Disciplina não encontrada");
         }
     }
 
-    public void loadSelectedDiscipline() {
-        if (selectedId == null) {
+    public void openDeleteDialog(Long id) {
+        if (id == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhuma disciplina selecionada");
             return;
         }
-
-        DisciplineDTO dto = disciplineService.getAllDisciplines()
-                .stream()
-                .filter(d -> selectedId.equals(d.getPkDiscipline()))
-                .findFirst()
-                .orElse(null);
-
-        if (dto != null) {
-            mapDtoFields(dto, selectedDiscipline);
-        } else {
-            addMessage(FacesMessage.SEVERITY_WARN, "Disciplina não encontrada", "");
-        }
+        this.selectedId = id;
     }
 
-    private void mapDtoFields(DisciplineDTO source, DisciplineDTO target) {
-        target.setPkDiscipline(source.getPkDiscipline());
-        target.setDisciplineCode(source.getDisciplineCode());
-        target.setDisciplineName(source.getDisciplineName());
-        target.setWorkload(source.getWorkload());
-        target.setStatus(source.getStatus());
-        target.setCreatedAt(source.getCreatedAt());
-        target.setUpdatedAt(source.getUpdatedAt());
+    public void deleteDiscipline() {
+        if (selectedId == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhuma disciplina selecionada para eliminar");
+            return;
+        }
+        try {
+            disciplineService.delete(selectedId);
+            selectedId = null;
+            init();
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Disciplina eliminada com sucesso");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Erro ao eliminar disciplina", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
+        }
     }
 
     public void saveUpdate() {
@@ -179,40 +192,44 @@ public class DisciplineController implements Serializable {
             init();
             editDto = new DisciplineDTO();
             selectedId = null;
-            addMessage(FacesMessage.SEVERITY_INFO, "Disciplina", "Disciplina atualizada com sucesso");
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Disciplina atualizada com sucesso");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erro ao atualizar disciplina", e);
-            addMessage(FacesMessage.SEVERITY_ERROR, "Disciplina", e.getMessage());
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
         }
     }
 
-    public void delete() {
-        if (selectedId == null) {
-            addMessage(FacesMessage.SEVERITY_WARN, "Nenhuma disciplina selecionada!", "");
+    public void viewDisciplineDetails(Long id) {
+        if (id == null)
             return;
-        }
-        try {
-            disciplineService.delete(selectedId);
-            selectedId = null;
-            init();
-            addMessage(FacesMessage.SEVERITY_INFO, "Disciplina", "Disciplina eliminada com sucesso");
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Erro ao eliminar disciplina", e);
-            addMessage(FacesMessage.SEVERITY_ERROR, "Disciplina", e.getMessage());
+        DisciplineDTO dto = disciplineService.getAllDisciplines().stream()
+                .filter(d -> id.equals(d.getPkDiscipline())).findFirst().orElse(null);
+        if (dto != null) {
+            this.selectedDiscipline = dto;
+            this.selectedId = id;
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════
     // UTIL
-    // ─────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════
+
+    private void mapDtoFields(DisciplineDTO source, DisciplineDTO target) {
+        target.setPkDiscipline(source.getPkDiscipline());
+        target.setDisciplineCode(source.getDisciplineCode());
+        target.setDisciplineName(source.getDisciplineName());
+        target.setDescription(source.getDescription());
+        target.setStatus(source.getStatus());
+        target.setObs(source.getObs());
+    }
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // GETTERS E SETTERS
-    // ─────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════
+    // GETTERS / SETTERS
+    // ═══════════════════════════════════════════════════════════════
 
     public Discipline getDiscipline() {
         return discipline;
@@ -246,33 +263,49 @@ public class DisciplineController implements Serializable {
         this.selectedId = selectedId;
     }
 
+    public DisciplineLazyModel getLazyModel() {
+        return lazyModel;
+    }
+
     public void setLazyModel(DisciplineLazyModel lazyModel) {
         this.lazyModel = lazyModel;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // ESTATÍSTICAS — GETTERS
-    // ─────────────────────────────────────────────────────────────
+    public String getFilterDisciplineCode() {
+        return filterDisciplineCode;
+    }
+
+    public void setFilterDisciplineCode(String filterDisciplineCode) {
+        this.filterDisciplineCode = filterDisciplineCode;
+    }
+
+    public String getFilterDisciplineName() {
+        return filterDisciplineName;
+    }
+
+    public void setFilterDisciplineName(String filterDisciplineName) {
+        this.filterDisciplineName = filterDisciplineName;
+    }
+
+    public String getFilterStatus() {
+        return filterStatus;
+    }
+
+    public void setFilterStatus(String filterStatus) {
+        this.filterStatus = filterStatus;
+    }
 
     public long getTotalDisciplineCount() {
         return totalDisciplineCount;
     }
 
-    public long getActiveDisciplineCount() {
-        return activeDisciplineCount;
+    public long getActiveCount() {
+        return activeCount;
     }
 
-    public long getInactiveDisciplineCount() {
-        return inactiveDisciplineCount;
+    public long getInactiveCount() {
+        return inactiveCount;
     }
-
-    public int getTotalWorkloadCount() {
-        return totalWorkloadCount;
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // ENUMS PARA DROPDOWNS
-    // ─────────────────────────────────────────────────────────────
 
     public DisciplineStatus[] getStatuses() {
         return DisciplineStatus.values();

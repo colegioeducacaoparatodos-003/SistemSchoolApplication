@@ -25,7 +25,7 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long pkStudent;
 
-    /** Número interno do Aluno(ex: ALU-00456) */
+    /** Número interno do Aluno(ex: ALU-2026-00456) */
     private String sudentNumber;
     private String fristName;
     private String lastName;

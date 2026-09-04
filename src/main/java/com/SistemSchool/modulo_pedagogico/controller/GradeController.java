@@ -3,17 +3,14 @@ package com.SistemSchool.modulo_pedagogico.controller;
 import com.SistemSchool.modulo_pedagogico.dto.EvaluationDTO;
 import com.SistemSchool.modulo_pedagogico.dto.GradeDTO;
 import com.SistemSchool.modulo_pedagogico.lazy.GradeLazyModel;
-import com.SistemSchool.modulo_pedagogico.io.GradeStatus;
+import com.SistemSchool.modulo_pedagogico.io.EvaluationType;
+import com.SistemSchool.modulo_pedagogico.io.Trimester;
 import com.SistemSchool.modulo_pedagogico.model.Evaluation;
 import com.SistemSchool.modulo_pedagogico.model.Grade;
 import com.SistemSchool.modulo_pedagogico.service.EvaluationService;
 import com.SistemSchool.modulo_pedagogico.service.GradeService;
 import com.SistemSchool.modulo_secrtaria.dto.EnrolmentDTO;
-import com.SistemSchool.modulo_secrtaria.dto.StudentDTO;
-import com.SistemSchool.modulo_secrtaria.model.Enrolment;
-import com.SistemSchool.modulo_secrtaria.model.Student;
 import com.SistemSchool.modulo_secrtaria.service.EnrolmentService;
-import com.SistemSchool.modulo_secrtaria.service.StudentService;
 
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -23,135 +20,59 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Named;
 
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Named
 @ViewScoped
 public class GradeController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
     private static final Logger LOGGER = Logger.getLogger(GradeController.class.getName());
 
-    // ─────────────────────────────────────────────────────────────
-    // MODELOS
-    // ─────────────────────────────────────────────────────────────
-
+    // ── MODELOS ──
     private Grade grade = new Grade();
-
     private GradeDTO editDto = new GradeDTO();
     private GradeDTO selectedGrade = new GradeDTO();
     private Long selectedId;
 
-    // Ids escolhidos no dropdown do formulário
+    // CORRIGIDO: Long com converter="jakarta.faces.Long" no XHTML
     private Long selectedEvaluationId;
     private Long selectedEnrolmentId;
-    private Long selectedStudentId;
 
-    // Listas para a view (dropdown), carregadas uma vez
-    private List<EvaluationDTO> evaluations = new java.util.ArrayList<>();
-    private List<EnrolmentDTO> enrolments = new java.util.ArrayList<>();
-    private List<StudentDTO> students = new java.util.ArrayList<>();
+    // ── FILTROS ──
+    private Long filterEvaluationId;
+    private Long filterEnrolmentId;
+    private String filterStudentName;
+    private String filterDisciplineName;
 
-    // ─────────────────────────────────────────────────────────────
-    // ESTATÍSTICAS
-    // ─────────────────────────────────────────────────────────────
+    // ── LISTAS ──
+    // CORRIGIDO: usar EvaluationDTO em vez de Evaluation para evitar LazyInitializationException
+    private List<EvaluationDTO> evaluations = new ArrayList<>();
+    private List<EnrolmentDTO> enrolments = new ArrayList<>();
 
-    private long totalGradesCount;
-    private long approvedCount;
-    private long pendingCount;
-    private double classAverage;
+    // ── ESTATÍSTICAS ──
+    private long totalGradeCount;
+    private double averageScore;
 
-    // ─────────────────────────────────────────────────────────────
-    // SERVIÇOS
-    // ─────────────────────────────────────────────────────────────
-
+    // ── SERVIÇOS ──
     @Inject
     private GradeService gradeService;
-
     @Inject
     private EvaluationService evaluationService;
-
     @Inject
     private EnrolmentService enrolmentService;
-
-    @Inject
-    private StudentService studentService;
-
     private transient GradeLazyModel lazyModel;
-
-    // ─────────────────────────────────────────────────────────────
-    // INICIALIZAÇÃO E NAVEGAÇÃO
-    // ─────────────────────────────────────────────────────────────
 
     @PostConstruct
     public void init() {
         lazyModel = new GradeLazyModel(gradeService);
         loadEvaluations();
         loadEnrolments();
-        loadStudents();
         computeStatistics();
-    }
-
-    private void loadEvaluations() {
-        try {
-            evaluations = evaluationService.getAllEvaluations();
-        } catch (Exception e) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao carregar avaliações", e.getMessage());
-            LOGGER.log(Level.SEVERE, "Erro ao carregar avaliações para o formulário de notas", e);
-        }
-    }
-
-    private void loadEnrolments() {
-        try {
-            enrolments = enrolmentService.getAllEnrolments();
-        } catch (Exception e) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao carregar matrículas", e.getMessage());
-            LOGGER.log(Level.SEVERE, "Erro ao carregar matrículas para o formulário de notas", e);
-        }
-    }
-
-    private void loadStudents() {
-        try {
-            students = studentService.getAllStudents();
-        } catch (Exception e) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao carregar alunos", e.getMessage());
-            LOGGER.log(Level.SEVERE, "Erro ao carregar alunos para o formulário de notas", e);
-        }
-    }
-
-    private void computeStatistics() {
-        try {
-            List<GradeDTO> all = gradeService.getAllGrades();
-
-            totalGradesCount = all.size();
-
-            approvedCount = all.stream()
-                    .filter(g -> g.getStatus() == GradeStatus.APPROVED)
-                    .count();
-
-            pendingCount = all.stream()
-                    .filter(g -> g.getStatus() == GradeStatus.PENDING)
-                    .count();
-
-            classAverage = all.stream()
-                    .filter(g -> g.getValue() != null)
-                    .mapToDouble(GradeDTO::getValue)
-                    .average()
-                    .orElse(0.0);
-
-        } catch (Exception e) {
-            totalGradesCount = 0;
-            approvedCount = 0;
-            pendingCount = 0;
-            classAverage = 0.0;
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao calcular estatísticas", e.getMessage());
-            LOGGER.log(Level.SEVERE, "Erro ao calcular estatísticas de notas", e);
-        }
     }
 
     public String load() {
@@ -164,287 +85,274 @@ public class GradeController implements Serializable {
         return "/management/pedagogico/grades.xhtml?faces-redirect=true";
     }
 
-    public GradeLazyModel getLazyModel() {
-        return lazyModel;
+    // ═══════════════════════════════════════════════════════════════
+    // FILTROS
+    // ═══════════════════════════════════════════════════════════════
+
+    public void applyFilters() {
+        computeStatistics();
+        addMessage(FacesMessage.SEVERITY_INFO, "Filtros aplicados", "");
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // CRUD
-    // ─────────────────────────────────────────────────────────────
+    public void clearFilters() {
+        filterEvaluationId = null;
+        filterEnrolmentId = null;
+        filterStudentName = null;
+        filterDisciplineName = null;
+        if (lazyModel != null) {
+            lazyModel.clearFilters();
+        }
+        computeStatistics();
+        addMessage(FacesMessage.SEVERITY_INFO, "Filtros limpos", "");
+    }
 
-    public String saveGrade() {
+    public List<GradeDTO> getFilteredGrades() {
+        List<GradeDTO> all = gradeService.getAllGrades();
+
+        return all.stream()
+                .filter(g -> filterEvaluationId == null ||
+                        (g.getEvaluationPk() != null && g.getEvaluationPk().equals(filterEvaluationId)))
+                .filter(g -> filterEnrolmentId == null ||
+                        (g.getEnrolmentPk() != null && g.getEnrolmentPk().equals(filterEnrolmentId)))
+                .filter(g -> filterStudentName == null || filterStudentName.isBlank() ||
+                        (g.getStudentFullName() != null && g.getStudentFullName().toLowerCase().contains(filterStudentName.toLowerCase())))
+                .filter(g -> filterDisciplineName == null || filterDisciplineName.isBlank() ||
+                        (g.getDisciplineName() != null && g.getDisciplineName().toLowerCase().contains(filterDisciplineName.toLowerCase())))
+                .collect(Collectors.toList());
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CARREGAMENTO
+    // ═══════════════════════════════════════════════════════════════
+
+    private void loadEvaluations() {
+        try {
+            evaluations = evaluationService.getAllEvaluations();
+            if (evaluations == null) {
+                evaluations = new ArrayList<>();
+            }
+        } catch (Exception e) {
+            evaluations = new ArrayList<>();
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao carregar avaliações", e.getMessage());
+            LOGGER.log(Level.SEVERE, "Erro ao carregar avaliações", e);
+        }
+    }
+
+    private void loadEnrolments() {
+        try {
+            enrolments = enrolmentService.getAllEnrolments();
+            if (enrolments == null) {
+                enrolments = new ArrayList<>();
+            }
+        } catch (Exception e) {
+            enrolments = new ArrayList<>();
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao carregar matrículas", e.getMessage());
+            LOGGER.log(Level.SEVERE, "Erro ao carregar matrículas", e);
+        }
+    }
+
+    private void computeStatistics() {
+        try {
+            List<GradeDTO> all = getFilteredGrades();
+            totalGradeCount = all.size();
+            averageScore = all.stream().mapToDouble(GradeDTO::getScore).average().orElse(0.0);
+        } catch (Exception e) {
+            totalGradeCount = 0;
+            averageScore = 0.0;
+            LOGGER.log(Level.SEVERE, "Erro ao calcular estatísticas", e);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CRUD
+    // ═══════════════════════════════════════════════════════════════
+
+    public void prepareNewGrade() {
+        grade = new Grade();
+        selectedEvaluationId = null;
+        selectedEnrolmentId = null;
+        loadEvaluations();
+        loadEnrolments();
+    }
+
+    public void saveGrade() {
         try {
             if (selectedEvaluationId == null) {
-                addMessage(FacesMessage.SEVERITY_ERROR, "Nota", "Selecione uma avaliação antes de gravar.");
-                return null;
+                addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "A avaliação é obrigatória.");
+                return;
             }
             if (selectedEnrolmentId == null) {
-                addMessage(FacesMessage.SEVERITY_ERROR, "Nota", "Selecione uma matrícula antes de gravar.");
-                return null;
+                addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "A matrícula / aluno é obrigatória.");
+                return;
             }
-            if (selectedStudentId == null) {
-                addMessage(FacesMessage.SEVERITY_ERROR, "Nota", "Selecione um aluno antes de gravar.");
-                return null;
+            if (grade.getScore() == null) {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "A nota é obrigatória.");
+                return;
             }
 
-            Evaluation evaluation = evaluationService.findById(selectedEvaluationId);
-            Enrolment enrolment = enrolmentService.findById(selectedEnrolmentId);
-            Student student = studentService.findById(selectedStudentId);
-
+            Evaluation evaluation = evaluationService.getById(selectedEvaluationId);
             grade.setEvaluation(evaluation);
+
+            var enrolment = enrolmentService.getById(selectedEnrolmentId);
             grade.setEnrolment(enrolment);
-            grade.setStudent(student);
 
             gradeService.save(grade);
 
             grade = new Grade();
             selectedEvaluationId = null;
             selectedEnrolmentId = null;
-            selectedStudentId = null;
+
             init();
 
-            FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .getFlash()
-                    .setKeepMessages(true);
-
-            addMessage(FacesMessage.SEVERITY_INFO, "Nota", "Nota registada com sucesso");
-
-            return "/management/pedagogico/grades.xhtml?faces-redirect=true";
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Nota lançada com sucesso");
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Erro ao gravar nota", e);
-            addMessage(FacesMessage.SEVERITY_ERROR, "Nota", e.getMessage());
-            return null;
+            LOGGER.log(Level.SEVERE, "Erro ao lançar nota", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // EDIT / UPDATE / DELETE
-    // ─────────────────────────────────────────────────────────────
-
-    public void openEditDialog() {
-        if (selectedId == null) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Nenhuma nota selecionada!", "");
+    public void openEditDialog(Long id) {
+        if (id == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhuma nota selecionada");
             return;
         }
+        this.selectedId = id;
+        loadEvaluations();
+        loadEnrolments();
 
-        GradeDTO dto = gradeService.getAllGrades()
-                .stream()
-                .filter(g -> selectedId.equals(g.getPkGrade()))
-                .findFirst()
-                .orElse(null);
-
+        GradeDTO dto = gradeService.getAllGrades().stream()
+                .filter(g -> id.equals(g.getPkGrade())).findFirst().orElse(null);
         if (dto != null) {
-            mapDtoFields(dto, editDto = new GradeDTO());
+            editDto = new GradeDTO();
+            mapDtoFields(dto, editDto);
             mapDtoFields(dto, selectedGrade);
             selectedEvaluationId = dto.getEvaluationPk();
             selectedEnrolmentId = dto.getEnrolmentPk();
-            selectedStudentId = dto.getStudentPk();
         } else {
-            addMessage(FacesMessage.SEVERITY_WARN, "Nota não encontrada", "");
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nota não encontrada");
         }
     }
 
-    public void loadSelectedGrade() {
-        if (selectedId == null) {
+    public void openDeleteDialog(Long id) {
+        if (id == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhuma nota selecionada");
             return;
         }
-
-        GradeDTO dto = gradeService.getAllGrades()
-                .stream()
-                .filter(g -> selectedId.equals(g.getPkGrade()))
-                .findFirst()
-                .orElse(null);
-
-        if (dto != null) {
-            mapDtoFields(dto, selectedGrade);
-        } else {
-            addMessage(FacesMessage.SEVERITY_WARN, "Nota não encontrada", "");
-        }
+        this.selectedId = id;
     }
 
-    private void mapDtoFields(GradeDTO source, GradeDTO target) {
-        target.setPkGrade(source.getPkGrade());
-        target.setEvaluationPk(source.getEvaluationPk());
-        target.setEvaluationDescription(source.getEvaluationDescription());
-        target.setEnrolmentPk(source.getEnrolmentPk());
-        target.setEnrolmentNumber(source.getEnrolmentNumber());
-        target.setStudentPk(source.getStudentPk());
-        target.setStudentFullName(source.getStudentFullName());
-        target.setValue(source.getValue());
-        target.setStatus(source.getStatus());
-        target.setObservation(source.getObservation());
-        target.setCreatedAt(source.getCreatedAt());
-        target.setUpdatedAt(source.getUpdatedAt());
-    }
-
-    public void saveUpdate() {
-        try {
-            if (selectedEvaluationId != null) {
-                editDto.setEvaluationPk(selectedEvaluationId);
-            }
-            if (selectedEnrolmentId != null) {
-                editDto.setEnrolmentPk(selectedEnrolmentId);
-            }
-            if (selectedStudentId != null) {
-                editDto.setStudentPk(selectedStudentId);
-            }
-            gradeService.update(editDto);
-            init();
-            editDto = new GradeDTO();
-            selectedId = null;
-            selectedEvaluationId = null;
-            selectedEnrolmentId = null;
-            selectedStudentId = null;
-            addMessage(FacesMessage.SEVERITY_INFO, "Nota", "Nota atualizada com sucesso");
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Erro ao atualizar nota", e);
-            addMessage(FacesMessage.SEVERITY_ERROR, "Nota", e.getMessage());
-        }
-    }
-
-    public void delete() {
+    public void deleteGrade() {
         if (selectedId == null) {
-            addMessage(FacesMessage.SEVERITY_WARN, "Nenhuma nota selecionada!", "");
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Nenhuma nota selecionada para eliminar");
             return;
         }
         try {
             gradeService.delete(selectedId);
             selectedId = null;
             init();
-            addMessage(FacesMessage.SEVERITY_INFO, "Nota", "Nota eliminada com sucesso");
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Nota eliminada com sucesso");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erro ao eliminar nota", e);
-            addMessage(FacesMessage.SEVERITY_ERROR, "Nota", e.getMessage());
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
+    public void saveUpdate() {
+        try {
+            if (editDto.getScore() == null) {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "A nota é obrigatória.");
+                return;
+            }
+
+            gradeService.update(editDto);
+            init();
+            editDto = new GradeDTO();
+            selectedId = null;
+            selectedEvaluationId = null;
+            selectedEnrolmentId = null;
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Nota atualizada com sucesso");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Erro ao atualizar nota", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
+        }
+    }
+
+    public void viewGradeDetails(Long id) {
+        if (id == null) return;
+        GradeDTO dto = gradeService.getAllGrades().stream()
+                .filter(g -> id.equals(g.getPkGrade())).findFirst().orElse(null);
+        if (dto != null) {
+            this.selectedGrade = dto;
+            this.selectedId = id;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // EXPORT
+    // ═══════════════════════════════════════════════════════════════
+
+    public void exportPdf() {
+        addMessage(FacesMessage.SEVERITY_INFO, "Exportar", "Funcionalidade PDF em desenvolvimento.");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // UTIL
-    // ─────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════
+
+    private void mapDtoFields(GradeDTO source, GradeDTO target) {
+        target.setPkGrade(source.getPkGrade());
+        target.setEvaluationPk(source.getEvaluationPk());
+        target.setEvaluationName(source.getEvaluationName());
+        target.setEvaluationType(source.getEvaluationType());
+        target.setTrimester(source.getTrimester());
+        target.setDisciplineName(source.getDisciplineName());
+        target.setEnrolmentPk(source.getEnrolmentPk());
+        target.setStudentFullName(source.getStudentFullName());
+        target.setStudentNumber(source.getStudentNumber());
+        target.setSchoolClassName(source.getSchoolClassName());
+        target.setScore(source.getScore());
+        target.setLaunchDate(source.getLaunchDate());
+        target.setObs(source.getObs());
+    }
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // GETTERS E SETTERS
-    // ─────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════
+    // GETTERS / SETTERS
+    // ═══════════════════════════════════════════════════════════════
 
-    public Grade getGrade() {
-        return grade;
-    }
+    public Grade getGrade() { return grade; }
+    public void setGrade(Grade grade) { this.grade = grade; }
+    public GradeDTO getEditDto() { return editDto; }
+    public void setEditDto(GradeDTO editDto) { this.editDto = editDto; }
+    public GradeDTO getSelectedGrade() { return selectedGrade; }
+    public void setSelectedGrade(GradeDTO selectedGrade) { this.selectedGrade = selectedGrade; }
+    public Long getSelectedId() { return selectedId; }
+    public void setSelectedId(Long selectedId) { this.selectedId = selectedId; }
 
-    public void setGrade(Grade grade) {
-        this.grade = grade;
-    }
+    public Long getSelectedEvaluationId() { return selectedEvaluationId; }
+    public void setSelectedEvaluationId(Long selectedEvaluationId) { this.selectedEvaluationId = selectedEvaluationId; }
+    public Long getSelectedEnrolmentId() { return selectedEnrolmentId; }
+    public void setSelectedEnrolmentId(Long selectedEnrolmentId) { this.selectedEnrolmentId = selectedEnrolmentId; }
 
-    public GradeDTO getEditDto() {
-        return editDto;
-    }
-
-    public void setEditDto(GradeDTO editDto) {
-        this.editDto = editDto;
-    }
-
-    public GradeDTO getSelectedGrade() {
-        return selectedGrade;
-    }
-
-    public void setSelectedGrade(GradeDTO selectedGrade) {
-        this.selectedGrade = selectedGrade;
-    }
-
-    public Long getSelectedId() {
-        return selectedId;
-    }
-
-    public void setSelectedId(Long selectedId) {
-        this.selectedId = selectedId;
-    }
-
-    public Long getSelectedEvaluationId() {
-        return selectedEvaluationId;
-    }
-
-    public void setSelectedEvaluationId(Long selectedEvaluationId) {
-        this.selectedEvaluationId = selectedEvaluationId;
-    }
-
-    public Long getSelectedEnrolmentId() {
-        return selectedEnrolmentId;
-    }
-
-    public void setSelectedEnrolmentId(Long selectedEnrolmentId) {
-        this.selectedEnrolmentId = selectedEnrolmentId;
-    }
-
-    public Long getSelectedStudentId() {
-        return selectedStudentId;
-    }
-
-    public void setSelectedStudentId(Long selectedStudentId) {
-        this.selectedStudentId = selectedStudentId;
-    }
-
-    public void setLazyModel(GradeLazyModel lazyModel) {
-        this.lazyModel = lazyModel;
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // ESTATÍSTICAS — GETTERS (nomes usados na view grades.xhtml)
-    // ─────────────────────────────────────────────────────────────
-
-    public long getTotalGradesCount() {
-        return totalGradesCount;
-    }
-
-    public long getApprovedCount() {
-        return approvedCount;
-    }
-
-    public long getPendingCount() {
-        return pendingCount;
-    }
-
-    public double getClassAverage() {
-        return classAverage;
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // ENUMS E LISTAS PARA DROPDOWNS
-    // ─────────────────────────────────────────────────────────────
-
-    public GradeStatus[] getStatuses() {
-        return GradeStatus.values();
-    }
-
-    public List<EvaluationDTO> getEvaluations() {
-        return evaluations;
-    }
-
-    public List<EnrolmentDTO> getEnrolments() {
-        return enrolments;
-    }
-
-    public List<StudentDTO> getStudents() {
-        return students;
-    }
-
-    public void refreshEvaluations() {
-        loadEvaluations();
-    }
-
-    public void refreshEnrolments() {
-        loadEnrolments();
-    }
-
-    public void refreshStudents() {
-        loadStudents();
-    }
-
-    public List<GradeDTO> getGrades() {
-        return gradeService.getAllGrades();
-    }
+    public GradeLazyModel getLazyModel() { return lazyModel; }
+    public void setLazyModel(GradeLazyModel lazyModel) { this.lazyModel = lazyModel; }
+    public Long getFilterEvaluationId() { return filterEvaluationId; }
+    public void setFilterEvaluationId(Long filterEvaluationId) { this.filterEvaluationId = filterEvaluationId; }
+    public Long getFilterEnrolmentId() { return filterEnrolmentId; }
+    public void setFilterEnrolmentId(Long filterEnrolmentId) { this.filterEnrolmentId = filterEnrolmentId; }
+    public String getFilterStudentName() { return filterStudentName; }
+    public void setFilterStudentName(String filterStudentName) { this.filterStudentName = filterStudentName; }
+    public String getFilterDisciplineName() { return filterDisciplineName; }
+    public void setFilterDisciplineName(String filterDisciplineName) { this.filterDisciplineName = filterDisciplineName; }
+    public long getTotalGradeCount() { return totalGradeCount; }
+    public double getAverageScore() { return averageScore; }
+    public List<EvaluationDTO> getEvaluations() { return evaluations; }
+    public List<EnrolmentDTO> getEnrolments() { return enrolments; }
+    public EvaluationType[] getEvaluationTypes() { return EvaluationType.values(); }
+    public Trimester[] getTrimesters() { return Trimester.values(); }
+    public List<GradeDTO> getGrades() { return gradeService.getAllGrades(); }
 }

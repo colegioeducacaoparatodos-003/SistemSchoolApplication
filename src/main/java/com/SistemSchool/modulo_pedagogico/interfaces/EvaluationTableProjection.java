@@ -4,30 +4,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public interface EvaluationTableProjection {
-
     Long getPkEvaluation();
-
     Long getDisciplinePk();
-
     String getDisciplineName();
-
-    Long getSchedulePk();
-
-    String getScheduleWeekDay();
-
-    String getTitle();
-
-    String getType();
-
-    Double getWeight();
-
+    String getEvaluationName();
+    String getEvaluationType();
+    String getTrimester();
     LocalDate getEvaluationDate();
-
-    String getStatus();
-
-    Integer getTrimester();
-
+    String getAnoLectivo();
+    String getObs();
     LocalDateTime getCreatedAt();
-
     LocalDateTime getUpdatedAt();
 }
