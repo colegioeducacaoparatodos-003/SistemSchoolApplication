@@ -1,26 +1,28 @@
 package com.SistemSchool.modulo_Recursoa_Humano.service;
 
 import java.io.IOException;
-import java.io.File;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.YearMonth;
+import java.util.Date;
 
 import org.primefaces.model.file.UploadedFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.SistemSchool.io.Assistant;
-import com.SistemSchool.io.FileImage;
-
-import jakarta.servlet.ServletContext;
 import com.SistemSchool.modulo_Recursoa_Humano.dto.TeacherDTO;
 import com.SistemSchool.modulo_Recursoa_Humano.interfaces.TeacherTableProjection;
 import com.SistemSchool.modulo_Recursoa_Humano.io.ContractType;
@@ -46,73 +48,99 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class TeacherService {
 
-    private static final String TEACHER_IMG_FOLDER = "teacher_img";
+    private static final Logger log = LoggerFactory.getLogger(TeacherService.class);
+
     private static final String TEACHER_PREFIX = "PROF";
     private static final int SEQUENCE_LENGTH = 5;
+    private static final String DEFAULT_PHOTO = "default.png";
 
     private final TeacherRepository repository;
+
+    /**
+     * Diretório onde as fotos dos professores são gravadas.
+     *
+     * IMPORTANTE: propositadamente NÃO usamos
+     * FacesContext.getExternalContext().getRealPath("/") aqui.
+     *
+     * Quando a aplicação corre como JAR executável do Spring Boot (Tomcat
+     * embutido), os recursos web ficam empacotados dentro do próprio JAR e
+     * getRealPath("/") pode devolver null. Isso provocava um
+     * NullPointerException dentro de Paths.get(webRoot, ...), que era
+     * apanhado pelo catch (Exception e) genérico do save()/updatePhoto() e
+     * relançado como uma IOException genérica — dando a sensação de "não dá
+     * para gravar" sem nenhuma pista da causa real.
+     *
+     * Configurável via application.properties/yml:
+     *   app.uploads.teacher-photos-dir=/caminho/absoluto/para/fotos
+     * Por omissão usa uma pasta "uploads/teacher_img" ao lado do diretório
+     * de trabalho (user.dir) da aplicação.
+     */
+    @Value("${app.uploads.teacher-photos-dir:${user.dir}/uploads/teacher_img}")
+    private String teacherImgDir;
 
     public TeacherService(TeacherRepository teacherRepository) {
         this.repository = teacherRepository;
     }
 
     // ---------------------
-    // CRUD
+    // ARMAZENAMENTO DE FOTOS
     // ---------------------
 
-    /**
-     * Garante que a pasta de imagens do professor existe.
-     * Se não existir, cria a pasta.
-     * @throws RuntimeException se não conseguir criar a pasta
-     */
-    private void ensureTeacherImgFolderExists() {
-        try {
-            FacesContext facesContext = FacesContext.getCurrentInstance();
-            if (facesContext != null) {
-                String webRoot = facesContext.getExternalContext().getRealPath("/");
-                Path folderPath = Paths.get(webRoot, TEACHER_IMG_FOLDER);
-                
-                if (!Files.exists(folderPath)) {
-                    Files.createDirectories(folderPath);
-                    System.out.println("Pasta " + TEACHER_IMG_FOLDER + " foi criada com sucesso em: " + folderPath);
-                }
-            }
-        } catch (IOException e) {
-            String errorMsg = "Erro ao criar pasta para imagens de professores: " + e.getMessage();
-            System.err.println(errorMsg);
-            e.printStackTrace();
-            throw new RuntimeException(errorMsg, e);
+    private Path resolveTeacherImgFolder() throws IOException {
+        Path folderPath = Paths.get(teacherImgDir);
+        if (!Files.exists(folderPath)) {
+            Files.createDirectories(folderPath);
+            log.info("Pasta de fotos de professores criada em: {}", folderPath.toAbsolutePath());
         }
+        return folderPath;
     }
+
+    /**
+     * Grava a foto enviada em disco com um nome único e devolve o nome do
+     * ficheiro gravado (para persistir em Teacher.photoPhath).
+     */
+    private String saveTeacherPhoto(UploadedFile photo) throws IOException {
+        Path folder = resolveTeacherImgFolder();
+
+        String extension;
+        String contentType = photo.getContentType();
+        String originalName = photo.getFileName();
+
+        if (contentType != null && contentType.contains("/")) {
+            extension = contentType.substring(contentType.lastIndexOf('/') + 1);
+        } else if (originalName != null && originalName.contains(".")) {
+            extension = originalName.substring(originalName.lastIndexOf('.') + 1);
+        } else {
+            extension = "png";
+        }
+
+        String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmssSSS").format(new Date());
+        String fileName = "0img-" + timestamp + "." + extension;
+        Path destination = folder.resolve(fileName);
+
+        try (InputStream inputStream = photo.getInputStream()) {
+            Files.copy(inputStream, destination, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        log.info("Foto de professor gravada em: {}", destination.toAbsolutePath());
+        return fileName;
+    }
+
+    // ---------------------
+    // CRUD
+    // ---------------------
 
     public Teacher save(Teacher teacher, UploadedFile photo) throws IOException {
 
         teacher.setTeacherNumber(generateTeacherNumber());
 
-        String newNameFile = "default.png";
+        String newNameFile = DEFAULT_PHOTO;
         if (photo != null && photo.getSize() > 0) {
             try {
-                // Garante que a pasta existe
-                ensureTeacherImgFolderExists();
-                
-                FileImage fileImage = new FileImage();
-                Assistant assistant = new Assistant();
-                newNameFile = "0" + assistant.novoNome(photo.getContentType());
-                fileImage.salvarArquivo(photo, TEACHER_IMG_FOLDER, newNameFile);
-                System.out.println("Foto do professor salva com sucesso: " + newNameFile);
+                newNameFile = saveTeacherPhoto(photo);
             } catch (IOException e) {
-                String errorMsg = "Erro ao salvar imagem do professor: " + e.getMessage();
-                System.err.println(errorMsg);
-                e.printStackTrace();
-                // Continua com default.png se houver erro
-                newNameFile = "default.png";
-                throw new IOException(errorMsg, e);
-            } catch (Exception e) {
-                String errorMsg = "Erro inesperado ao processar imagem do professor: " + e.getMessage();
-                System.err.println(errorMsg);
-                e.printStackTrace();
-                newNameFile = "default.png";
-                throw new IOException(errorMsg, e);
+                log.error("Erro ao salvar imagem do professor", e);
+                throw new IOException("Erro ao salvar imagem do professor: " + e.getMessage(), e);
             }
         }
         teacher.setPhotoPhath(newNameFile);
@@ -122,13 +150,11 @@ public class TeacherService {
 
         try {
             Teacher savedTeacher = repository.save(teacher);
-            System.out.println("Professor registado com sucesso: " + teacher.getTeacherNumber());
+            log.info("Professor registado com sucesso: {}", teacher.getTeacherNumber());
             return savedTeacher;
         } catch (Exception e) {
-            String errorMsg = "Erro ao salvar professor na base de dados: " + e.getMessage();
-            System.err.println(errorMsg);
-            e.printStackTrace();
-            throw new IOException(errorMsg, e);
+            log.error("Erro ao salvar professor na base de dados", e);
+            throw new IOException("Erro ao salvar professor na base de dados: " + e.getMessage(), e);
         }
     }
 
@@ -138,6 +164,11 @@ public class TeacherService {
     }
 
     public void update(TeacherDTO dto) {
+        if (dto.getPkTeacher() == null) {
+            throw new IllegalArgumentException(
+                    "Não é possível atualizar: identificador do professor (pkTeacher) está nulo");
+        }
+
         Teacher teacher = repository.findById(dto.getPkTeacher())
                 .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
 
@@ -158,38 +189,32 @@ public class TeacherService {
         teacher.setObs(dto.getObs());
         teacher.setUpdatedAt(LocalDateTime.now());
 
-        repository.save(teacher);
+        try {
+            repository.save(teacher);
+            log.info("Professor atualizado com sucesso: {}", teacher.getTeacherNumber());
+        } catch (Exception e) {
+            log.error("Erro ao atualizar professor na base de dados", e);
+            throw new RuntimeException("Erro ao atualizar professor na base de dados: " + e.getMessage(), e);
+        }
     }
 
     public void updatePhoto(Long pkTeacher, UploadedFile photo) throws IOException {
+        if (photo == null || photo.getSize() <= 0) {
+            return;
+        }
+
         Teacher teacher = repository.findById(pkTeacher)
                 .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
 
-        if (photo != null && photo.getSize() > 0) {
-            try {
-                // Garante que a pasta existe
-                ensureTeacherImgFolderExists();
-                
-                FileImage fileImage = new FileImage();
-                Assistant assistant = new Assistant();
-                String newNameFile = "0" + assistant.novoNome(photo.getContentType());
-                fileImage.salvarArquivo(photo, TEACHER_IMG_FOLDER, newNameFile);
-
-                teacher.setPhotoPhath(newNameFile);
-                teacher.setUpdatedAt(LocalDateTime.now());
-                repository.save(teacher);
-                System.out.println("Foto do professor atualizada com sucesso: " + newNameFile);
-            } catch (IOException e) {
-                String errorMsg = "Erro ao atualizar imagem do professor: " + e.getMessage();
-                System.err.println(errorMsg);
-                e.printStackTrace();
-                throw new IOException(errorMsg, e);
-            } catch (Exception e) {
-                String errorMsg = "Erro inesperado ao atualizar imagem do professor: " + e.getMessage();
-                System.err.println(errorMsg);
-                e.printStackTrace();
-                throw new IOException(errorMsg, e);
-            }
+        try {
+            String newNameFile = saveTeacherPhoto(photo);
+            teacher.setPhotoPhath(newNameFile);
+            teacher.setUpdatedAt(LocalDateTime.now());
+            repository.save(teacher);
+            log.info("Foto do professor atualizada com sucesso: {}", newNameFile);
+        } catch (IOException e) {
+            log.error("Erro ao atualizar imagem do professor", e);
+            throw new IOException("Erro ao atualizar imagem do professor: " + e.getMessage(), e);
         }
     }
 

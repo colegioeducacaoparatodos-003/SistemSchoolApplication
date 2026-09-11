@@ -19,6 +19,7 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.file.UploadedFile;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.logging.Level;
@@ -48,6 +49,8 @@ public class StudentController implements Serializable {
     // ── Diálogo de edição (usa o DTO diretamente) ──
     private StudentDTO editDto;
     private UploadedFile uploadedPhoto;
+    private byte[] uploadedPhotoContent;
+    private String uploadedPhotoName;
 
     private StudentDTO alunoSelecionado;
 
@@ -103,35 +106,98 @@ public class StudentController implements Serializable {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // EDIÇÃO (formulário com ajax="false" por causa do p:fileUpload simple)
+    // EDIÇÃO
     // ─────────────────────────────────────────────────────────────
 
     public void prepararEdicao(StudentDTO dto) {
+        if (dto == null || dto.getPkStudent() == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Selecione um aluno para editar.");
+            return;
+        }
         this.alunoSelecionado = dto;
         Student entidade = studentService.findById(dto.getPkStudent());
         this.editDto = StudentDTO.fromEntity(entidade);
         this.uploadedPhoto = null;
+        this.uploadedPhotoContent = null;
+        this.uploadedPhotoName = null;
+    }
+
+    /**
+     * Upload automático da foto no diálogo de edição.
+     * O p:fileUpload (mode="advanced", auto="true") envia o arquivo
+     * imediatamente via AJAX; guardamos temporariamente até o save.
+     */
+    public void handleEditFileUpload(FileUploadEvent event) {
+        try {
+            UploadedFile foto = event.getFile();
+            byte[] conteudo = foto.getContent();
+            if (conteudo == null || conteudo.length == 0) {
+                try (var inputStream = foto.getInputStream()) {
+                    conteudo = inputStream.readAllBytes();
+                }
+            }
+
+            this.uploadedPhoto = foto;
+            this.uploadedPhotoContent = conteudo;
+            this.uploadedPhotoName = foto.getFileName();
+            addMessage(FacesMessage.SEVERITY_INFO, "Ficheiro recebido",
+                    foto.getFileName() + " será guardado ao confirmar a edição.");
+        } catch (IOException e) {
+            this.uploadedPhoto = null;
+            this.uploadedPhotoContent = null;
+            this.uploadedPhotoName = null;
+            LOGGER.log(Level.WARNING, "Não foi possível ler a nova foto do aluno", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro no upload",
+                    "Não foi possível ler a imagem selecionada.");
+        }
     }
 
     /**
      * Ação do botão "Guardar" do diálogo de edição.
-     * O botão usa ajax="false" (postback normal) porque o p:fileUpload em
-     * mode="simple" só funciona com submit tradicional do formulário.
-     * Por isso usamos Flash + faces-redirect para preservar as mensagens
-     * e evitar reenvio do formulário ao dar refresh (padrão PRG).
+     * É void porque é invocado via actionListener (AJAX).
      */
-    public String saveUpdate() {
-        FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+    public void saveUpdate() {
         try {
-            studentService.update(editDto, uploadedPhoto);
+            if (editDto == null || editDto.getPkStudent() == null) {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "Dados do aluno não carregados.");
+                return;
+            }
+
+            byte[] fotoConteudo = uploadedPhotoContent;
+            String nomeFoto = uploadedPhotoName;
+            if (uploadedPhoto != null && (fotoConteudo == null || fotoConteudo.length == 0)) {
+                fotoConteudo = uploadedPhoto.getContent();
+                if (fotoConteudo == null || fotoConteudo.length == 0) {
+                    try (var inputStream = uploadedPhoto.getInputStream()) {
+                        fotoConteudo = inputStream.readAllBytes();
+                    } catch (IOException e) {
+                        throw new RuntimeException("Não foi possível ler a imagem selecionada.", e);
+                    }
+                }
+                nomeFoto = uploadedPhoto.getFileName();
+            }
+
+            studentService.update(editDto, fotoConteudo, nomeFoto);
+
             addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Dados do aluno atualizados.");
+
+            // Fecha o dialog e atualiza a tabela/mensagens da pagina principal
+            PrimeFaces.current().executeScript("PF('editStudentDialog').hide()");
+            PrimeFaces.current().ajax().update("formAlunos:dtAlunos", "formAlunos:messages");
+
+            // Limpa o estado
+            this.editDto = null;
+            this.uploadedPhoto = null;
+            this.uploadedPhotoContent = null;
+            this.uploadedPhotoName = null;
+            this.alunoSelecionado = null;
+
         } catch (RuntimeException e) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao guardar", e.getMessage());
             LOGGER.log(Level.WARNING, "Erro ao atualizar aluno", e);
+            // Dialog permanece aberto para o usuario ver a mensagem de erro em msgsEdit
         }
-        return "/management/secretaria/students.xhtml?faces-redirect=true";
     }
-
     // ─────────────────────────────────────────────────────────────
     // ELIMINAÇÃO
     // ─────────────────────────────────────────────────────────────
@@ -247,6 +313,7 @@ public class StudentController implements Serializable {
         // TODO: gerar ficha detalhada do aluno
         addMessage(FacesMessage.SEVERITY_INFO, "Imprimir", "Ficha detalhada em desenvolvimento.");
     }
+
     // ─────────────────────────────────────────────────────────────
     // LISTAS AUXILIARES PARA COMBOS (p:selectOneMenu)
     // ─────────────────────────────────────────────────────────────

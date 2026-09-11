@@ -21,6 +21,10 @@
                 --stu-radius: 12px;
                 --stu-shadow: 0 4px 20px rgba(20, 20, 20, .10);
                 --font-mono: 'DM Mono', monospace;
+                --bl-line: #7fa8d9;
+                --bl-peach: #fce4c4;
+                --bl-head: #dcebf7;
+                --bl-zebra: #f4f8fd;
             }
             .breadcrumb-pill {
                 display: inline-flex; align-items: center; gap: 5px;
@@ -60,46 +64,85 @@
                 letter-spacing: .04em; color: var(--stu-muted); margin-bottom: .35rem;
             }
             .doc-body { padding: 1.2rem 1.3rem; }
-            .doc-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-            .doc-table thead th {
-                background: var(--stu-black); color: var(--stu-yellow); font-size: .7rem; text-transform: uppercase;
-                padding: .7rem .6rem; border: 1px solid var(--stu-black); white-space: nowrap;
-            }
-            .doc-table tbody td { padding: .6rem; border-bottom: 1px solid var(--stu-border); text-align: center; }
-            .doc-table .cell-name { text-align: left; font-weight: 600; padding-left: 1rem; }
-            .badge-mac { background: #eaf1fb; color: var(--stu-blue); padding: 3px 10px; border-radius: 99px; font-weight: 700; font-family: var(--font-mono); font-size: .75rem; }
-            .badge-npt { background: #fff8e1; color: #8a6400; padding: 3px 10px; border-radius: 99px; font-weight: 700; font-family: var(--font-mono); font-size: .75rem; }
-            .badge-mt { background: #262626; color: var(--stu-yellow); padding: 3px 10px; border-radius: 99px; font-weight: 700; font-family: var(--font-mono); font-size: .75rem; }
-            .badge-aprovado { background: #e8f6ec; color: var(--stu-green); padding: 3px 10px; border-radius: 99px; font-weight: 700; font-size: .72rem; }
-            .badge-reprovado { background: #fdecee; color: var(--stu-red); padding: 3px 10px; border-radius: 99px; font-weight: 700; font-size: .72rem; }
             .doc-empty { text-align: center; padding: 3rem 1rem; color: var(--stu-muted); }
             .doc-empty i { font-size: 2.5rem; opacity: .2; display: block; margin-bottom: .5rem; }
-            .bol-info {
-                display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-                gap: 1rem; padding: 1rem 1.3rem; background: var(--stu-surface-2); border-bottom: 1px solid var(--stu-border);
-            }
-            .bol-info-label { font-size: .68rem; text-transform: uppercase; color: var(--stu-muted); letter-spacing: .04em; }
-            .bol-info-value { font-size: .92rem; font-weight: 700; color: var(--stu-text); }
-            .bol-footer {
-                padding: 1rem 1.3rem; display: flex; justify-content: space-between;
-                align-items: center; flex-wrap: wrap; gap: 1rem; border-top: 1px solid var(--stu-border);
-                background: var(--stu-surface-2);
-            }
-            .text-situacao-aprovado { color: var(--stu-green); }
-            .text-situacao-reprovado { color: var(--stu-red); }
-            .text-situacao-em-curso { color: var(--stu-blue); }
-            .stu-dialog-footer {
-                display: flex; justify-content: flex-end; gap: .6rem; padding: 1rem 1.3rem;
-                border-top: 1px solid var(--stu-border); flex-wrap: wrap;
-            }
             .boletim-count-pill {
                 display: inline-flex; align-items: center; gap: 5px;
                 background: #eaf1fb; border: 1px solid rgba(26, 95, 180, .25);
                 color: var(--stu-blue); border-radius: 99px; padding: 3px 12px;
                 font-size: .72rem; font-weight: 700;
             }
-            .boletim-block { margin-bottom: 1.4rem; }
-            .boletim-block:last-child { margin-bottom: 0; }
+            .stu-dialog-footer {
+                display: flex; justify-content: flex-end; gap: .6rem; padding: 1rem 1.3rem;
+                border-top: 1px solid var(--stu-border); flex-wrap: wrap;
+            }
+            .text-situacao-aprovado { color: var(--stu-green); }
+            .text-situacao-reprovado { color: var(--stu-red); }
+            .text-situacao-em-curso { color: var(--stu-blue); }
+
+            /* ══ BOLETIM — estrutura do modelo A5 ══ */
+            .bl-block { margin-bottom: 1.6rem; }
+            .bl-doc {
+                background: #fff; border: 1px solid var(--stu-border);
+                border-radius: 8px; overflow: hidden;
+                max-width: 520px; margin: 0 auto;
+            }
+            .bl-header {
+                display: flex; justify-content: space-between; align-items: flex-end;
+                padding: .9rem 1.1rem .45rem; border-bottom: 2px solid var(--stu-black);
+            }
+            .bl-brand { display: flex; gap: .6rem; align-items: center; }
+            .bl-logo {
+                width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0;
+                background: linear-gradient(135deg, var(--stu-black), var(--stu-red));
+                color: var(--stu-yellow); display: flex; align-items: center; justify-content: center;
+                font-weight: 800; font-size: 1rem;
+            }
+            .bl-school { font-weight: 800; font-size: .98rem; color: var(--stu-text); line-height: 1.15; }
+            .bl-school small { display: block; font-weight: 600; color: var(--stu-muted); font-size: .66rem; }
+            .bl-slogan { font-size: .7rem; color: var(--stu-muted); font-style: italic; padding-bottom: .15rem; }
+            .bl-title {
+                text-align: center; font-weight: 800; letter-spacing: .07em;
+                font-size: 1.02rem; margin: .85rem 0 .65rem; color: var(--stu-text);
+            }
+            .bl-info { padding: 0 1.1rem .7rem; }
+            .bl-row {
+                display: grid; grid-template-columns: repeat(4, 1fr);
+                gap: .8rem; margin-bottom: .45rem;
+            }
+            .bl-field {
+                border-bottom: 1px dotted #9aa0a6; padding-bottom: 2px;
+                font-size: .8rem; color: var(--stu-text); min-width: 0;
+            }
+            .bl-field span { overflow-wrap: anywhere; }
+            .bl-field b {
+                font-size: .66rem; text-transform: uppercase;
+                color: var(--stu-muted); letter-spacing: .03em; font-weight: 700;
+            }
+            .bl-table-wrap { padding: .1rem 1.1rem 0; overflow-x: auto; }
+            table.bl-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+            .bl-table th, .bl-table td { border: 1px solid var(--bl-line); padding: .42rem .5rem; text-align: center; }
+            .bl-table .th-disc { background: var(--bl-peach); font-weight: 800; color: var(--stu-text); }
+            .bl-table .th-tri { background: #fff; font-weight: 800; letter-spacing: .06em; color: var(--stu-text); }
+            .bl-table .th-sub { background: var(--bl-head); font-weight: 800; color: var(--stu-text); }
+            .bl-table td.name { text-align: left; font-weight: 600; color: var(--stu-text); }
+            .bl-table tbody tr:nth-child(even) { background: var(--bl-zebra); }
+            .bl-table .stu-score { font-family: var(--font-mono); font-weight: 700; }
+            .bl-legend {
+                padding: .6rem 1.1rem 0; font-size: .68rem; line-height: 1.5; color: var(--stu-text);
+            }
+            .bl-legend b { text-decoration: underline; }
+            .bl-summary {
+                display: flex; justify-content: space-between; align-items: center;
+                padding: .6rem 1.1rem 0; font-size: .82rem; flex-wrap: wrap; gap: .5rem;
+                color: var(--stu-text);
+            }
+            .bl-sign {
+                text-align: center; font-size: .7rem; color: var(--stu-muted);
+                padding: .4rem 1.1rem 1.1rem;
+            }
+            .bl-sign .line { display: inline-block; width: 220px; border-top: 1px solid var(--stu-text); padding-top: 3px; margin-top: 2.4rem; }
+
             .sc-loading-overlay {
                 position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
                 background: rgba(20, 20, 20, 0.85); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); z-index: 9999;
@@ -137,20 +180,20 @@
             @keyframes scSpin { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }
             @keyframes scSpinReverse { 0% { transform: rotate(0deg) } 100% { transform: rotate(-360deg) } }
             @keyframes scPulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1 } 50% { transform: translate(-50%, -50%) scale(1.4); opacity: .7 } }
-            .sc-loading-text { font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 600; color: var(--stu-text); text-align: center; }
+            .sc-loading-text { font-size: 1rem; font-weight: 600; color: var(--stu-text); text-align: center; }
             .sc-loading-sub { font-size: .78rem; color: var(--stu-muted); text-align: center; margin-top: -.6rem; }
             .sc-loading-dots::after { content: ''; animation: scDots 1.5s steps(4, end) infinite; }
             @keyframes scDots { 0% { content: '' } 25% { content: '.' } 50% { content: '..' } 75% { content: '...' } 100% { content: '' } }
-            .sc-loading-progress { width: 100%; height: 3px; background: var(--stu-border); border-radius: 99px; overflow: hidden; margin-top: .3rem; }
-            .sc-loading-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--stu-red), var(--stu-yellow)); border-radius: 99px; animation: scProgress 2s ease-in-out infinite; }
-            @keyframes scProgress { 0% { width: 0%; margin-left: 0% } 50% { width: 60%; margin-left: 20% } 100% { width: 0%; margin-left: 100% } }
+
             @media print {
+                @page { size: A5; margin: 10mm; }
                 .no-print { display: none !important; }
                 body { background: #fff; }
                 .stu-page { padding: 0; }
                 .stu-card { box-shadow: none; border: none; }
-                .boletim-block { page-break-after: always; margin-bottom: 0; }
-                .boletim-block:last-child { page-break-after: auto; }
+                .bl-doc { border: none; max-width: none; border-radius: 0; }
+                .bl-block { page-break-after: always; margin-bottom: 0; }
+                .bl-block:last-child { page-break-after: auto; }
             }
             @media (max-width: 576px) {
                 .stu-header { flex-direction: column; align-items: stretch; }
@@ -159,6 +202,7 @@
                 .doc-filters .field-actions .ui-button { width: 100%; }
                 .stu-dialog-footer { flex-direction: column-reverse; align-items: stretch; }
                 .stu-dialog-footer .ui-button { width: 100%; margin: 0 !important; }
+                .bl-row { grid-template-columns: 1fr 1fr; }
             }
         </style>
 
@@ -167,7 +211,6 @@
                 <div class="sc-loader-rings"><div class="sc-loader-core"></div></div>
                 <div class="sc-loading-text">A processar<span class="sc-loading-dots"></span></div>
                 <div class="sc-loading-sub">Por favor aguarde</div>
-                <div class="sc-loading-progress"><div class="sc-loading-progress-bar"></div></div>
             </div>
         </div>
 
@@ -181,7 +224,7 @@
                     </div>
                 </div>
                 <div class="stu-header-right">
-                    <span class="breadcrumb-pill"><i class="pi pi-home" style="font-size:.65rem" /> Gestao Pedagogico Boletim</span>
+                    <span class="breadcrumb-pill"><i class="pi pi-home" style="font-size:.65rem" /> Gestão Pedagógica › Boletim</span>
                     <p:button value="Voltar" icon="pi pi-arrow-left" styleClass="ui-button-outlined ui-button-secondary"
                         outcome="/management/pedagogico/trimesterResults" />
                 </div>
@@ -205,9 +248,9 @@
                             </p:selectCheckboxMenu>
                         </div>
                         <div>
-                            <label class="sc-label">Matriculas</label>
+                            <label class="sc-label">Matrículas</label>
                             <p:selectCheckboxMenu id="bMatriculaDoc" value="#{boletimController.selectedEnrolmentIds}"
-                                label="Selecionar matriculas" updateLabel="true" multiple="true"
+                                label="Selecionar matrículas" updateLabel="true" multiple="true"
                                 filter="true" filterMatchMode="contains" panelStyleClass="ui-shadow"
                                 style="width:100%;">
                                 <f:selectItems value="#{boletimController.enrolmentOptions}" var="o"
@@ -223,7 +266,7 @@
                                 filter="true" filterMatchMode="contains" panelStyleClass="ui-shadow"
                                 style="width:100%;">
                                 <f:selectItems value="#{boletimController.trimesters}" var="tr"
-                                    itemLabel="#{tr}o Trimestre" itemValue="#{tr}" />
+                                    itemLabel="#{tr}º Trimestre" itemValue="#{tr}" />
                                 <p:ajax update="bGerarBtn" />
                             </p:selectCheckboxMenu>
                         </div>
@@ -244,86 +287,96 @@
                 <div class="stu-card">
                     <div class="doc-body">
                         <h:panelGroup rendered="#{boletimController.rendered and not empty boletimController.boletins}">
-                            <div class="no-print" style="margin-bottom:1rem;">
+                            <div class="no-print" style="margin-bottom:1rem; text-align:center;">
                                 <span class="boletim-count-pill"><i class="pi pi-id-card" /> #{fn:length(boletimController.boletins)} boletim(ns) gerado(s)</span>
                             </div>
 
                             <ui:repeat value="#{boletimController.boletins}" var="boletim">
-                                <div class="boletim-block">
-                                    <div class="bol-info" style="border-radius: var(--stu-radius) var(--stu-radius) 0 0;">
-                                        <div>
-                                            <div class="bol-info-label">Aluno</div>
-                                            <div class="bol-info-value">#{boletim.studentName}</div>
-                                        </div>
-                                        <div>
-                                            <div class="bol-info-label">No Matricula</div>
-                                            <div class="bol-info-value">#{boletim.enrolmentNumber}</div>
-                                        </div>
-                                        <div>
-                                            <div class="bol-info-label">Turma</div>
-                                            <div class="bol-info-value">#{boletim.schoolClassName}</div>
-                                        </div>
-                                        <div>
-                                            <div class="bol-info-label">Trimestre</div>
-                                            <div class="bol-info-value">#{boletim.trimester}o</div>
-                                        </div>
-                                    </div>
-
-                                    <h:panelGroup rendered="#{not boletim.isEmpty()}">
-                                        <div style="overflow-x:auto;">
-                                            <table class="doc-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th style="text-align:left; padding-left:1rem">Disciplina</th>
-                                                        <th>MAC</th>
-                                                        <th>NPT</th>
-                                                        <th>MT</th>
-                                                        <th>Situacao</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <ui:repeat value="#{boletim.disciplines}" var="d">
-                                                        <tr>
-                                                            <td class="cell-name">#{d.disciplineName}</td>
-                                                            <td><span class="badge-mac">#{d.macFormatted}</span></td>
-                                                            <td><span class="badge-npt">#{d.nptFormatted}</span></td>
-                                                            <td><span class="badge-mt">#{d.mtFormatted}</span></td>
-                                                            <td>
-                                                                <h:panelGroup rendered="#{d.finalSituation eq 'Aprovado'}"><span
-                                                                        class="badge-aprovado">Aprovado</span></h:panelGroup>
-                                                                <h:panelGroup rendered="#{d.finalSituation eq 'Reprovado'}"><span
-                                                                        class="badge-reprovado">Reprovado</span></h:panelGroup>
-                                                                <h:panelGroup rendered="#{d.finalSituation eq '-'}"><span
-                                                                        style="color:var(--stu-muted)">-</span></h:panelGroup>
-                                                            </td>
-                                                        </tr>
-                                                    </ui:repeat>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="bol-footer" style="border-radius: 0 0 var(--stu-radius) var(--stu-radius);">
-                                            <div>
-                                                <div class="bol-info-label">Media Geral do Trimestre</div>
-                                                <div class="bol-info-value" style="font-size:1.1rem;">
-                                                    #{boletim.generalAverageFormatted}</div>
+                                <div class="bl-block">
+                                    <div class="bl-doc">
+                                        <div class="bl-header">
+                                            <div class="bl-brand">
+                                                <div class="bl-logo">S</div>
+                                                <div class="bl-school">SistemSchool<small>Gestão Escolar</small></div>
                                             </div>
-                                            <div style="text-align:right">
-                                                <div class="bol-info-label">Situacao Final</div>
-                                                <div class="bol-info-value #{boletim.generalSituation eq 'Aprovado' ? 'text-situacao-aprovado' : (boletim.generalSituation eq 'Reprovado' ? 'text-situacao-reprovado' : 'text-situacao-em-curso')}"
-                                                    style="font-size:1.1rem;">
-                                                    #{boletim.generalSituation}
+                                            <div class="bl-slogan">Ensinamos Valores para a Vida</div>
+                                        </div>
+
+                                        <div class="bl-title">BOLETIM DE NOTAS</div>
+
+                                        <div class="bl-info">
+                                            <div class="bl-row" style="grid-template-columns: 1fr;">
+                                                <div class="bl-field"><b>Nome:</b> <span>#{boletim.studentName}</span></div>
+                                            </div>
+                                            <div class="bl-row">
+                                                <div class="bl-field"><b>Nº Matrícula:</b> <span>#{boletim.enrolmentNumber}</span></div>
+                                                <div class="bl-field"><b>Turma:</b> <span>#{boletim.schoolClassName}</span></div>
+                                                <div class="bl-field"><b>Trimestre:</b> <span>#{boletim.trimester}º</span></div>
+                                                <div class="bl-field"><b>Data:</b> <span></span></div>
+                                            </div>
+                                        </div>
+
+                                        <h:panelGroup rendered="#{not boletim.isEmpty()}">
+                                            <div class="bl-table-wrap">
+                                                <table class="bl-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="th-disc" rowspan="2">Disciplinas</th>
+                                                            <th class="th-tri" colspan="3">#{boletim.trimesterLabel}</th>
+                                                        </tr>
+                                                        <tr>
+                                                            <th class="th-sub">MAC</th>
+                                                            <th class="th-sub">NPT</th>
+                                                            <th class="th-sub">MT</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <ui:repeat value="#{boletim.disciplines}" var="d">
+                                                            <tr>
+                                                                <td class="name">#{d.disciplineName}</td>
+                                                                <td><span class="stu-score">#{d.macFormatted}</span></td>
+                                                                <td><span class="stu-score">#{d.nptFormatted}</span></td>
+                                                                <td><span class="stu-score">#{d.mtFormatted}</span></td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div class="bl-legend">
+                                                <b>Observações</b><br />
+                                                MAC - Média da Avaliação Contínua (= Trabalhos de casa, sala de aula...)<br />
+                                                NPT - Nota da Prova do Trimestre<br />
+                                                MT - Média Final do Trimestre
+                                            </div>
+
+                                            <div class="bl-summary">
+                                                <div>
+                                                    <b>Média Geral do Trimestre:</b>
+                                                    <span class="stu-score">#{boletim.generalAverageFormatted}</span>
+                                                </div>
+                                                <div>
+                                                    <b>Situação Final:</b>
+                                                    <span class="#{boletim.generalSituation eq 'Aprovado' ? 'text-situacao-aprovado' : (boletim.generalSituation eq 'Reprovado' ? 'text-situacao-reprovado' : 'text-situacao-em-curso')}">
+                                                        #{boletim.generalSituation}</span>
                                                 </div>
                                             </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{boletim.isEmpty()}">
+                                            <div class="doc-empty" style="padding:2rem 1rem;">
+                                                <i class="pi pi-info-circle"></i>Nenhum resultado encontrado para este aluno neste trimestre.
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <div class="bl-sign">
+                                            <span class="line">O Director de Turma</span>
                                         </div>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{boletim.isEmpty()}">
-                                        <div class="doc-empty"><i class="pi pi-info-circle"></i>Nenhum resultado encontrado para este aluno neste trimestre.</div>
-                                    </h:panelGroup>
+                                    </div>
                                 </div>
                             </ui:repeat>
                         </h:panelGroup>
                         <h:panelGroup rendered="#{not boletimController.rendered or empty boletimController.boletins}">
-                            <div class="doc-empty"><i class="pi pi-id-card"></i>Selecione alunos, matriculas e trimestres e clique em Gerar.</div>
+                            <div class="doc-empty"><i class="pi pi-id-card"></i>Selecione alunos, matrículas e trimestres e clique em Gerar.</div>
                         </h:panelGroup>
                     </div>
 
@@ -331,7 +384,7 @@
                         <p:commandButton value="Imprimir" icon="pi pi-print" type="button"
                             onclick="window.print(); return false;" styleClass="ui-button-outlined"
                             disabled="#{not boletimController.rendered or empty boletimController.boletins}" />
-                        <p:commandButton value="Baixar Todos em PDF" icon="pi pi-file-pdf" ajax="false"
+                        <p:commandButton value="Baixar Todos em PDF (A5)" icon="pi pi-file-pdf" ajax="false"
                             styleClass="ui-button-primary"
                             disabled="#{not boletimController.rendered or empty boletimController.boletins}">
                             <p:fileDownload value="#{boletimController.pdfFile}" />

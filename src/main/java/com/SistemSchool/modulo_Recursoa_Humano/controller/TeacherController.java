@@ -13,6 +13,8 @@ import jakarta.inject.Named;
 
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.SistemSchool.io.Gender;
 import com.SistemSchool.modulo_Recursoa_Humano.dto.TeacherDTO;
@@ -28,6 +30,7 @@ import com.SistemSchool.modulo_Recursoa_Humano.service.TeacherService;
 public class TeacherController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger log = LoggerFactory.getLogger(TeacherController.class);
 
     @Inject
     private TeacherService teacherService;
@@ -139,33 +142,31 @@ public class TeacherController implements Serializable {
                 addMessage(FacesMessage.SEVERITY_WARN, "Professor", "Selecione o estado");
                 return;
             }
-            
-            System.out.println("Iniciando salvamento do professor: " + teacher.getFristName() + " " + teacher.getLastName());
+
+            log.info("Iniciando salvamento do professor: {} {}", teacher.getFristName(), teacher.getLastName());
             teacherService.save(teacher, uploadedPhoto);
             teacher = new Teacher();
             uploadedPhoto = null;
             lazyModel = new TeacherLazyModel(this);
             refreshStats();
             addMessage(FacesMessage.SEVERITY_INFO, "Professor", "Professor registado com sucesso");
-            System.out.println("Professor registado com sucesso");
+            log.info("Professor registado com sucesso");
         } catch (IOException e) {
-            System.err.println("Erro de I/O ao salvar professor: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Erro de I/O ao salvar professor", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Professor", "Erro ao processar a imagem: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Erro inesperado ao salvar professor: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Erro inesperado ao salvar professor", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Professor", "Erro ao registar o professor: " + e.getMessage());
         }
     }
 
     public void saveUpdate() {
         try {
-            System.out.println("Iniciando atualização do professor: " + editDto.getPkTeacher());
+            log.info("Iniciando atualização do professor: {}", editDto.getPkTeacher());
             teacherService.update(editDto);
 
             if (uploadedPhoto != null && uploadedPhoto.getSize() > 0) {
-                System.out.println("Atualizando foto do professor...");
+                log.info("Atualizando foto do professor...");
                 teacherService.updatePhoto(editDto.getPkTeacher(), uploadedPhoto);
             }
 
@@ -175,14 +176,15 @@ public class TeacherController implements Serializable {
             refreshStats();
 
             addMessage(FacesMessage.SEVERITY_INFO, "Professor", "Professor atualizado com sucesso");
-            System.out.println("Professor atualizado com sucesso");
+            log.info("Professor atualizado com sucesso");
+        } catch (IllegalArgumentException e) {
+            log.error("Dados inválidos ao atualizar professor", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Professor", e.getMessage());
         } catch (IOException e) {
-            System.err.println("Erro de I/O ao atualizar professor: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Erro de I/O ao atualizar professor", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Professor", "Erro ao processar a imagem: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Erro ao atualizar professor: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Erro ao atualizar professor", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Professor", "Erro ao atualizar o professor: " + e.getMessage());
         }
     }
@@ -193,7 +195,7 @@ public class TeacherController implements Serializable {
             lazyModel = new TeacherLazyModel(this);
             refreshStats();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Erro ao eliminar professor", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Professor", e.getMessage());
         }
     }
@@ -215,7 +217,7 @@ public class TeacherController implements Serializable {
         try {
             teacherService.exportTeacherListPdf(filterTeacherNumber, filterName, filterStatus);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Erro ao gerar o PDF da lista de professores", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Professor", "Erro ao gerar o PDF da lista de professores");
         }
     }

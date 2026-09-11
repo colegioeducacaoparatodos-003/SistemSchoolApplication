@@ -1,48 +1,48 @@
 package com.SistemSchool.modulo_secrtaria.lazy;
 
-import com.SistemSchool.modulo_secrtaria.controller.DocumentController;
-import com.SistemSchool.modulo_secrtaria.dto.DocumentDTO;
-import org.primefaces.model.LazyDataModel;
-import org.primefaces.model.SortMeta;
-import org.primefaces.model.FilterMeta;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
-
 import java.util.List;
 import java.util.Map;
 
-/**
- * Lê o critério de filtro ativo diretamente do {@link DocumentController}
- * (toolbar de filtros da view) a cada chamada de load()/count(), em vez de
- * depender dos filtros nativos de coluna do p:dataTable.
- */
-public class DocumentLazyModel extends LazyDataModel<DocumentDTO> {
+import org.primefaces.model.FilterMeta;
+import org.primefaces.model.LazyDataModel;
+import org.primefaces.model.SortMeta;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 
-    private static final long serialVersionUID = 1L;
+import com.SistemSchool.modulo_secrtaria.dto.DocumentTableDTO;
+import com.SistemSchool.modulo_secrtaria.service.DocumentService;
 
-    private final DocumentController controller;
+public class DocumentLazyModel extends LazyDataModel<DocumentTableDTO> {
 
-    public DocumentLazyModel(DocumentController controller) {
-        this.controller = controller;
+    private final DocumentService service;
+
+    public DocumentLazyModel(DocumentService service) {
+        this.service = service;
     }
 
     @Override
-    public List<DocumentDTO> load(int first, int pageSize, Map<String, SortMeta> sortBy,
+    public List<DocumentTableDTO> load(
+            int first,
+            int pageSize,
+            Map<String, SortMeta> sortBy,
             Map<String, FilterMeta> filterBy) {
+
         int page = first / pageSize;
 
-        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        Sort sort = Sort.unsorted();
 
-        if (sortBy != null && !sortBy.isEmpty()) {
-            SortMeta sortMeta = sortBy.values().iterator().next();
-            Sort.Direction direction = sortMeta.getOrder().isAscending()
-                    ? Sort.Direction.ASC
-                    : Sort.Direction.DESC;
-            sort = Sort.by(direction, sortMeta.getField());
+        if (!sortBy.isEmpty()) {
+
+            SortMeta meta = sortBy.values().iterator().next();
+
+            sort = Sort.by(
+                    meta.getOrder().isAscending()
+                            ? Sort.Direction.ASC
+                            : Sort.Direction.DESC,
+                    meta.getField());
         }
 
-        Page<DocumentDTO> result = controller.getDocumentService()
-                .findLazy(page, pageSize, sort, controller.buildFilterCriteria());
+        Page<DocumentTableDTO> result = service.findLazy(page, pageSize, sort);
 
         setRowCount((int) result.getTotalElements());
 
@@ -51,24 +51,33 @@ public class DocumentLazyModel extends LazyDataModel<DocumentDTO> {
 
     @Override
     public int count(Map<String, FilterMeta> filterBy) {
-        Page<DocumentDTO> page = controller.getDocumentService()
-                .findLazy(0, 1, Sort.unsorted(), controller.buildFilterCriteria());
+
+        Page<DocumentTableDTO> page = service.findLazy(0, 1, Sort.unsorted());
+
         return (int) page.getTotalElements();
     }
 
     @Override
-    public DocumentDTO getRowData(String rowKey) {
-        return controller.getDocumentService().getAllDocuments()
-                .stream()
-                .filter(d -> d.getPhDocument().toString().equals(rowKey))
-                .findFirst()
-                .orElse(null);
+    public String getRowKey(DocumentTableDTO dto) {
+        return String.valueOf(dto.getPkDocument());
     }
+    // Aqui
 
     @Override
-    public String getRowKey(DocumentDTO documentDTO) {
-        return documentDTO.getPhDocument() != null
-                ? documentDTO.getPhDocument().toString()
-                : null;
+    public DocumentTableDTO getRowData(String rowKey) {
+
+        int id = Integer.parseInt(rowKey);
+
+        List<DocumentTableDTO> list = (List<DocumentTableDTO>) getWrappedData();
+
+        if (list != null) {
+            for (DocumentTableDTO dto : list) {
+                if (dto.getPkDocument() == id) {
+                    return dto;
+                }
+            }
+        }
+
+        return null;
     }
 }

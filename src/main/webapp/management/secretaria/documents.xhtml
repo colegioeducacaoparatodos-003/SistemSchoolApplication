@@ -1,0 +1,356 @@
+<ui:composition template="/components/dashboard/dashboard-layout.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="titulo">
+        Documentos
+    </ui:define>
+
+    <ui:define name="content">
+
+        <style>
+            /* ============ Página ============ */
+            .docs-page {
+                padding: 1.5rem;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+
+            /* ============ Toolbar ============ */
+            .docs-toolbar {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1rem;
+                align-items: center;
+                justify-content: space-between;
+                background: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 14px;
+                padding: 1.1rem 1.4rem;
+                margin-bottom: 1.25rem;
+                box-shadow: 0 1px 3px rgba(16, 24, 40, .06);
+            }
+            .docs-title {
+                margin: 0;
+                font-size: 1.35rem;
+                font-weight: 700;
+                color: #111827;
+            }
+            .docs-subtitle {
+                margin: .15rem 0 0;
+                font-size: .85rem;
+                color: #6b7280;
+            }
+            .docs-toolbar-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: .6rem;
+                align-items: center;
+            }
+            .docs-filter-select {
+                min-width: 230px;
+            }
+
+            /* ============ Botões ============ */
+            .ui-button.docs-btn { border-radius: 10px; font-weight: 600; }
+            .ui-button.docs-btn-primary { background: #4f46e5; border-color: #4f46e5; }
+            .ui-button.docs-btn-primary:hover { background: #4338ca; border-color: #4338ca; }
+            .ui-button.docs-btn-outline { background: #fff; border: 1px solid #d1d5db; color: #374151; }
+            .ui-button.docs-btn-outline:hover { background: #f9fafb; border-color: #9ca3af; color: #111827; }
+            .ui-button.docs-btn-ghost { background: transparent; border: 1px solid transparent; color: #6b7280; }
+            .ui-button.docs-btn-ghost:hover { background: #f3f4f6; color: #111827; }
+
+            /* ============ Tabela ============ */
+            .docs-table.ui-datatable {
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 14px;
+                overflow: hidden;
+                box-shadow: 0 1px 3px rgba(16, 24, 40, .06);
+            }
+            .docs-table.ui-datatable table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            .docs-table.ui-datatable thead th {
+                background: #f9fafb;
+                color: #374151;
+                font-weight: 600;
+                font-size: .78rem;
+                text-transform: uppercase;
+                letter-spacing: .04em;
+                padding: .9rem 1rem;
+                border: 0 none !important;
+                border-bottom: 1px solid #e5e7eb !important;
+            }
+            .docs-table.ui-datatable tbody td {
+                padding: .8rem 1rem;
+                border: 0 none !important;
+                border-bottom: 1px solid #f3f4f6 !important;
+                font-size: .9rem;
+                color: #374151;
+            }
+            .docs-table.ui-datatable tbody tr:last-child td {
+                border-bottom: 0 none !important;
+            }
+            .docs-table.ui-datatable tbody tr:hover td {
+                background: #f8faff;
+            }
+            .docs-table .doc-name { font-weight: 600; color: #111827; }
+            .docs-table .file-cell { display: flex; align-items: center; gap: .6rem; }
+            .docs-table .file-icon {
+                color: #ef4444;
+                font-size: 1.15rem;
+                background: #fef2f2;
+                padding: .4rem;
+                border-radius: 8px;
+            }
+            .docs-table .ui-paginator {
+                border: 0 none !important;
+                border-top: 1px solid #e5e7eb !important;
+                background: #fff;
+                padding: .7rem 1rem;
+            }
+            .docs-table .ui-paginator .ui-paginator-pages .ui-state-active {
+                background: #4f46e5;
+                border-color: #4f46e5;
+                border-radius: 8px;
+            }
+            .docs-table .ui-paginator .ui-paginator-pages .ui-paginator-page {
+                border-radius: 8px;
+            }
+
+            /* ============ Badges de tipo ============ */
+            .doc-badge {
+                display: inline-block;
+                padding: .28rem .7rem;
+                border-radius: 999px;
+                font-size: .75rem;
+                font-weight: 600;
+                white-space: nowrap;
+            }
+            .badge-blue   { background: #e0e7ff; color: #3730a3; }
+            .badge-green  { background: #d1fae5; color: #065f46; }
+            .badge-amber  { background: #fef3c7; color: #92400e; }
+            .badge-purple { background: #ede9fe; color: #5b21b6; }
+            .badge-cyan   { background: #cffafe; color: #155e75; }
+            .badge-gray   { background: #f3f4f6; color: #374151; }
+
+            /* ============ Botões de ação ============ */
+            .row-actions { display: flex; gap: .35rem; }
+            .row-actions .ui-button {
+                width: 2.15rem !important;
+                height: 2.15rem;
+                border-radius: 8px !important;
+            }
+
+            /* ============ Dialog de detalhes ============ */
+            .docs-details-dialog { width: 34rem !important; max-width: 95vw; }
+            .docs-details-dialog .ui-dialog-content { padding: 1.5rem 1.6rem !important; }
+            .detail-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem 1.4rem;
+            }
+            .detail-item.full { grid-column: 1 / -1; }
+            .detail-label {
+                font-size: .72rem;
+                text-transform: uppercase;
+                letter-spacing: .05em;
+                color: #9ca3af;
+                font-weight: 600;
+                margin-bottom: .25rem;
+            }
+            .detail-value {
+                font-size: .92rem;
+                color: #111827;
+                font-weight: 500;
+                word-break: break-word;
+            }
+        </style>
+
+        <div class="docs-page">
+
+            <h:form id="dashboardTable">
+                <p:growl id="msg" showDetail="true" />
+
+                <!-- ==================== Toolbar ==================== -->
+                <div class="docs-toolbar">
+                    <div>
+                        <h1 class="docs-title">Documentos</h1>
+                        <p class="docs-subtitle">Gerencie os ficheiros e certificados da secretaria</p>
+                    </div>
+
+                    <div class="docs-toolbar-actions">
+                        <p:selectOneMenu id="filterType" value="#{documentController.searchDocumentType}"
+                            styleClass="docs-filter-select">
+                            <f:selectItem itemLabel="Todos os tipos" itemValue="" />
+                            <f:selectItem itemLabel="Certidão de Nascimento" itemValue="CERTIDAO_NASCIMENTO" />
+                            <f:selectItem itemLabel="Bilhete de Identidade" itemValue="BILHETE_IDENTIDADE" />
+                            <f:selectItem itemLabel="Cartão de Vacinação" itemValue="CARTAO_VACINA" />
+                            <f:selectItem itemLabel="Declaração de Transferência" itemValue="DECLARACAO_TRANSFERENCIA" />
+                            <f:selectItem itemLabel="Certificado" itemValue="CERTIFICADO" />
+                            <f:selectItem itemLabel="Outro" itemValue="OTHER" />
+                        </p:selectOneMenu>
+
+                        <p:commandButton value="Filtrar" icon="pi pi-filter" styleClass="docs-btn docs-btn-outline"
+                            actionListener="#{documentController.loadDocumentsType}"
+                            update="msg documentsTable" />
+
+                        <p:commandButton value="Limpar" icon="pi pi-times" styleClass="docs-btn docs-btn-ghost"
+                            actionListener="#{documentController.setDocuments(null)}"
+                            update="documentsTable"
+                            rendered="#{not empty documentController.documents}" />
+
+                        <p:commandButton value="Novo Documento" icon="pi pi-plus" styleClass="docs-btn docs-btn-primary"
+                            type="button" onclick="PF('createDialog').show()" />
+                    </div>
+                </div>
+
+                <!-- ==================== Tabela ====================
+                     Sem filtro: usa o lazyModel. Com filtro: usa a lista "documents"
+                     (o controller já retorna projections com as mesmas propriedades). -->
+                <p:dataTable id="documentsTable" styleClass="docs-table"
+                    value="#{not empty documentController.documents ? documentController.documents : documentController.lazyModel}"
+                    var="item" lazy="#{empty documentController.documents}"
+                    paginator="true" paginatorPosition="bottom" rows="10"
+                    emptyMessage="Nenhum documento encontrado."
+                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords} registos"
+                    rowsPerPageTemplate="5,10,20,50">
+
+                    <p:column headerText="ID" style="width:70px">
+                        <h:outputText value="##{item.pkDocument}" />
+                    </p:column>
+
+                    <p:column headerText="Nome do ficheiro">
+                        <div class="file-cell">
+                            <i class="pi pi-file-pdf file-icon" />
+                            <h:outputText value="#{item.fileName}" styleClass="doc-name" />
+                        </div>
+                    </p:column>
+
+                    <p:column headerText="Tipo" style="width:230px">
+                        <h:outputText
+                            styleClass="doc-badge #{item.documentType eq 'CERTIDAO_NASCIMENTO' ? 'badge-blue' :
+                                item.documentType eq 'BILHETE_IDENTIDADE' ? 'badge-green' :
+                                item.documentType eq 'CARTAO_VACINA' ? 'badge-amber' :
+                                item.documentType eq 'DECLARACAO_TRANSFERENCIA' ? 'badge-purple' :
+                                item.documentType eq 'CERTIFICADO' ? 'badge-cyan' : 'badge-gray'}"
+                            value="#{item.documentType eq 'CERTIDAO_NASCIMENTO' ? 'Certidão de Nascimento' :
+                                item.documentType eq 'BILHETE_IDENTIDADE' ? 'Bilhete de Identidade' :
+                                item.documentType eq 'CARTAO_VACINA' ? 'Cartão de Vacinação' :
+                                item.documentType eq 'DECLARACAO_TRANSFERENCIA' ? 'Declaração de Transferência' :
+                                item.documentType eq 'CERTIFICADO' ? 'Certificado' : 'Outro'}" />
+                    </p:column>
+
+                    <p:column headerText="Tamanho" style="width:120px">
+                        <h:outputText value="#{item.fileSize}">
+                            <f:convertNumber groupingUsed="true" />
+                        </h:outputText>
+                        <h:outputText value=" bytes" style="font-size:.75rem;color:#9ca3af" />
+                    </p:column>
+
+                    <p:column headerText="Data de upload" style="width:150px">
+                        <h:outputText value="#{item.uploadDate}">
+                            <f:convertDateTime type="localDate" pattern="dd/MM/yyyy" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Ações" style="width:160px">
+                        <div class="row-actions">
+
+                            <!-- Download (método downloadDocument do controller) -->
+                            <p:commandButton icon="pi pi-download" title="Descarregar"
+                                styleClass="ui-button-flat ui-button-secondary"
+                                ajax="false">
+                                <f:setPropertyActionListener target="#{documentController.selectedId}"
+                                    value="#{item.pkDocument}" />
+                            </p:commandButton>
+
+                            <!-- Detalhes -->
+                            <p:commandButton icon="pi pi-eye" title="Detalhes"
+                                styleClass="ui-button-flat ui-button-info"
+                                update=":detailsPanel"
+                                oncomplete="PF('detailsDialog').show()">
+                                <f:setPropertyActionListener target="#{documentController.selectedId}"
+                                    value="#{item.pkDocument}" />
+                            </p:commandButton>
+
+                            <!-- Eliminar (delete já existe no DocumentService) -->
+                            <p:commandButton icon="pi pi-trash" title="Eliminar"
+                                styleClass="ui-button-flat ui-button-danger"
+                                actionListener="#{documentController.service.delete(item.pkDocument)}"
+                                update="@form">
+                                <p:confirm header="Eliminar documento"
+                                    message="Tem a certeza que pretende eliminar este documento? Esta ação não pode ser anulada."
+                                    icon="pi pi-exclamation-triangle" />
+                            </p:commandButton>
+
+                        </div>
+                    </p:column>
+
+                </p:dataTable>
+
+                <p:confirmDialog global="true" responsive="true">
+                    <p:commandButton value="Não" type="button"
+                        styleClass="ui-confirmdialog-no ui-button-flat" />
+                    <p:commandButton value="Sim, eliminar" type="button"
+                        styleClass="ui-confirmdialog-yes ui-button-danger" />
+                </p:confirmDialog>
+            </h:form>
+
+            <!-- ==================== Dialog: Detalhes ==================== -->
+            <p:dialog id="detailsDialog" widgetVar="detailsDialog" modal="true" closeOnEscape="true"
+                resizable="false" draggable="false" showEffect="fade" hideEffect="fade"
+                styleClass="docs-details-dialog" header="Detalhes do documento">
+
+                <p:outputPanel id="detailsPanel" rendered="#{not empty documentController.selectedId}">
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">ID</div>
+                            <div class="detail-value">
+                                ##{documentController.service.findById(documentController.selectedId).pkDocument}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Tipo</div>
+                            <div class="detail-value">
+                                #{documentController.service.findById(documentController.selectedId).documentType}
+                            </div>
+                        </div>
+                        <div class="detail-item full">
+                            <div class="detail-label">Nome do ficheiro</div>
+                            <div class="detail-value">
+                                #{documentController.service.findById(documentController.selectedId).fileName}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Content-Type</div>
+                            <div class="detail-value">
+                                #{documentController.service.findById(documentController.selectedId).contentType}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Tamanho</div>
+                            <div class="detail-value">
+                                #{documentController.service.findById(documentController.selectedId).fileSize} bytes
+                            </div>
+                        </div>
+                        <div class="detail-item full">
+                            <div class="detail-label">Data de upload</div>
+                            <div class="detail-value">
+                                #{documentController.service.findById(documentController.selectedId).uploadDate}
+                            </div>
+                        </div>
+                    </div>
+                </p:outputPanel>
+            </p:dialog>
+
+            <ui:include src="./documents/document-create.xhtml" />
+        </div>
+    </ui:define>
+</ui:composition>

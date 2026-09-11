@@ -1,54 +1,46 @@
 package com.SistemSchool.modulo_secrtaria.repository;
 
-import com.SistemSchool.modulo_secrtaria.io.DocumentType;
-import com.SistemSchool.modulo_secrtaria.model.Document;
+import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import com.SistemSchool.modulo_secrtaria.interfaces.DocumentTableProjection;
+import com.SistemSchool.modulo_secrtaria.model.Document;
 
 @Repository
-public interface DocumentRepository extends JpaRepository<Document, Long>, JpaSpecificationExecutor<Document> {
+public interface DocumentRepository extends JpaRepository<Document, Integer> {
 
-       // -------------------------------
-       // Queries utilitárias
-       // -------------------------------
+       @Query(value = """
+                     SELECT d.pk_document AS pkDocument,
+                            d.document_type AS documentType,
+                            d.file_name AS fileName,
+                            d.content_type AS contentType,
+                            d.file_size AS fileSize,
+                            d.upload_date AS uploadDate
+                     FROM document d
 
-       List<Document> findByStudent_PkStudent(Long studentPk);
+                     """, countQuery = "SELECT COUNT(*) FROM document", nativeQuery = true)
+       Page<DocumentTableProjection> findAllForTable(Pageable pageable);
 
-       List<Document> findByDocumentType(DocumentType documentType);
-
-       boolean existsByDocumentNumber(String documentNumber);
-
-       Optional<Document> findByDocumentNumber(String documentNumber);
-
-       // -------------------------------
-       // Geração de sequência do documentNumber (DOC-ano-sequencia)
-       // -------------------------------
-
-       @Query("""
-                     SELECT d.documentNumber
-                     FROM Document d
-                     WHERE d.documentNumber LIKE CONCAT(:prefix, '%')
-                     ORDER BY d.documentNumber DESC
-                     """)
-       List<String> findLastDocumentNumbersByPrefix(@Param("prefix") String prefix, Pageable pageable);
-
-       // -------------------------------
-       // Estatísticas (cards do topo da listagem)
-       // -------------------------------
-
-       long countByExpiryDateBefore(LocalDate date);
-
-       long countByExpiryDateBetween(LocalDate start, LocalDate end);
-
-       @Query("SELECT COUNT(DISTINCT d.student.pkStudent) FROM Document d")
-       long countDistinctStudents();
+       // Busca por documentType (LIKE para permitir parte do texto)
+       @Query(value = """
+                     SELECT d.pk_document AS pkDocument,
+                            d.document_type AS documentType,
+                            d.file_name AS fileName,
+                            d.content_type AS contentType,
+                            d.file_size AS fileSize,
+                            d.upload_date AS uploadDate
+                     FROM document d
+                     WHERE d.document_type = :documentType
+                     """, countQuery = """
+                     SELECT COUNT(*)
+                     FROM document d
+                     WHERE d.document_type = :documentType
+                     """, nativeQuery = true)
+       List<DocumentTableProjection> findAllForTableByType(@Param("documentType") String documentType);
 }

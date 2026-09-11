@@ -1,6 +1,5 @@
 package com.SistemSchool.modulo_secrtaria.service;
 
-import com.SistemSchool.io.FileImage;
 import com.SistemSchool.modulo_secrtaria.dto.StudentDTO;
 import com.SistemSchool.modulo_secrtaria.interfaces.StudentTableProjection;
 import com.SistemSchool.modulo_secrtaria.io.StudentStatus;
@@ -8,6 +7,7 @@ import com.SistemSchool.modulo_secrtaria.model.Student;
 import com.SistemSchool.modulo_secrtaria.repository.StudentRepository;
 import com.SistemSchool.util.BIValidator;
 
+import jakarta.faces.context.FacesContext;
 import jakarta.transaction.Transactional;
 
 import org.primefaces.model.file.UploadedFile;
@@ -19,18 +19,24 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.SistemSchool.io.Gender;
 
-import java.time.LocalDate;
-
+import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service
 @Transactional
 public class StudentService {
+
+    private static final Logger LOGGER = Logger.getLogger(StudentService.class.getName());
 
     /**
      * Pasta (dentro da aplicação web) onde as fotos dos alunos são guardadas.
@@ -45,11 +51,9 @@ public class StudentService {
     private static final String PREFIXO_NUMERO_ALUNO = "ALU-";
 
     private final StudentRepository repository;
-    private final FileImage fileImage;
 
     public StudentService(StudentRepository repository) {
         this.repository = repository;
-        this.fileImage = new FileImage();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -81,7 +85,7 @@ public class StudentService {
         return repository.save(student);
     }
 
-    public void update(StudentDTO dto, UploadedFile novaFoto) {
+    public void update(StudentDTO dto, byte[] novaFotoConteudo, String nomeOriginalFoto) {
         Student student = repository.findById(dto.getPkStudent())
                 .orElseThrow(() -> new RuntimeException("Aluno não encontrado com id: " + dto.getPkStudent()));
 
@@ -114,9 +118,9 @@ public class StudentService {
         student.setStatus(dto.getStatus());
         student.setObs(dto.getObs());
 
-        if (temFicheiro(novaFoto)) {
+        if (novaFotoConteudo != null && novaFotoConteudo.length > 0) {
             removerFotoAtual(student.getUploadPhoto());
-            String nomeFicheiro = guardarFoto(novaFoto, student.getSudentNumber());
+            String nomeFicheiro = guardarFoto(novaFotoConteudo, nomeOriginalFoto, student.getSudentNumber());
             student.setUploadPhoto(nomeFicheiro);
         }
 
@@ -200,23 +204,65 @@ public class StudentService {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // GESTÃO DA FOTO (usa a classe FileImage)
+    // GESTÃO DA FOTO
     // ─────────────────────────────────────────────────────────────
+    //
+    // Reescrito para gravar diretamente em webapp/student_img usando o
+    // caminho real da aplicação (ExternalContext.getRealPath), sem depender
+    // de nenhuma classe auxiliar externa. A pasta é criada automaticamente
+    // caso ainda não exista.
 
     private boolean temFicheiro(UploadedFile foto) {
         return foto != null && foto.getContent() != null && foto.getContent().length > 0;
     }
 
+    /**
+     * Resolve o caminho absoluto (no disco) da pasta {@code student_img}
+     * dentro do webapp em execução, criando-a se necessário.
+     */
+    private File resolverPastaFotos() throws IOException {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            throw new IOException("FacesContext indisponível — não é possível resolver o caminho real do webapp.");
+        }
+
+        String caminhoReal = facesContext.getExternalContext().getRealPath("/" + PASTA_FOTOS_ALUNOS);
+        if (caminhoReal == null) {
+            throw new IOException(
+                    "Não foi possível resolver o caminho real da pasta '" + PASTA_FOTOS_ALUNOS + "'.");
+        }
+
+        File pasta = new File(caminhoReal);
+        if (!pasta.exists() && !pasta.mkdirs()) {
+            throw new IOException("Não foi possível criar a pasta de fotos: " + pasta.getAbsolutePath());
+        }
+
+        return pasta;
+    }
+
     private String guardarFoto(UploadedFile foto, String sudentNumber) {
         try {
-            String extensao = extrairExtensao(foto.getFileName());
+            try (InputStream in = foto.getInputStream()) {
+                return guardarFoto(in.readAllBytes(), foto.getFileName(), sudentNumber);
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Erro ao guardar a foto do aluno", e);
+            throw new RuntimeException("Não foi possível guardar a foto do aluno: " + e.getMessage(), e);
+        }
+    }
+
+    private String guardarFoto(byte[] conteudo, String nomeOriginal, String sudentNumber) {
+        try {
+            String extensao = extrairExtensao(nomeOriginal);
             String base = (sudentNumber != null && !sudentNumber.isBlank()) ? sudentNumber : "aluno";
             String novoNome = base + "_" + System.currentTimeMillis() + extensao;
 
-            fileImage.salvarArquivoSemMudarONome(foto, PASTA_FOTOS_ALUNOS, novoNome);
-
+            File pastaFotos = resolverPastaFotos();
+            File destino = new File(pastaFotos, novoNome);
+            Files.write(destino.toPath(), conteudo);
             return novoNome;
         } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Erro ao guardar a foto do aluno", e);
             throw new RuntimeException("Não foi possível guardar a foto do aluno: " + e.getMessage(), e);
         }
     }
@@ -226,12 +272,14 @@ public class StudentService {
             return;
         }
         try {
-            fileImage.eliminarFicheiro(nomeFicheiroAtual, PASTA_FOTOS_ALUNOS);
-        } catch (SQLException e) {
+            File pastaFotos = resolverPastaFotos();
+            File ficheiro = new File(pastaFotos, nomeFicheiroAtual);
+            Files.deleteIfExists(ficheiro.toPath());
+        } catch (IOException e) {
             // Falha ao remover a foto antiga não deve impedir a operação principal;
             // fica apenas registada.
-            System.out.println("Aviso: não foi possível eliminar a foto antiga (" + nomeFicheiroAtual + "): "
-                    + e.getMessage());
+            LOGGER.log(Level.WARNING,
+                    "Aviso: não foi possível eliminar a foto antiga (" + nomeFicheiroAtual + ")", e);
         }
     }
 

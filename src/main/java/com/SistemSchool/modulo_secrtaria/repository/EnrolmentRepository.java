@@ -130,6 +130,19 @@ public interface EnrolmentRepository extends JpaRepository<Enrolment, Long> {
                      """)
        List<Enrolment> findByStudent_PkStudentWithSchoolClass(@Param("studentPk") Long studentPk);
 
+       @Query("SELECT e FROM Enrolment e " +
+                     "JOIN FETCH e.student " +
+                     "JOIN FETCH e.schoolClass " +
+                     "WHERE e.student.pkStudent = :studentId " +
+                     "ORDER BY e.enrolmentData DESC")
+       List<Enrolment> findByStudentPkWithStudentAndClass(@Param("studentId") Long studentId);
+
+       @Query("SELECT e FROM Enrolment e " +
+                     "JOIN FETCH e.student " +
+                     "JOIN FETCH e.schoolClass " +
+                     "WHERE e.phEnrolment = :id")
+       Optional<Enrolment> findByIdWithStudentAndClass(@Param("id") Long id);
+
        // -------------------------------
        // Queries utilitárias
        // -------------------------------

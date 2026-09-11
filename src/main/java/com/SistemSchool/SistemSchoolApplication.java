@@ -34,6 +34,11 @@ public class SistemSchoolApplication {
         ServletRegistrationBean<FacesServlet> registration = new ServletRegistrationBean<>(new FacesServlet(), "*.xhtml");
         registration.setName("Faces Servlet");
         registration.setLoadOnStartup(1);
+        registration.setMultipartConfig(new MultipartConfigElement(
+                System.getProperty("java.io.tmpdir"),
+                10 * 1024 * 1024,
+                20 * 1024 * 1024,
+                1024 * 1024));
         return registration;
     }
 
@@ -49,7 +54,7 @@ public class SistemSchoolApplication {
 
             // servletContext.setInitParameter("org.apache.myfaces.CDI_MANAGER", "none");
             servletContext.setInitParameter("org.apache.myfaces.INITIALIZE_ALWAYS_STANDALONE", "true");
-            servletContext.setInitParameter("primefaces.UPLOADER", "commons");
+            servletContext.setInitParameter("primefaces.UPLOADER", "native");
 
             // Configuração do PrimeFaces
             servletContext.setInitParameter("primefaces.THEME", "saga");

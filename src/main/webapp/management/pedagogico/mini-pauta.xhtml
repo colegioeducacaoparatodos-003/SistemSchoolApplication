@@ -139,27 +139,45 @@
             .btn-ghost:hover { background: var(--enr-border); }
             .btn-print { background: var(--enr-blue); color: #fff; border: none; border-radius: 6px; padding: 8px 18px; font-size: .85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
             .btn-print:hover { background: #154a8c; }
+            .btn-excel { background: var(--enr-green); color: #fff; border: none; border-radius: 6px; padding: 8px 18px; font-size: .85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+            .btn-excel:hover { filter: brightness(1.08); }
 
-            .enr-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-            .enr-table thead th { background: var(--enr-black); color: var(--yellow-lt); font-size: .7rem; text-transform: uppercase; padding: .75rem .6rem; border: 1px solid var(--enr-black); white-space: nowrap; }
-            .enr-table tbody td { padding: .65rem .6rem; border-bottom: 1px solid var(--enr-border); text-align: center; }
-            .enr-table tbody tr:hover { background: var(--enr-surface-2); }
-            .enr-table .cell-name { text-align: left; font-weight: 600; padding-left: 1rem; }
-            .enr-table .cell-num { font-family: var(--font-mono); color: var(--enr-muted); }
+            /* ══════════ MINI-PAUTA — modelo oficial (por disciplina, 3 trimestres) ══════════ */
+            .mp-sheet { padding: 1.2rem 1.2rem 1.6rem; }
 
-            .badge-mac { background: var(--blue-pale); color: var(--enr-blue); padding: 3px 10px; border-radius: 99px; font-weight: 700; font-family: var(--font-mono); font-size: .75rem; }
-            .badge-npt { background: var(--yellow-pale); color: #8a6400; padding: 3px 10px; border-radius: 99px; font-weight: 700; font-family: var(--font-mono); font-size: .75rem; }
-            .badge-mt { background: var(--black-mid); color: var(--enr-yellow); padding: 3px 10px; border-radius: 99px; font-weight: 700; font-family: var(--font-mono); font-size: .75rem; }
-            .badge-aprovado { background: var(--green-pale); color: var(--enr-green); padding: 3px 10px; border-radius: 99px; font-weight: 700; font-size: .72rem; }
-            .badge-reprovado { background: var(--red-pale); color: var(--enr-red); padding: 3px 10px; border-radius: 99px; font-weight: 700; font-size: .72rem; }
+            .mp-inst-header { text-align: center; line-height: 1.35; margin-bottom: .8rem; }
+            .mp-inst-header .mp-line { font-size: .78rem; font-weight: 600; color: var(--enr-text); letter-spacing: .02em; }
+            .mp-inst-header .mp-title { font-size: 1.05rem; font-weight: 800; color: var(--enr-text); margin-top: 2px; }
+            .mp-inst-header .mp-school { font-size: .85rem; font-weight: 700; color: var(--enr-text); }
+
+            .mp-meta {
+                display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem;
+                font-size: .78rem; font-weight: 700; color: var(--enr-text);
+                border-top: 2px solid var(--enr-black); border-bottom: 1px solid var(--enr-black);
+                padding: .35rem .2rem; margin-bottom: .6rem;
+            }
+            .mp-meta .mp-meta-scale { color: var(--enr-muted); font-weight: 600; }
+
+            .enr-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+            .enr-table th, .enr-table td { border: 1px solid var(--enr-black); }
+            .enr-table thead th { background: var(--enr-black); color: var(--yellow-lt); font-size: .68rem; text-transform: uppercase; padding: .45rem .3rem; white-space: nowrap; text-align: center; }
+            .enr-table thead th.mp-th-group { background: var(--black-mid); font-size: .7rem; letter-spacing: .04em; }
+            .enr-table tbody td { padding: .35rem .3rem; text-align: center; height: 22px; }
+            .enr-table .cell-num { font-family: var(--font-mono); color: var(--enr-muted); width: 36px; }
+            .enr-table .cell-name { text-align: left; font-weight: 600; padding-left: .6rem; min-width: 180px; white-space: nowrap; }
+            .enr-table .cell-score { font-family: var(--font-mono); font-weight: 500; width: 46px; }
+            .enr-table .cell-obs { min-width: 90px; }
+            .enr-table tbody tr:nth-child(even) td { background: #fcfcfd; }
+
+            .mp-signature {
+                margin-top: 1.6rem; text-align: center; font-size: .78rem; font-weight: 600; color: var(--enr-text);
+            }
+            .mp-signature .mp-sig-line { display: inline-block; min-width: 220px; border-bottom: 1px solid var(--enr-black); height: 1.4em; }
 
             .enr-empty { text-align: center; padding: 3rem 1rem; color: var(--enr-muted); }
             .enr-empty i { font-size: 2.5rem; opacity: .18; margin-bottom: .6rem; display: block; }
             .enr-empty-title { font-weight: 700; margin-bottom: .3rem; color: var(--enr-text); }
             .enr-empty-sub { font-size: .85rem; }
-
-            .enr-empty-block { text-align: center; padding: 2.2rem 1rem; color: var(--enr-muted); }
-            .enr-empty-block i { font-size: 2rem; opacity: .2; display: block; margin-bottom: .5rem; }
 
             .sc-loading-overlay {
                 position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -196,7 +214,10 @@
                 .enr-header-left { width: 100%; }
                 .enr-toolbar { flex-direction: column; align-items: stretch; }
                 .enr-toolbar-right { width: 100%; }
-                .enr-toolbar-right .btn-print { width: 100%; justify-content: center; }
+                .enr-toolbar-right .btn-print,
+                .enr-toolbar-right .btn-new,
+                .enr-toolbar-right .btn-ghost,
+                .enr-toolbar-right .btn-excel { width: 100%; justify-content: center; }
                 .enr-filters { grid-template-columns: 1fr; }
                 .enr-filters .field-actions { flex-direction: column; align-items: stretch; }
                 .enr-stat-value { font-size: 1.2rem; }
@@ -207,9 +228,13 @@
                 .no-print { display: none !important; }
                 body { background: #fff; }
                 .enr-page { padding: 0; }
-                .enr-card { box-shadow: none; border: 1px solid #000; break-inside: avoid; page-break-inside: avoid; margin-bottom: 1.5rem; }
+                .enr-card { box-shadow: none; border: none; break-inside: avoid; page-break-inside: avoid; margin-bottom: 1rem; }
+                .mp-sheet { padding: 0; }
+                .enr-table { font-size: .72rem; }
                 .enr-table thead th { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                .badge-mac, .badge-npt, .badge-mt, .badge-aprovado, .badge-reprovado { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                .enr-table thead th.mp-th-group { background: #333 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                .enr-table tbody tr:nth-child(even) td { background: #fff !important; }
+                .enr-table, .enr-table th, .enr-table td { border-color: #000 !important; }
             }
             /* ]]> */
         </style>
@@ -232,7 +257,7 @@
                         <div class="enr-header-icon"><i class="pi pi-table"></i></div>
                         <div class="enr-header-title">
                             <h1>Mini-Pauta</h1>
-                            <p>MAC · NPT · MT — Avaliação por turma e disciplina</p>
+                            <p>MAC · NPT · MT — 1º, 2º e 3º trimestres lado a lado</p>
                         </div>
                     </div>
                     <span class="breadcrumb-pill no-print">
@@ -245,7 +270,7 @@
                     <div class="enr-stats no-print">
                         <div class="enr-stat">
                             <div>
-                                <div class="enr-stat-label">Blocos Gerados</div>
+                                <div class="enr-stat-label">Disciplinas na Pauta</div>
                                 <div class="enr-stat-value">
                                     <h:outputText value="#{miniPautaController.reportBlocks.size()}" />
                                 </div>
@@ -333,78 +358,109 @@
                     </div>
                 </div>
 
-                <h:panelGroup rendered="#{miniPautaController.rendered}">
-                    <ui:repeat value="#{miniPautaController.reportBlocks}" var="block" varStatus="bs">
-                        <div class="enr-card">
-                            <div class="enr-toolbar">
-                                <div class="enr-toolbar-left">
-                                    <span class="enr-toolbar-title">
-                                        #{block.disciplineName} — #{block.trimester}º Trimestre
-                                        <span class="scale-badge">
-                                            <i class="pi pi-chart-bar" style="font-size:.6rem"></i>
-                                            Escala #{block.scaleLabel}
-                                        </span>
-                                    </span>
-                                    <span class="enr-toolbar-sub">
-                                        MAC = Média Avaliação Contínua · NPT = Nota Prova Trimestral · MT = Média Trimestral
-                                        <h:panelGroup rendered="#{block.educationLevel eq 'PRIMARIO'}">
-                                            · Aprovação ≥ 5 valores (escala 0–10)
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{block.educationLevel eq 'I_CICLO'}">
-                                            · Aprovação ≥ 10 valores (escala 0–20)
-                                        </h:panelGroup>
-                                    </span>
-                                </div>
-                                <div class="enr-toolbar-right">
-                                    <p:commandButton value="Imprimir" icon="pi pi-print" styleClass="btn-print no-print" type="button" onclick="window.print()" />
-                                </div>
+                <!-- Exportação: só aparece depois de gerar pelo menos um bloco.
+                     Os botões de download usam ajax="false" (postback normal) porque
+                     o controlador escreve o ficheiro diretamente na resposta HTTP -
+                     uma chamada ajax normal não dispara o download do browser. -->
+                <h:panelGroup rendered="#{miniPautaController.rendered and not empty miniPautaController.reportBlocks}">
+                    <div class="enr-card no-print">
+                        <div class="enr-toolbar">
+                            <div class="enr-toolbar-left">
+                                <span class="enr-toolbar-title"><i class="pi pi-download" style="color:var(--enr-blue); margin-right:.4rem;"></i> Exportar Mini-Pauta</span>
+                                <span class="enr-toolbar-sub">Imprima ou baixe a pauta no modelo oficial</span>
                             </div>
+                            <div class="enr-toolbar-right">
+                                <p:commandButton value="Imprimir" icon="pi pi-print" styleClass="btn-print" type="button" onclick="window.print()" />
+                                <p:commandButton value="PDF" icon="pi pi-file-pdf" styleClass="btn-new"
+                                    ajax="false" actionListener="#{miniPautaController.exportPdf}" />
+                                <p:commandButton value="Excel" icon="pi pi-file-excel" styleClass="btn-excel"
+                                    ajax="false" actionListener="#{miniPautaController.exportExcel}" />
+                                <p:commandButton value="CSV" icon="pi pi-file" styleClass="btn-ghost"
+                                    ajax="false" actionListener="#{miniPautaController.exportCsv}" />
+                            </div>
+                        </div>
+                    </div>
+                </h:panelGroup>
 
-                            <h:panelGroup rendered="#{not block.isEmpty()}">
-                                <div style="overflow-x:auto;">
-                                    <table class="enr-table">
-                                        <thead>
-                                            <tr>
-                                                <th style="width:40px">Nº</th>
-                                                <th style="min-width:200px;text-align:left;padding-left:1rem">Nome do Aluno</th>
-                                                <th>MAC</th>
-                                                <th>NPT</th>
-                                                <th>MT</th>
-                                                <th>Situação</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <ui:repeat value="#{block.rows}" var="row">
+                <!-- ══════ MINI-PAUTA — modelo oficial: 1 disciplina por folha, 3 trimestres lado a lado ══════ -->
+                <h:panelGroup rendered="#{miniPautaController.rendered}">
+                    <ui:repeat value="#{miniPautaController.reportBlocks}" var="block">
+                        <div class="enr-card">
+                            <div class="mp-sheet">
+                                <!-- Cabeçalho institucional -->
+                                <div class="mp-inst-header">
+                                    <div class="mp-line">REPÚBLICA DE ANGOLA</div>
+                                    <div class="mp-line">ADMINISTRAÇÃO MUNICIPAL DE #{miniPautaController.municipality}</div>
+                                    <div class="mp-line">DIRECÇÃO MUNICIPAL DA EDUCAÇÃO DE #{miniPautaController.educationDirectorate}</div>
+                                    <div class="mp-title">MINI-PAUTA</div>
+                                    <div class="mp-school">#{miniPautaController.schoolName}</div>
+                                </div>
+
+                                <!-- Linha disciplina / turma / ano lectivo -->
+                                <div class="mp-meta">
+                                    <span>DISCIPLINA: #{block.disciplineName}</span>
+                                    <span>*CLASSE / TURMA: #{miniPautaController.selectedClassName}</span>
+                                    <span>ANO LECTIVO: #{miniPautaController.schoolYear}</span>
+                                    <span class="mp-meta-scale">Escala #{block.scaleLabel}
+                                        <h:panelGroup rendered="#{block.educationLevel eq 'PRIMARIO'}">(Aprovação ≥ 5)</h:panelGroup>
+                                        <h:panelGroup rendered="#{block.educationLevel eq 'I_CICLO'}">(Aprovação ≥ 10)</h:panelGroup>
+                                    </span>
+                                </div>
+
+                                <h:panelGroup rendered="#{not block.isEmpty()}">
+                                    <div style="overflow-x:auto;">
+                                        <table class="enr-table">
+                                            <thead>
+                                                <!-- Linha 1: grupos de trimestre -->
                                                 <tr>
-                                                    <td class="cell-num">#{row.rowNumber}</td>
-                                                    <td class="cell-name">#{row.studentName}</td>
-                                                    <td><span class="badge-mac">#{row.macFormatted}</span></td>
-                                                    <td><span class="badge-npt">#{row.nptFormatted}</span></td>
-                                                    <td><span class="badge-mt">#{row.mtFormatted}</span></td>
-                                                    <td>
-                                                        <h:panelGroup rendered="#{row.situation eq 'Aprovado'}">
-                                                            <span class="badge-aprovado"><i class="pi pi-check-circle" style="font-size:.6rem;margin-right:4px"></i>Aprovado</span>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup rendered="#{row.situation eq 'Reprovado'}">
-                                                            <span class="badge-reprovado"><i class="pi pi-times-circle" style="font-size:.6rem;margin-right:4px"></i>Reprovado</span>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup rendered="#{row.situation eq '—'}">
-                                                            <span style="color:var(--enr-muted)">—</span>
-                                                        </h:panelGroup>
-                                                    </td>
+                                                    <th rowspan="2">Nº</th>
+                                                    <th rowspan="2" style="text-align:left;padding-left:.6rem">NOME COMPLETO</th>
+                                                    <th class="mp-th-group" colspan="3">1º TRIMESTRE</th>
+                                                    <th class="mp-th-group" colspan="3">2º TRIMESTRE</th>
+                                                    <th class="mp-th-group" colspan="3">3º TRIMESTRE</th>
+                                                    <th rowspan="2">OBSERVAÇÃO</th>
                                                 </tr>
-                                            </ui:repeat>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </h:panelGroup>
+                                                <!-- Linha 2: MAC / NPT / MT -->
+                                                <tr>
+                                                    <th>MAC</th><th>NPT</th><th>MT</th>
+                                                    <th>MAC</th><th>NPT</th><th>MT</th>
+                                                    <th>MAC</th><th>NPT</th><th>MT</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <ui:repeat value="#{block.rows}" var="row">
+                                                    <tr>
+                                                        <td class="cell-num">#{row.rowNumber}</td>
+                                                        <td class="cell-name">#{row.studentName}</td>
+                                                        <td class="cell-score">#{row.scores['1'].macFormatted}</td>
+                                                        <td class="cell-score">#{row.scores['1'].nptFormatted}</td>
+                                                        <td class="cell-score">#{row.scores['1'].mtFormatted}</td>
+                                                        <td class="cell-score">#{row.scores['2'].macFormatted}</td>
+                                                        <td class="cell-score">#{row.scores['2'].nptFormatted}</td>
+                                                        <td class="cell-score">#{row.scores['2'].mtFormatted}</td>
+                                                        <td class="cell-score">#{row.scores['3'].macFormatted}</td>
+                                                        <td class="cell-score">#{row.scores['3'].nptFormatted}</td>
+                                                        <td class="cell-score">#{row.scores['3'].mtFormatted}</td>
+                                                        <td class="cell-obs"></td>
+                                                    </tr>
+                                                </ui:repeat>
+                                            </tbody>
+                                        </table>
+                                    </div>
 
-                            <h:panelGroup rendered="#{block.isEmpty()}">
-                                <div class="enr-empty-block">
-                                    <i class="pi pi-table"></i>
-                                    Nenhum aluno encontrado para #{block.disciplineName} — #{block.trimester}º Trimestre.
-                                </div>
-                            </h:panelGroup>
+                                    <div class="mp-signature">
+                                        O Professor <span class="mp-sig-line"></span>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{block.isEmpty()}">
+                                    <div class="enr-empty">
+                                        <i class="pi pi-table"></i>
+                                        <div class="enr-empty-title">Nenhum aluno encontrado</div>
+                                        <div class="enr-empty-sub">Para #{block.disciplineName} com os filtros selecionados.</div>
+                                    </div>
+                                </h:panelGroup>
+                            </div>
                         </div>
                     </ui:repeat>
                 </h:panelGroup>

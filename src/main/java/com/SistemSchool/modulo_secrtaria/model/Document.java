@@ -1,24 +1,18 @@
 package com.SistemSchool.modulo_secrtaria.model;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.primefaces.model.file.UploadedFile;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-
-import com.SistemSchool.modulo_secrtaria.io.DocumentType;
-import java.util.Objects;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "document")
@@ -26,96 +20,53 @@ public class Document {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long pkDocument;
-    private String documentNumber;
-
-    // ==============================================
-    // Nome do arquivo (caso seja digitalizado) /////
-    // ==============================================
+    private int pkDocument;
+    private String documentType;
+    // DECLARATION | VISAS | LIABILITY AGREEMENT | LAWS | OTHER
     private String fileName;
-
-    // ======================================
-    // Caminho onde o arquivo foi salvo /////
-    // ======================================
     private String filePath;
+    private String contentType;
+    private long fileSize;
+    private LocalDate uploadDate;
+    private int fkUser;
 
-    //==============================
-    // Relacionamentos *////////////
-    //==============================
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_pk", nullable = false, foreignKey = @ForeignKey(name = "fk_document_student"))
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "student_pk", nullable = false)
     private Student student;
-    
-    @Enumerated(EnumType.STRING)
-    private DocumentType documentType;
-    // =====================
-    // Data de emissão /////
-    // =====================
-    private LocalDate issueDate;
 
-    // ====================
-    // Data de validade ///
-    // ====================
-    private LocalDate expiryDate;
-
-    // ====================
-    // Auditoria //////////
-    // ====================
-    private String obs;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    @Transient
+    private UploadedFile uploadedFile;
 
     public Document() {
-
     }
 
-    // Getters, Setters, Equals, HashCode, toString
-
-    public Document(Long phDocument, String documentNumber, 
-                    String fileName, String filePath, Student student, 
-                    DocumentType documentType, LocalDate issueDate, 
-                    LocalDate expiryDate, String obs, LocalDateTime createdAt, 
-                    LocalDateTime updatedAt) {
-
-        this.pkDocument = phDocument;
-        this.documentNumber = documentNumber;
+    public Document(int pkDocument, String documentType, String fileName, String filePath, String contentType,
+            long fileSize, LocalDate uploadDate, int fkUser, UploadedFile uploadedFile) {
+        this.pkDocument = pkDocument;
+        this.documentType = documentType;
         this.fileName = fileName;
         this.filePath = filePath;
-        this.student = student;
-        this.documentType = documentType;
-        this.issueDate = issueDate;
-        this.expiryDate = expiryDate;
-        this.obs = obs;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-
+        this.contentType = contentType;
+        this.fileSize = fileSize;
+        this.uploadDate = uploadDate;
+        this.fkUser = fkUser;
+        this.uploadedFile = uploadedFile;
     }
 
-    public Long getPhDocument() {
+    public int getPkDocument() {
         return this.pkDocument;
     }
 
-    public void setPhDocument(Long phDocument) {
-        this.pkDocument = phDocument;
+    public void setPkDocument(int pkDocument) {
+        this.pkDocument = pkDocument;
     }
 
-    public String getDocumentNumber() {
-        return this.documentNumber;
+    public String getDocumentType() {
+        return this.documentType;
     }
 
-    public void setDocumentNumber(String documentNumber) {
-        this.documentNumber = documentNumber;
+    public void setDocumentType(String documentType) {
+        this.documentType = documentType;
     }
 
     public String getFileName() {
@@ -134,69 +85,61 @@ public class Document {
         this.filePath = filePath;
     }
 
+    public String getContentType() {
+        return this.contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public long getFileSize() {
+        return this.fileSize;
+    }
+
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public LocalDate getUploadDate() {
+        return this.uploadDate;
+    }
+
+    public void setUploadDate(LocalDate uploadDate) {
+        this.uploadDate = uploadDate;
+    }
+
+    public int getFkUser() {
+        return this.fkUser;
+    }
+
+    public void setFkUser(int fkUser) {
+        this.fkUser = fkUser;
+    }
+
     public Student getStudent() {
-        return this.student;
+        return student;
     }
 
     public void setStudent(Student student) {
         this.student = student;
     }
 
-    public DocumentType getDocumentType() {
-        return this.documentType;
+    public UploadedFile getUploadedFile() {
+        return this.uploadedFile;
     }
 
-    public void setDocumentType(DocumentType documentType) {
-        this.documentType = documentType;
+    public void setUploadedFile(UploadedFile uploadedFile) {
+        this.uploadedFile = uploadedFile;
     }
 
-    public LocalDate getIssueDate() {
-        return this.issueDate;
-    }
-
-    public void setIssueDate(LocalDate issueDate) {
-        this.issueDate = issueDate;
-    }
-
-    public LocalDate getExpiryDate() {
-        return this.expiryDate;
-    }
-
-    public void setExpiryDate(LocalDate expiryDate) {
-        this.expiryDate = expiryDate;
-    }
-
-    public String getObs() {
-        return this.obs;
-    }
-
-    public void setObs(String obs) {
-        this.obs = obs;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return this.createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return this.updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Document phDocument(Long phDocument) {
-        setPhDocument(phDocument);
+    public Document pkDocument(int pkDocument) {
+        setPkDocument(pkDocument);
         return this;
     }
 
-    public Document documentNumber(String documentNumber) {
-        setDocumentNumber(documentNumber);
+    public Document documentType(String documentType) {
+        setDocumentType(documentType);
         return this;
     }
 
@@ -210,72 +153,50 @@ public class Document {
         return this;
     }
 
-    public Document student(Student student) {
-        setStudent(student);
+    public Document contentType(String contentType) {
+        setContentType(contentType);
         return this;
     }
 
-    public Document documentType(DocumentType documentType) {
-        setDocumentType(documentType);
+    public Document fileSize(long fileSize) {
+        setFileSize(fileSize);
         return this;
     }
 
-    public Document issueDate(LocalDate issueDate) {
-        setIssueDate(issueDate);
+    public Document uploadDate(LocalDate uploadDate) {
+        setUploadDate(uploadDate);
         return this;
     }
 
-    public Document expiryDate(LocalDate expiryDate) {
-        setExpiryDate(expiryDate);
+    public Document fkUser(int fkUser) {
+        setFkUser(fkUser);
         return this;
     }
 
-    public Document obs(String obs) {
-        setObs(obs);
-        return this;
-    }
-
-    public Document createdAt(LocalDateTime createdAt) {
-        setCreatedAt(createdAt);
-        return this;
-    }
-
-    public Document updatedAt(LocalDateTime updatedAt) {
-        setUpdatedAt(updatedAt);
+    public Document uploadedFile(UploadedFile uploadedFile) {
+        setUploadedFile(uploadedFile);
         return this;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o == this)
-            return true;
-        if (!(o instanceof Document)) {
-            return false;
-        }
-        Document document = (Document) o;
-        return Objects.equals(pkDocument, document.pkDocument) && Objects.equals(documentNumber, document.documentNumber) && Objects.equals(fileName, document.fileName) && Objects.equals(filePath, document.filePath) && Objects.equals(student, document.student) && Objects.equals(documentType, document.documentType) && Objects.equals(issueDate, document.issueDate) && Objects.equals(expiryDate, document.expiryDate) && Objects.equals(obs, document.obs) && Objects.equals(createdAt, document.createdAt) && Objects.equals(updatedAt, document.updatedAt);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(pkDocument, documentNumber, fileName, filePath, student, documentType, issueDate, expiryDate, obs, createdAt, updatedAt);
+        return EqualsBuilder.reflectionEquals(this, o);
     }
 
     @Override
     public String toString() {
         return "{" +
-            " phDocument='" + getPhDocument() + "'" +
-            ", documentNumber='" + getDocumentNumber() + "'" +
-            ", fileName='" + getFileName() + "'" +
-            ", filePath='" + getFilePath() + "'" +
-            ", student='" + getStudent() + "'" +
-            ", documentType='" + getDocumentType() + "'" +
-            ", issueDate='" + getIssueDate() + "'" +
-            ", expiryDate='" + getExpiryDate() + "'" +
-            ", obs='" + getObs() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", updatedAt='" + getUpdatedAt() + "'" +
-            "}";
+                " pkDocument='" + getPkDocument() + "'" +
+                ", documentType='" + getDocumentType() + "'" +
+                ", fileName='" + getFileName() + "'" +
+                ", filePath='" + getFilePath() + "'" +
+                ", contentType='" + getContentType() + "'" +
+                ", fileSize='" + getFileSize() + "'" +
+                ", uploadDate='" + getUploadDate() + "'" +
+                ", fkUser='" + getFkUser() + "'" +
+                ", uploadedFile='" + getUploadedFile() + "'" +
+                "}";
     }
-    
+
+
 }

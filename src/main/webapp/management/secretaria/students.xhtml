@@ -935,10 +935,10 @@
                                     oncomplete="hideScLoading(); PF('viewStudentDialog').show()"
                                     update=":viewStudentForm" process="@this" />
 
-                                <p:commandButton styleClass="stu-act edit" icon="pi pi-pencil" title="#{msg.edit}"
-                                    action="#{studentController.prepararEdicao(aluno)}" onstart="showScLoading()"
-                                    oncomplete="hideScLoading(); PF('editStudentDialog').show()"
-                                    update=":studentEditForm" process="@this" />
+                                <p:commandButton icon="pi pi-pencil"
+                                    actionListener="#{studentController.prepararEdicao(aluno)}"
+                                    oncomplete="PF('editStudentDialog').show()" update=":editStudentDialog"
+                                    process="@this" />
 
                                 <p:menuButton icon="pi pi-print" styleClass="stu-act print" title="#{msg.print}">
                                     <p:menuitem value="#{msg.studentCard}" icon="pi pi-id-card"

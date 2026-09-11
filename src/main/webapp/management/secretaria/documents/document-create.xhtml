@@ -1,159 +1,211 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<ui:fragment xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <p:dialog id="createDocumentDialog" widgetVar="createDocumentDialog" header="#{msg.newDocument}" modal="true"
-        showEffect="fade" hideEffect="fade" closeOnEscape="true" style="width: 90vw; max-width: 800px;"
-        resizable="false" appendTo="@(body)" styleClass="sc-dialog-create" responsive="true" fitViewport="true">
+    <style>
+        /* ============ Dialog ============ */
+        .add-document-dialog {
+            width: 34rem !important;
+            max-width: 95vw;
+        }
+        .add-document-dialog .ui-dialog-titlebar {
+            border: 0 none;
+            background: transparent;
+            padding: 1.5rem 1.6rem 0;
+        }
+        .add-document-dialog .ui-dialog-content {
+            padding: 1.2rem 1.6rem 1.6rem !important;
+        }
 
-        <h:form id="documentCreateForm" styleClass="ui-fluid" enctype="multipart/form-data">
-            <p:messages id="msgsCreate" showDetail="true" closable="true" globalOnly="true" />
+        /* ============ Cabeçalho ============ */
+        .dlg-header {
+            display: flex;
+            gap: .9rem;
+            align-items: center;
+        }
+        .dlg-header-icon {
+            width: 2.7rem;
+            height: 2.7rem;
+            border-radius: 12px;
+            background: #eef2ff;
+            color: #4f46e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+        .dlg-title-text h2 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #111827;
+        }
+        .dlg-title-text p {
+            margin: .1rem 0 0;
+            font-size: .8rem;
+            color: #6b7280;
+        }
 
-            <div class="sc-dialog-body">
-                <div class="sc-section-title">
-                    <i class="pi pi-file"></i> #{msg.documentDetails}
+        /* ============ Campos ============ */
+        .field-block { margin-bottom: 1.1rem; }
+        .field-label {
+            display: block;
+            font-size: .76rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: .4rem;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+        }
+        .field-block .ui-inputtext,
+        .field-block .ui-selectonemenu {
+            width: 100%;
+            border-radius: 10px;
+            padding: .6rem .8rem;
+        }
+        .field-block .ui-selectonemenu .ui-selectonemenu-label { padding: .6rem .8rem; }
+
+        /* ============ Zona de upload ============ */
+        .upload-dropzone {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 1.2rem 1rem 1rem;
+            text-align: center;
+            background: #fafafa;
+            transition: border-color .2s, background .2s;
+        }
+        .upload-dropzone:hover {
+            border-color: #4f46e5;
+            background: #f5f7ff;
+        }
+        .upload-dropzone .ui-fileupload-simple {
+            display: flex;
+            justify-content: center;
+        }
+        .upload-dropzone .ui-fileupload .ui-button {
+            background: #4f46e5;
+            border-color: #4f46e5;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .upload-dropzone .ui-fileupload .ui-button:hover {
+            background: #4338ca;
+            border-color: #4338ca;
+        }
+        .upload-dropzone .ui-fileupload-filename {
+            display: block;
+            margin-top: .5rem;
+            font-size: .8rem;
+            color: #374151;
+        }
+        .upload-hint {
+            margin-top: .6rem;
+            font-size: .75rem;
+            color: #9ca3af;
+        }
+
+        /* ============ Rodapé ============ */
+        .dlg-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: .6rem;
+            margin-top: 1.5rem;
+        }
+        .ui-button.save-btn {
+            background: #4f46e5;
+            border-color: #4f46e5;
+            border-radius: 10px;
+            font-weight: 600;
+            padding: .5rem 1.3rem;
+        }
+        .ui-button.save-btn:hover {
+            background: #4338ca;
+            border-color: #4338ca;
+        }
+        .ui-button.cancel-btn {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            color: #374151;
+            border-radius: 10px;
+            padding: .5rem 1.1rem;
+        }
+        .ui-button.cancel-btn:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+    </style>
+
+    <h:form id="createForm" enctype="multipart/form-data">
+        <p:growl id="messages" showDetail="true" />
+
+        <p:dialog id="createDialog" widgetVar="createDialog" modal="true" closeOnEscape="true"
+            resizable="false" draggable="false" showEffect="fade" hideEffect="fade"
+            styleClass="add-document-dialog" responsive="true">
+
+            <f:facet name="header">
+                <div class="dlg-header">
+                    <span class="dlg-header-icon"><i class="pi pi-file-pdf" /></span>
+                    <div class="dlg-title-text">
+                        <h2>Adicionar documento</h2>
+                        <p>Carregue um ficheiro e associe-o a um tipo</p>
+                    </div>
                 </div>
+            </f:facet>
 
-                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
-                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
+            <div class="field-block">
+                <h:outputText styleClass="field-label" value="Nome do ficheiro" />
+                <p:inputText value="#{documentController.document.fileName}" styleClass="w-full"
+                    placeholder="Ex.: Certidão de nascimento - João" />
+            </div>
 
-                    <p:outputLabel for="studentCreate" value="#{msg.student}" styleClass="sc-label req" />
-                    <h:panelGroup>
-                        <p:selectOneMenu id="studentCreate" value="#{documentController.selectedStudentId}" required="true"
-                            requiredMessage="#{msg.studentRequired}" filter="true" filterMatchMode="contains" style="width:100%;">
-                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
-                            <f:selectItems value="#{documentController.students}" var="st" itemLabel="#{st.fullName}"
-                                itemValue="#{st.pkStudent}" />
-                        </p:selectOneMenu>
-                        <p:message for="studentCreate" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
+            <div class="field-block">
+                <h:outputText styleClass="field-label" value="Tipo de documento" />
+                <p:selectOneMenu value="#{documentController.document.documentType}" styleClass="w-full">
+                    <f:selectItem itemLabel="Selecione o tipo" itemValue="" />
+                    <f:selectItem itemLabel="Certidão de Nascimento" itemValue="CERTIDAO_NASCIMENTO" />
+                    <f:selectItem itemLabel="Bilhete de Identidade" itemValue="BILHETE_IDENTIDADE" />
+                    <f:selectItem itemLabel="Cartão de Vacinação" itemValue="CARTAO_VACINA" />
+                    <f:selectItem itemLabel="Declaração de Transferência" itemValue="DECLARACAO_TRANSFERENCIA" />
+                    <f:selectItem itemLabel="Certificado" itemValue="CERTIFICADO" />
+                    <f:selectItem itemLabel="Outro" itemValue="OTHER" />
+                </p:selectOneMenu>
+            </div>
 
-                    <!-- documentNumber é gerado automaticamente pelo servidor (DOC-Ano-Sequência) -->
-                    <p:outputLabel for="documentNumberCreate" value="#{msg.documentNumber}" styleClass="sc-label" />
-                    <h:panelGroup>
-                        <p:inputText id="documentNumberCreate" value="#{documentController.novoDocumento.documentNumber}"
-                            disabled="true" placeholder="DOC-Ano-Sequência" styleClass="sc-input" />
-                        <span class="sc-hint">Gerado automaticamente ao gravar</span>
-                    </h:panelGroup>
+            <div class="field-block">
+                <h:outputText styleClass="field-label" value="Aluno" />
+                <p:selectOneMenu value="#{documentController.selectedStudentId}" styleClass="w-full"
+                    required="true" requiredMessage="Selecione o aluno do documento.">
+                    <f:selectItem itemLabel="Selecione o aluno" itemValue="" />
+                    <f:selectItems value="#{documentController.students}" var="student"
+                        itemLabel="#{student.sudentNumber} - #{student.fullName}"
+                        itemValue="#{student.pkStudent}" />
+                </p:selectOneMenu>
+            </div>
 
-                    <p:outputLabel for="documentTypeCreate" value="#{msg.documentType}" styleClass="sc-label req" />
-                    <h:panelGroup>
-                        <p:selectOneMenu id="documentTypeCreate" value="#{documentController.novoDocumento.documentType}"
-                            required="true" requiredMessage="#{msg.documentTypeRequired}" style="width:100%;">
-                            <f:selectItem itemLabel="&#8212; #{msg.select} &#8212;" itemValue="#{null}" noSelectionOption="true" />
-                            <f:selectItems value="#{documentController.tiposDocumento}" var="t"
-                                itemLabel="#{t.descricao}" itemValue="#{t}" />
-                        </p:selectOneMenu>
-                        <p:message for="documentTypeCreate" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
-
-                    <p:outputLabel for="issueDateCreate" value="#{msg.issueDate}" styleClass="sc-label" />
-                    <p:datePicker id="issueDateCreate" value="#{documentController.novoDocumento.issueDate}"
-                        pattern="dd/MM/yyyy" showIcon="true" locale="pt" style="width:100%;" yearNavigator="true" monthNavigator="true"
-                        yearRange="2020:2035" />
-
-                    <p:outputLabel for="expiryDateCreate" value="#{msg.expiryDate}" styleClass="sc-label" />
-                    <p:datePicker id="expiryDateCreate" value="#{documentController.novoDocumento.expiryDate}"
-                        pattern="dd/MM/yyyy" showIcon="true" locale="pt" style="width:100%;" yearNavigator="true" monthNavigator="true"
-                        yearRange="2020:2035" />
-
-                </p:panelGrid>
-
-                <div class="sc-section-title" style="margin-top:1.2rem;">
-                    <i class="pi pi-upload"></i> #{msg.file}
-                </div>
-
-                <p:fileUpload id="uploadCreate" listener="#{documentController.handleFileUpload}" mode="advanced"
-                    auto="true" dragDropSupport="true" multiple="false" label="#{msg.chooseFile}"
-                    uploadLabel="#{msg.upload}" cancelLabel="#{msg.cancel}"
-                    update=":documentCreateForm:msgsCreate" process="@this" style="width:100%;">
-                    <p:validateFile sizeLimit="10000000" allowTypes="/(\.|\/)(pdf|jpe?g|png|docx?)$/" />
-                </p:fileUpload>
-
-                <div class="sc-section-title" style="margin-top:1.2rem;">
-                    <i class="pi pi-info-circle"></i> #{msg.additionalInformation}
-                </div>
-
-                <div class="sc-fullwidth-field">
-                    <p:outputLabel for="notesCreate" value="#{msg.notes}" styleClass="sc-label" />
-                    <p:inputTextarea id="notesCreate" value="#{documentController.novoDocumento.obs}" rows="3"
-                        maxlength="500" counter="notesCounterCreate" counterTemplate="{0} / 500"
-                        placeholder="#{msg.additionalNotesPlaceholder}" autoResize="true" styleClass="sc-input" />
-                    <h:outputText id="notesCounterCreate" styleClass="sc-counter" />
+            <div class="field-block">
+                <h:outputText styleClass="field-label" value="Ficheiro" />
+                <div class="upload-dropzone">
+                    <p:fileUpload id="fileUpload" value="#{documentController.document.uploadedFile}"
+                        mode="simple" skinSimple="true"
+                        allowTypes="/(\.|\/)(gif|jpe?g|png|pdf)$/"
+                        label="Escolher ficheiro" styleClass="upload-button" />
+                    <div class="upload-hint">Formatos aceites: PDF, JPG, PNG e GIF</div>
                 </div>
             </div>
 
-            <div class="sc-dialog-footer">
-                <p:commandButton value="#{msg.cancel}" icon="pi pi-times" type="button"
-                    onclick="hideScLoading(); PF('createDocumentDialog').hide()" 
-                    styleClass="ui-button-outlined ui-button-secondary" />
-                <p:commandButton value="#{msg.save}" icon="pi pi-save" styleClass="ui-button-success"
-                    action="#{documentController.salvarDocumento}" process="@form"
-                    update=":documentCreateForm:msgsCreate :formDocuments:dtDocuments :formDocuments:messages"
-                    onstart="showScLoading()"
-                    oncomplete="hideScLoading(); if (!args.validationFailed) { PF('createDocumentDialog').hide(); }" />
+            <div class="dlg-footer">
+                <p:commandButton value="Cancelar" type="button"
+                    onclick="PF('createDialog').hide()" styleClass="cancel-btn" />
+                <p:commandButton value="Guardar" icon="pi pi-check"
+                    actionListener="#{documentController.add}"
+                    process="@form" update="@form :dashboardTable" resetValues="true"
+                    onstart="showLoader()"
+                    oncomplete="hideLoader(); if (args &amp;&amp; args.saved) PF('createDialog').hide()"
+                    styleClass="save-btn" />
             </div>
-        </h:form>
-
-        <style type="text/css">
-            /* <![CDATA[ */
-            .sc-dialog-create .ui-dialog-content { padding: 0 !important; }
-            .sc-dialog-body {
-                padding: 1.2rem 1.5rem 1rem;
-                max-height: calc(90vh - 120px);
-                overflow-y: auto;
-            }
-            .sc-section-title {
-                font-size: 1rem; font-weight: 700; margin-bottom: 1rem;
-                display: flex; align-items: center; gap: .5rem;
-                color: var(--enr-text, #141414);
-            }
-            .sc-section-title i { color: var(--enr-red, #c8102e); }
-            .sc-label {
-                font-size: .88rem; font-weight: 600; color: #374151;
-                margin-bottom: .35rem; display: block;
-            }
-            .sc-label.req::after { content: " *"; color: #dc2626; }
-            .sc-field-msg {
-                display: block; margin-top: 4px; font-size: 12px; color: #dc2626;
-            }
-            .sc-input { width: 100%; }
-            .sc-hint {
-                display: block; margin-top: 4px; font-size: 12px; color: #888;
-            }
-            .sc-fullwidth-field { margin-top: 1.2rem; }
-            .sc-counter {
-                display: block; text-align: right; font-size: 11px;
-                color: #888; margin-top: 2px;
-            }
-            .sc-dialog-footer {
-                display: flex; justify-content: flex-end; gap: .6rem;
-                padding: 1rem 1.5rem; border-top: 1px solid #e5e7eb;
-                flex-wrap: wrap; background: #fafafa;
-                border-radius: 0 0 12px 12px;
-            }
-            .sc-dialog-footer .ui-button { min-width: 120px; }
-
-            .sc-dialog-body::-webkit-scrollbar { width: 5px; }
-            .sc-dialog-body::-webkit-scrollbar-track { background: transparent; }
-            .sc-dialog-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
-
-            @media (max-width: 768px) {
-                .sc-dialog-create { width: 95vw !important; max-width: 95vw !important; }
-                .sc-dialog-create .ui-dialog-content { padding: 0 !important; }
-                .sc-dialog-body { padding: 1rem; max-height: calc(85vh - 100px); }
-                .sc-dialog-footer { padding: .8rem 1rem; flex-direction: column; gap: .5rem; }
-                .sc-dialog-footer .ui-button { width: 100%; min-width: unset; }
-                .sc-section-title { font-size: .95rem; }
-                .sc-label { font-size: .85rem; }
-            }
-            @media (max-width: 576px) {
-                .sc-dialog-body { padding: .8rem; }
-                .sc-fullwidth-field { margin-top: 1rem; }
-            }
-            /* ]]> */
-        </style>
-    </p:dialog>
-
-</ui:composition>
+        </p:dialog>
+    </h:form>
+</ui:fragment>
