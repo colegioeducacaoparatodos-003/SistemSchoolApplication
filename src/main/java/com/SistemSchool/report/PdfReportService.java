@@ -696,11 +696,11 @@ public final class PdfReportService {
     }
 
     public static byte[] generatePagamentoListReport(List<PagamentoDTO> pagamentos) throws DocumentException {
-        Document doc = new Document(PageSize.A4, 30, 30, 90, 58);
+        Document doc = new Document(PageSize.A4, 30, 30, 90, 75);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfWriter writer = PdfWriter.getInstance(doc, baos);
         writer.setPageEvent(new ReportPageEvent(
-                "Lista de Pagamentos", "COMPLEXO ESCOLA PRIVADO EDUCAÇÃO PARA TODOS", tryLoadLogo(), 42, 32));
+                "Lista de Pagamentos", "COMPLEXO ESCOLA PRIVADO EDUCAÇÃO PARA TODOS", tryLoadLogo(), 58, 48, 30));
         doc.open();
         addSectionTitle(doc, "Lista de Pagamentos (" + pagamentos.size() + ")");
         doc.add(buildPagamentoSummary(pagamentos));
