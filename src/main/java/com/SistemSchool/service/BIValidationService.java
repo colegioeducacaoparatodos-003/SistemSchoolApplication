@@ -8,7 +8,7 @@ import com.SistemSchool.util.BIValidator;
 public class BIValidationService {
 
     public boolean validar(String bi) {
-        return BIValidator.isValid(bi);
+        return BIValidator.validarOnline(bi).isValido();
     }
 
 }

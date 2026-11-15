@@ -90,8 +90,10 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
         SELECT p FROM Pagamento p
         WHERE (:numeroDocumento IS NULL OR LOWER(p.numeroDocumento) LIKE LOWER(CONCAT('%', :numeroDocumento, '%')))
           AND (:studentName IS NULL OR LOWER(p.enrolment.student.fullName) LIKE LOWER(CONCAT('%', :studentName, '%')))
+                    AND (:schoolClassId IS NULL OR p.enrolment.schoolClass.pkSchoolClass = :schoolClassId)
           AND (:formaPagamento IS NULL OR p.formaPagamento = :formaPagamento)
           AND (:estado IS NULL OR p.estado = :estado)
+                    AND (:mesReferencia IS NULL OR p.mesReferencia = :mesReferencia)
           AND (:dataInicio IS NULL OR p.dataPagamento >= :dataInicio)
           AND (:dataFim IS NULL OR p.dataPagamento <= :dataFim)
         ORDER BY p.createdAt DESC
@@ -99,8 +101,10 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
     Page<Pagamento> findComFiltros(
             @Param("numeroDocumento") String numeroDocumento,
             @Param("studentName") String studentName,
+            @Param("schoolClassId") Long schoolClassId,
             @Param("formaPagamento") FormaPagamento formaPagamento,
             @Param("estado") EstadoPagamento estado,
+            @Param("mesReferencia") MesReferencia mesReferencia,
             @Param("dataInicio") LocalDateTime dataInicio,
             @Param("dataFim") LocalDateTime dataFim,
             Pageable pageable);

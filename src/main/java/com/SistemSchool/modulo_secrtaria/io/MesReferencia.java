@@ -4,8 +4,11 @@ public enum MesReferencia {
 
     CONFIRMACAO("Confirmação"),
     MATRICULA("Matrícula"),
-    BOLETIN("Boletim"),
+    BOLETIM("Boletim"),
     CARTAO("Cartão"),
+    UNIFORME("Uniforme"),
+    CERTIFICADO("Certificado"),
+    DECLARACAO("Declaração"),
     JANEIRO("Janeiro"),
     FEVEREIRO("Fevereiro"),
     MARCO("Março"),

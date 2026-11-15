@@ -24,6 +24,107 @@
                 --font-mono: 'DM Mono', monospace;
             }
 
+            /* ===== BOTÕES (estilo copiado da view Resultado do Trimestre) ===== */
+            .ui-button.stu-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: .45rem;
+                min-height: 36px;
+                padding: .5rem .85rem !important;
+                border: 1px solid transparent !important;
+                border-radius: 8px !important;
+                font-size: .82rem !important;
+                font-weight: 700 !important;
+                line-height: 1.2;
+                box-shadow: none !important;
+                transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .15s ease;
+            }
+
+            .ui-button.stu-button .ui-button-text,
+            .ui-button.stu-button .ui-button-icon-left,
+            .ui-button.stu-button .ui-button-icon-right {
+                color: inherit !important;
+            }
+
+            .ui-button.stu-button-primary {
+                color: #fff !important;
+                background: var(--stu-red) !important;
+                border-color: var(--stu-red) !important;
+            }
+
+            .ui-button.stu-button-success {
+                color: #fff !important;
+                background: var(--stu-green) !important;
+                border-color: var(--stu-green) !important;
+            }
+
+            .ui-button.stu-button-danger {
+                color: #fff !important;
+                background: var(--stu-red) !important;
+                border-color: var(--stu-red) !important;
+            }
+
+            .ui-button.stu-button-outline {
+                color: var(--stu-black) !important;
+                background: var(--stu-surface) !important;
+                border-color: var(--stu-border) !important;
+            }
+
+            .ui-button.stu-button-neutral {
+                color: var(--stu-muted) !important;
+                background: var(--stu-surface-2) !important;
+                border-color: var(--stu-border) !important;
+            }
+
+            .ui-button.stu-button-primary:not(.ui-state-disabled):hover,
+            .ui-button.stu-button-danger:not(.ui-state-disabled):hover {
+                background: #a80d26 !important;
+                border-color: #a80d26 !important;
+            }
+
+            .ui-button.stu-button-success:not(.ui-state-disabled):hover {
+                background: #176f31 !important;
+                border-color: #176f31 !important;
+            }
+
+            .ui-button.stu-button-outline:not(.ui-state-disabled):hover,
+            .ui-button.stu-button-neutral:not(.ui-state-disabled):hover {
+                color: var(--stu-black) !important;
+                background: #fff8e1 !important;
+                border-color: var(--stu-yellow) !important;
+            }
+
+            .ui-button.stu-button:focus {
+                box-shadow: 0 0 0 3px rgba(200, 16, 46, .18) !important;
+            }
+
+            .ui-button.stu-button.ui-state-disabled {
+                opacity: .55;
+                cursor: not-allowed;
+            }
+
+            .ui-button.stu-button-gerar,
+            .ui-menubutton.stu-button-gerar > .ui-button {
+                color: var(--stu-yellow) !important;
+                background: linear-gradient(135deg, var(--stu-black) 0%, var(--stu-red) 100%) !important;
+                border-color: var(--stu-red) !important;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28) !important;
+            }
+
+            .ui-button.stu-button-gerar .ui-button-text,
+            .ui-button.stu-button-gerar .ui-button-icon-left,
+            .ui-menubutton.stu-button-gerar > .ui-button .ui-button-text,
+            .ui-menubutton.stu-button-gerar > .ui-button .ui-button-icon-left {
+                color: var(--stu-yellow) !important;
+            }
+
+            .ui-button.stu-button-gerar:not(.ui-state-disabled):hover,
+            .ui-menubutton.stu-button-gerar > .ui-button:not(.ui-state-disabled):hover {
+                filter: brightness(1.12);
+                box-shadow: 0 5px 14px rgba(200, 16, 46, .36) !important;
+            }
+
             .breadcrumb-pill {
                 display: inline-flex;
                 align-items: center;
@@ -49,14 +150,19 @@
                 font-size: .75rem;
             }
 
+            /* ===== Página: margens laterais e inferior responsivas ===== */
             .stu-page {
-                padding: 1.2rem;
+                box-sizing: border-box;
+                width: 100%;
+                max-width: 1600px;
+                margin: 0 auto;
+                padding: clamp(1rem, 2.5vw, 1.6rem) clamp(1rem, 3vw, 2.5rem) clamp(2rem, 6vw, 4rem);
             }
 
-            @media(min-width:768px) {
-                .stu-page {
-                    padding: 1.6rem 2rem 2.5rem;
-                }
+            .stu-page *,
+            .stu-page *::before,
+            .stu-page *::after {
+                box-sizing: border-box;
             }
 
             .stu-header {
@@ -72,6 +178,7 @@
                 display: flex;
                 align-items: center;
                 gap: 1rem;
+                min-width: 0;
             }
 
             .stu-header-icon {
@@ -87,11 +194,16 @@
                 flex-shrink: 0;
             }
 
+            .stu-header-title {
+                min-width: 0;
+            }
+
             .stu-header-title h1 {
-                font-size: 1.35rem;
+                font-size: clamp(1.15rem, 1rem + 0.8vw, 1.35rem);
                 font-weight: 800;
                 margin: 0 0 .2rem;
                 color: var(--stu-text);
+                overflow-wrap: anywhere;
             }
 
             .stu-header-title p {
@@ -102,20 +214,20 @@
 
             .stu-stats {
                 display: grid;
-                grid-template-columns: repeat(1, 1fr);
+                grid-template-columns: repeat(1, minmax(0, 1fr));
                 gap: .9rem;
                 margin-bottom: 1.4rem;
             }
 
             @media(min-width:576px) {
                 .stu-stats {
-                    grid-template-columns: repeat(2, 1fr);
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
                 }
             }
 
-            @media(min-width:992px) {
+            @media(min-width:1200px) {
                 .stu-stats {
-                    grid-template-columns: repeat(4, 1fr);
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
                 }
             }
 
@@ -128,7 +240,13 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                gap: .75rem;
+                min-width: 0;
                 transition: transform .2s;
+            }
+
+            .stu-stat > div:first-child {
+                min-width: 0;
             }
 
             .stu-stat:hover {
@@ -148,6 +266,7 @@
                 font-weight: 800;
                 color: var(--stu-text);
                 margin-top: .15rem;
+                overflow-wrap: anywhere;
             }
 
             .stu-stat-icon {
@@ -158,6 +277,7 @@
                 align-items: center;
                 justify-content: center;
                 font-size: 1.1rem;
+                flex-shrink: 0;
             }
 
             .stu-stat-icon.dark {
@@ -186,6 +306,7 @@
                 border-radius: var(--stu-radius);
                 box-shadow: var(--stu-shadow);
                 overflow: hidden;
+                min-width: 0;
             }
 
             .stu-toolbar {
@@ -357,6 +478,7 @@
                 border: 1px solid rgba(245, 180, 0, .35);
             }
 
+            /* ===== BOTÕES DE AÇÃO DA TABELA (estilo da view Resultado do Trimestre) ===== */
             .stu-actions {
                 display: flex;
                 align-items: center;
@@ -368,8 +490,8 @@
             .stu-act {
                 width: 30px;
                 height: 30px;
-                border-radius: 6px;
-                border: 1px solid var(--stu-border);
+                border-radius: 8px;
+                border: 1px solid var(--stu-border) !important;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -379,27 +501,38 @@
             }
 
             .stu-act:hover {
-                transform: scale(1.08);
+                transform: translateY(-1px);
             }
 
             .stu-act.view {
-                color: var(--stu-blue);
-                background: #eaf1fb;
+                color: #fff !important;
+                background: linear-gradient(135deg, var(--stu-black) 0%, var(--stu-red) 100%) !important;
+                border: none !important;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28);
+            }
+
+            .stu-act.view .ui-button-icon-left {
+                color: #fff !important;
+            }
+
+            .stu-act.view:hover {
+                filter: brightness(1.12);
+                box-shadow: 0 5px 14px rgba(200, 16, 46, .36);
             }
 
             .stu-act.edit {
-                color: #8a6400;
-                background: #fff8e1;
+                color: #8a6400 !important;
+                background: #fff8e1 !important;
             }
 
             .stu-act.delete {
-                color: var(--stu-red);
-                background: #fdecee;
+                color: var(--stu-red) !important;
+                background: #fdecee !important;
             }
 
             .stu-act.print {
-                color: #059669;
-                background: #d1fae5;
+                color: var(--stu-green) !important;
+                background: #e8f6ec !important;
             }
 
             .stu-empty {
@@ -428,8 +561,10 @@
                 position: fixed;
                 top: 0;
                 left: 0;
-                width: 100vw;
-                height: 100vh;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                height: 100%;
                 background: rgba(20, 20, 20, 0.85);
                 backdrop-filter: blur(8px);
                 -webkit-backdrop-filter: blur(8px);
@@ -459,6 +594,7 @@
                 gap: 1.2rem;
                 border: 1px solid var(--stu-border);
                 min-width: 260px;
+                max-width: calc(100% - 2rem);
                 transform: scale(0.9);
                 transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
@@ -624,7 +760,65 @@
                 }
             }
 
-            /* ===== RESPONSIVIDADE MOBILE ===== */
+            /* ===== RESPONSIVIDADE ===== */
+
+            /* Filtros: cada campo cresce para ocupar o espaço disponível */
+            .stu-filters > .ui-selectonemenu,
+            .stu-filters > .ui-inputfield,
+            .stu-filters > .p-datepicker,
+            .stu-filters > .ui-datepicker,
+            .stu-filters > .p-calendar {
+                flex: 1 1 180px;
+                max-width: 100%;
+            }
+
+            /* Tabela: rolagem horizontal contida no cartão */
+            .stu-table-wrap {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .stu-table-wrap .ui-datatable {
+                max-width: 100%;
+            }
+
+            .stu-table .ui-paginator,
+            .stu-table .p-paginator {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+                gap: .4rem .5rem;
+            }
+
+            /* Diálogos nunca maiores que o ecrã */
+            .ui-dialog {
+                max-width: 96vw;
+            }
+
+            .ui-dialog .ui-dialog-content {
+                max-width: 100%;
+                overflow-x: auto;
+            }
+
+            /* Tablet */
+            @media (min-width: 641px) and (max-width: 1199.98px) {
+                .stu-table-wrap .ui-datatable table {
+                    min-width: 900px;
+                }
+            }
+
+            @media (max-width: 991.98px) {
+                .stu-toolbar,
+                .stu-filters {
+                    padding-left: 1rem;
+                    padding-right: 1rem;
+                }
+            }
+
+            /* Telemóvel */
             @media (max-width: 576px) {
                 .stu-header {
                     flex-direction: column;
@@ -633,6 +827,12 @@
 
                 .stu-header-left {
                     width: 100%;
+                }
+
+                .breadcrumb-pill {
+                    max-width: 100%;
+                    flex-wrap: wrap;
+                    justify-content: center;
                 }
 
                 .stu-toolbar {
@@ -656,9 +856,18 @@
                     gap: .5rem;
                 }
 
+                .stu-filters > .ui-selectonemenu,
+                .stu-filters > .ui-inputfield,
+                .stu-filters > .p-datepicker,
+                .stu-filters > .ui-datepicker,
+                .stu-filters > .p-calendar {
+                    flex: 0 0 auto;
+                }
+
                 .stu-filters .ui-inputfield,
                 .stu-filters .ui-selectonemenu,
                 .stu-filters .p-datepicker,
+                .stu-filters .ui-datepicker,
                 .stu-filters .ui-button {
                     width: 100% !important;
                     min-width: unset !important;
@@ -666,6 +875,10 @@
 
                 .stu-search-input {
                     width: 100% !important;
+                }
+
+                .stu-stat {
+                    padding: 1rem;
                 }
 
                 .stu-stat-value {
@@ -694,6 +907,32 @@
                     padding: 2rem 1.5rem;
                     min-width: 220px;
                     margin: 0 1rem;
+                }
+            }
+
+            /* Telemóveis muito pequenos */
+            @media (max-width: 400px) {
+                .stu-detail-grid {
+                    grid-template-columns: 1fr !important;
+                }
+
+                .stu-header-icon {
+                    width: 40px;
+                    height: 40px;
+                    font-size: 1.05rem;
+                }
+
+                .stu-stat-icon {
+                    width: 38px;
+                    height: 38px;
+                    font-size: 1rem;
+                }
+            }
+
+            /* Ecrãs muito grandes */
+            @media (min-width: 1920px) {
+                .stu-page {
+                    max-width: 1760px;
                 }
             }
         </style>
@@ -797,7 +1036,7 @@
                         </div>
                         <div class="stu-toolbar-right">
                             <p:menuButton value="#{msg.exportPrint}" icon="pi pi-file-export"
-                                styleClass="ui-button-outlined">
+                                styleClass="stu-button stu-button-outline stu-button-gerar">
                                 <p:menuitem value="#{msg.fullListPdf}" icon="pi pi-file-pdf"
                                     action="#{studentController.exportStudentsPdf}" ajax="false" />
                                 <p:menuitem value="#{msg.activeListPdf}" icon="pi pi-check-circle"
@@ -816,7 +1055,8 @@
                                     onclick="window.print(); return false;" />
                             </p:menuButton>
 
-                            <p:commandButton value="#{msg.newStudent}" icon="pi pi-plus" styleClass="ui-button-success"
+                            <p:commandButton value="#{msg.newStudent}" icon="pi pi-plus"
+                                styleClass="stu-button stu-button-success stu-button-gerar"
                                 actionListener="#{studentController.prepararNovo}" onstart="showScLoading()"
                                 oncomplete="hideScLoading(); PF('createStudentDialog').show()"
                                 update=":studentCreateForm" process="@this" />
@@ -857,13 +1097,14 @@
 
                         <p:commandButton icon="pi pi-filter" value="#{msg.apply}"
                             action="#{studentController.applyFilters}" update="dtAlunos messages"
-                            styleClass="ui-button-primary" />
+                            styleClass="stu-button stu-button-primary stu-button-gerar" />
                         <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}"
                             action="#{studentController.clearFilters}" update="@form"
-                            styleClass="ui-button-outlined ui-button-secondary" />
+                            styleClass="stu-button stu-button-primary stu-button-gerar" />
                     </div>
 
                     <!-- TABLE -->
+                    <div class="stu-table-wrap">
                     <p:dataTable id="dtAlunos" widgetVar="dtAlunos" styleClass="stu-table" var="aluno"
                         value="#{studentController.lazyModel}" lazy="true" paginator="true" rows="10" reflow="true"
                         paginatorPosition="bottom"
@@ -935,23 +1176,24 @@
                                     oncomplete="hideScLoading(); PF('viewStudentDialog').show()"
                                     update=":viewStudentForm" process="@this" />
 
-                                <p:commandButton icon="pi pi-pencil"
+                                <p:commandButton styleClass="stu-act edit" icon="pi pi-pencil"
                                     actionListener="#{studentController.prepararEdicao(aluno)}"
                                     oncomplete="PF('editStudentDialog').show()" update=":editStudentDialog"
                                     process="@this" />
 
-                                <p:menuButton icon="pi pi-print" styleClass="stu-act print" title="#{msg.print}">
+                                <p:menuButton icon="pi pi-print" styleClass="stu-act print" title="#{msg.print}"
+                                    appendTo="@(body)">
                                     <p:menuitem value="#{msg.studentCard}" icon="pi pi-id-card"
-                                        action="#{studentController.printStudentCard(aluno.phStudent)}" ajax="false" />
+                                        action="#{studentController.printStudentCard(aluno.pkStudent)}" ajax="false" />
                                     <p:menuitem value="#{msg.detailsPdf}" icon="pi pi-file-pdf"
-                                        action="#{studentController.printStudentDetailsPdf(aluno.phStudent)}"
+                                        action="#{studentController.printStudentDetailsPdf(aluno.pkStudent)}"
                                         ajax="false" />
                                 </p:menuButton>
 
                                 <p:commandButton styleClass="stu-act delete" icon="pi pi-trash" title="#{msg.delete}"
                                     onstart="showScLoading()"
                                     oncomplete="hideScLoading(); PF('deleteStudentDialog').show()"
-                                    update=":deleteStudentForm" process="@this">
+                                    update=":deleteStudentForm" process="@this" rendered="#{sessionBean.admin}">
                                     <f:setPropertyActionListener value="#{aluno}"
                                         target="#{studentController.alunoSelecionado}" />
                                 </p:commandButton>
@@ -965,6 +1207,7 @@
                             </div>
                         </f:facet>
                     </p:dataTable>
+                    </div>
                 </div>
             </h:form>
 
@@ -985,11 +1228,13 @@
                     </div>
                     <div class="stu-dialog-footer">
                         <p:commandButton value="#{msg.cancel}" type="button" onclick="PF('deleteStudentDialog').hide()"
-                            styleClass="ui-button-outlined ui-button-secondary" />
-                        <p:commandButton value="#{msg.yesDelete}" icon="pi pi-trash" styleClass="ui-button-danger"
+                            styleClass="stu-button stu-button-neutral" />
+                        <p:commandButton value="#{msg.yesDelete}" icon="pi pi-trash"
+                            styleClass="stu-button stu-button-danger"
                             action="#{studentController.eliminar(studentController.alunoSelecionado)}" process="@this"
                             oncomplete="PF('deleteStudentDialog').hide()"
-                            update=":formAlunos:dtAlunos :formAlunos:messages" />
+                            update=":formAlunos:dtAlunos :formAlunos:messages"
+                            rendered="#{sessionBean.admin}" />
                     </div>
                 </p:dialog>
             </h:form>
@@ -1017,7 +1262,7 @@
                             <div style="font-size:.85rem; color:var(--stu-muted);">
                                 #{msg.number} #{studentController.alunoSelecionado.sudentNumber}</div>
                         </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; font-size:.9rem;">
+                        <div class="stu-detail-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; font-size:.9rem;">
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
                                 <div
                                     style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
@@ -1064,7 +1309,7 @@
                                     <h:outputText value=" / #{studentController.alunoSelecionado.phone_2}"
                                         rendered="#{not empty studentController.alunoSelecionado.phone_2}" />
                                 </div>
-                                <div style="font-size:.8rem; color:var(--stu-muted); margin-top:.2rem;">
+                                <div style="font-size:.8rem; color:var(--stu-muted); margin-top:.2rem; overflow-wrap:anywhere;">
                                     <i class="pi pi-envelope" style="font-size:.7rem" />
                                     #{studentController.alunoSelecionado.email}
                                 </div>
@@ -1080,10 +1325,10 @@
                     </div>
                     <div class="stu-dialog-footer">
                         <p:commandButton value="#{msg.close}" type="button" onclick="PF('viewStudentDialog').hide()"
-                            styleClass="ui-button-outlined" />
+                            styleClass="stu-button stu-button-neutral" />
                         <p:commandButton value="#{msg.print}" icon="pi pi-print"
-                            action="#{studentController.printStudentDetailsPdf(studentController.alunoSelecionado.phStudent)}"
-                            ajax="false" styleClass="ui-button-primary" />
+                            action="#{studentController.printStudentDetailsPdf(studentController.alunoSelecionado.pkStudent)}"
+                            ajax="false" styleClass="stu-button stu-button-primary" />
                     </div>
                 </p:dialog>
             </h:form>
@@ -1122,9 +1367,7 @@
                     req.originalOnerror = req.onerror;
                     req.onerror = function (xhr, status, error) {
                         hideScLoading();
-                        if (req.originalOnerror) {
-                            req.originalOnerror(xhr, status, error);
-                        }
+                        if (req.originalOnerror) req.originalOnerror(xhr, status, error);
                     };
                     PrimeFaces.ajax.Queue.originalAdd(req);
                 };

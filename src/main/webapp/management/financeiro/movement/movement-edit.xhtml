@@ -116,7 +116,8 @@
                 <p:commandButton value="#{msg.save}" icon="pi pi-save" styleClass="ui-button-success"
                     action="#{financialMovementController.saveUpdate}" process="@form"
                     update=":movementEditForm:msgsEdit :formMovements:dtMovements :formMovements:messages"
-                    oncomplete="if (!args.validationFailed) { PF('editMovementDialog').hide(); }" />
+                    oncomplete="if (!args.validationFailed) { PF('editMovementDialog').hide(); }"
+                    rendered="#{sessionBean.financial}" />
             </div>
         </h:form>
 

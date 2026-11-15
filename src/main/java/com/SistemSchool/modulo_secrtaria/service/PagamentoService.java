@@ -1,7 +1,6 @@
 package com.SistemSchool.modulo_secrtaria.service;
 
 import com.SistemSchool.modulo_secrtaria.dto.PagamentoDTO;
-import com.SistemSchool.modulo_secrtaria.interfaces.PagamentoTableProjection;
 import com.SistemSchool.modulo_secrtaria.io.EstadoPagamento;
 import com.SistemSchool.modulo_secrtaria.io.FormaPagamento;
 import com.SistemSchool.modulo_secrtaria.io.MesReferencia;
@@ -32,7 +31,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -139,6 +137,7 @@ public class PagamentoService {
     }
 
     public void update(PagamentoDTO dto) {
+        com.SistemSchool.config.FinancialOperationGuard.requireFinancial();
         Pagamento pagamento = repository.findById(dto.getPkPagamento())
                 .orElseThrow(() -> new RuntimeException("Pagamento não encontrado com id: " + dto.getPkPagamento()));
 
@@ -192,6 +191,7 @@ public class PagamentoService {
     }
 
     public void delete(Long id) {
+        com.SistemSchool.config.FinancialOperationGuard.requireFinancial();
         Pagamento pagamento = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pagamento não encontrado com id: " + id));
         repository.deleteById(id);
@@ -248,34 +248,33 @@ public class PagamentoService {
     }
 
     private int mesNumero(MesReferencia mes) {
-        switch (mes.name()) {
-            case "JANEIRO":
+        switch (mes) {
+            case JANEIRO:
                 return 1;
-            case "FEVEREIRO":
+            case FEVEREIRO:
                 return 2;
-            case "MARCO":
-            case "MARÇO":
+            case MARCO:
                 return 3;
-            case "ABRIL":
+            case ABRIL:
                 return 4;
-            case "MAIO":
+            case MAIO:
                 return 5;
-            case "JUNHO":
+            case JUNHO:
                 return 6;
-            case "JULHO":
+            case JULHO:
                 return 7;
-            case "AGOSTO":
+            case AGOSTO:
                 return 8;
-            case "SETEMBRO":
+            case SETEMBRO:
                 return 9;
-            case "OUTUBRO":
+            case OUTUBRO:
                 return 10;
-            case "NOVEMBRO":
+            case NOVEMBRO:
                 return 11;
-            case "DEZEMBRO":
+            case DEZEMBRO:
                 return 12;
             default:
-                return mes.ordinal() + 1;
+                throw new IllegalArgumentException("Tipo de referência não é um mês: " + mes);
         }
     }
 
@@ -422,6 +421,9 @@ public class PagamentoService {
         pagamento.setDataPagamento(dataPagamento);
         pagamento.setEstado(EstadoPagamento.PAGO);
         pagamento.setNumeroDocumento(generateNumeroDocumento());
+        pagamento.setRegistradoPor(operador != null && !operador.isBlank()
+            ? operador
+            : "Usuário não identificado");
 
         try {
             pagamento = repository.save(pagamento);
@@ -446,22 +448,24 @@ public class PagamentoService {
 
     public Page<PagamentoDTO> findLazy(int page, int size, Sort sort,
             String numeroDocumento, String studentName,
-            FormaPagamento formaPagamento, EstadoPagamento estado,
+            Long schoolClassId, FormaPagamento formaPagamento, EstadoPagamento estado,
+            MesReferencia mesReferencia,
             LocalDateTime dataInicio, LocalDateTime dataFim) {
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<Pagamento> result = repository.findComFiltros(
                 blankToNull(numeroDocumento), blankToNull(studentName),
-                formaPagamento, estado, dataInicio, dataFim, pageable);
+                schoolClassId, formaPagamento, estado, mesReferencia, dataInicio, dataFim, pageable);
         return result.map(this::toDto);
     }
 
     public List<PagamentoDTO> buscarComFiltros(String numeroDocumento, String studentName,
-            FormaPagamento formaPagamento, EstadoPagamento estado,
+            Long schoolClassId, FormaPagamento formaPagamento, EstadoPagamento estado,
+            MesReferencia mesReferencia,
             LocalDateTime dataInicio, LocalDateTime dataFim) {
         try {
             return repository.findComFiltros(
                     blankToNull(numeroDocumento), blankToNull(studentName),
-                    formaPagamento, estado, dataInicio, dataFim, Pageable.unpaged())
+                    schoolClassId, formaPagamento, estado, mesReferencia, dataInicio, dataFim, Pageable.unpaged())
                     .getContent()
                     .stream()
                     .map(this::toDto)
@@ -534,6 +538,28 @@ public class PagamentoService {
         if (pagamento.getCashBox() != null)
             pagamento.getCashBox().getCashBoxNumber();
         return pdfGeneratorService.generatePagamentoPdf(pagamento);
+    }
+
+    public byte[] gerarComprovativoPdf(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            throw new RuntimeException("Selecione pelo menos um pagamento.");
+        }
+        List<Pagamento> pagamentos = repository.findAllById(ids);
+        if (pagamentos.size() != ids.size()) {
+            throw new RuntimeException("Um ou mais pagamentos selecionados não foram encontrados.");
+        }
+
+        Long studentId = pagamentos.get(0).getEnrolment() != null
+                && pagamentos.get(0).getEnrolment().getStudent() != null
+                ? pagamentos.get(0).getEnrolment().getStudent().getPkStudent()
+                : null;
+        boolean mesmoAluno = pagamentos.stream().allMatch(p -> p.getEnrolment() != null
+                && p.getEnrolment().getStudent() != null
+                && java.util.Objects.equals(studentId, p.getEnrolment().getStudent().getPkStudent()));
+        if (!mesmoAluno) {
+            throw new RuntimeException("Só é possível consolidar pagamentos do mesmo aluno.");
+        }
+        return pdfGeneratorService.generatePagamentosPdf(pagamentos);
     }
 
     // ─────────────────────────────────────────────────────────────

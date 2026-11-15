@@ -21,44 +21,93 @@
                 --enr-shadow: 0 4px 20px rgba(20, 20, 20, .10);
             }
 
+            .ui-button.enr-button-gerar {
+                color: var(--enr-yellow) !important;
+                background: linear-gradient(135deg, var(--enr-black) 0%, var(--enr-red) 100%) !important;
+                border: none !important;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28) !important;
+                transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
+            }
+
+            .ui-button.enr-button-gerar .ui-button-text,
+            .ui-button.enr-button-gerar .ui-button-icon-left {
+                color: var(--enr-yellow) !important;
+            }
+
+            .ui-button.enr-button-gerar:not(.ui-state-disabled):hover {
+                filter: brightness(1.12);
+                box-shadow: 0 5px 14px rgba(200, 16, 46, .36) !important;
+            }
+
             .breadcrumb-pill {
                 display: inline-flex; align-items: center; gap: 5px;
                 background: #fff8e1; border: 1px solid rgba(245, 180, 0, .35);
                 color: #8a6400; border-radius: 99px; padding: 3px 12px;
                 font-size: .72rem; font-weight: 600;
+                max-width: 100%; flex-wrap: wrap;
             }
 
-            .enr-page { padding: 1.2rem; }
-            @media(min-width:768px) { .enr-page { padding: 1.6rem 2rem 2.5rem; } }
+            /* ===== PÁGINA: margens laterais e inferior responsivas ===== */
+            .enr-page,
+            .enr-page * {
+                box-sizing: border-box;
+            }
+
+            .enr-page {
+                width: 100%;
+                max-width: 1600px;
+                margin: 0 auto;
+                padding: clamp(.75rem, 3vw, 2rem);
+                padding-bottom: clamp(2rem, 6vw, 3.5rem);
+            }
 
             .enr-header {
                 display: flex; align-items: flex-start; justify-content: space-between;
                 flex-wrap: wrap; gap: 1rem; margin-bottom: 1.4rem;
             }
-            .enr-header-left { display: flex; align-items: center; gap: 1rem; }
+            .enr-header-left { display: flex; align-items: center; gap: 1rem; min-width: 0; }
             .enr-header-icon {
                 width: 46px; height: 46px; border-radius: 12px;
                 background: linear-gradient(135deg, var(--enr-black) 0%, var(--enr-red) 100%);
                 display: flex; align-items: center; justify-content: center;
                 color: var(--enr-yellow); font-size: 1.2rem; flex-shrink: 0;
             }
-            .enr-header-title h1 { font-size: 1.35rem; font-weight: 800; margin: 0 0 .2rem; color: var(--enr-text); }
+
+            /* ===== ÍCONES CENTRALIZADOS ===== */
+            .enr-header-icon i,
+            .enr-stat-icon i {
+                display: block;
+                line-height: 1;
+                margin: 0;
+                text-align: center;
+            }
+
+            .enr-header-title { min-width: 0; }
+            .enr-header-title h1 {
+                font-size: clamp(1.1rem, 2.5vw, 1.35rem); font-weight: 800;
+                margin: 0 0 .2rem; color: var(--enr-text); word-break: break-word;
+            }
             .enr-header-title p { font-size: .85rem; color: var(--enr-muted); margin: 0; }
 
             .enr-stats {
                 display: grid; grid-template-columns: repeat(1, 1fr); gap: .9rem; margin-bottom: 1.4rem;
             }
-            @media(min-width:576px) { .enr-stats { grid-template-columns: repeat(4, 1fr); } }
+            @media(min-width:576px) { .enr-stats { grid-template-columns: repeat(2, 1fr); } }
+            @media(min-width:992px) { .enr-stats { grid-template-columns: repeat(4, 1fr); } }
 
             .enr-stat {
                 background: var(--enr-surface); border: 1px solid var(--enr-border);
                 border-radius: var(--enr-radius); box-shadow: var(--enr-shadow);
                 padding: 1.1rem 1.2rem; display: flex; align-items: center; justify-content: space-between;
+                gap: .6rem; min-width: 0;
                 transition: transform .2s;
             }
             .enr-stat:hover { transform: translateY(-2px); }
             .enr-stat-label { font-size: .72rem; color: var(--enr-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
-            .enr-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--enr-text); margin-top: .15rem; word-break: break-word; }
+            .enr-stat-value {
+                font-size: clamp(1.2rem, 3vw, 1.5rem); font-weight: 800;
+                color: var(--enr-text); margin-top: .15rem; word-break: break-word;
+            }
             .enr-stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
             .enr-stat-icon.dark { background: var(--enr-black); color: var(--enr-yellow); }
             .enr-stat-icon.red { background: #fdecee; color: var(--enr-red); }
@@ -68,6 +117,7 @@
             .enr-card {
                 background: var(--enr-surface); border: 1px solid var(--enr-border);
                 border-radius: var(--enr-radius); box-shadow: var(--enr-shadow); overflow: hidden;
+                width: 100%; max-width: 100%;
             }
 
             .enr-toolbar {
@@ -83,7 +133,18 @@
                 padding: .8rem 1.2rem; background: var(--enr-surface-2);
                 border-bottom: 1px solid var(--enr-border);
             }
+            .enr-filters > .ui-inputfield,
+            .enr-filters > .ui-selectonemenu {
+                flex: 1 1 180px;
+                max-width: 100%;
+            }
 
+            /* ===== TABELA ===== */
+            .enr-table .ui-datatable-tablewrapper,
+            .enr-table .p-datatable-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
             .enr-table.p-datatable .p-datatable-thead>tr>th {
                 background: var(--enr-black) !important; color: var(--enr-yellow) !important;
                 font-size: .7rem !important; text-transform: uppercase !important;
@@ -93,11 +154,19 @@
                 font-size: .82rem !important; padding: .72rem 1rem !important;
             }
             .enr-table.p-datatable .p-datatable-tbody>tr:hover { background: var(--enr-surface-2) !important; }
+            .enr-table .ui-paginator {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+                gap: .25rem;
+                white-space: normal;
+            }
 
             .enr-avatar {
                 width: 36px; height: 36px; border-radius: 50%;
                 background: var(--enr-black); color: var(--enr-yellow);
-                font-size: .8rem; font-weight: 700;
+                font-size: .8rem; font-weight: 700; line-height: 1;
                 display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
             }
 
@@ -112,11 +181,46 @@
             .enr-badge.active { background: #e6f4ea; color: var(--enr-green); border: 1px solid rgba(30, 142, 62, .3); }
             .enr-badge.inactive { background: #f3f4f6; color: #9ca3af; border: 1px solid #d1d5db; }
 
-            .enr-actions { display: flex; align-items: center; gap: 4px; justify-content: center; flex-wrap: wrap; }
-            .enr-act {
-                width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--enr-border);
-                display: inline-flex; align-items: center; justify-content: center;
-                font-size: .8rem; cursor: pointer; transition: all 0.15s;
+            /* ===== AÇÕES: ícones centralizados ===== */
+            .enr-actions {
+                display: flex; align-items: center; gap: 4px; justify-content: center; flex-wrap: wrap;
+                width: 100%;
+            }
+            .enr-act,
+            .ui-button.enr-act {
+                width: 30px !important;
+                height: 30px !important;
+                min-width: 30px !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border-radius: 6px;
+                border: 1px solid var(--enr-border);
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: .8rem;
+                line-height: 1;
+                cursor: pointer;
+                transition: all 0.15s;
+                text-align: center;
+            }
+            .enr-act .ui-button-text,
+            .ui-button.enr-act .ui-button-text {
+                display: none !important;
+            }
+            .enr-act .ui-button-icon-left,
+            .enr-act .ui-icon,
+            .ui-button.enr-act .ui-button-icon-left,
+            .ui-button.enr-act .ui-icon {
+                position: static !important;
+                display: block !important;
+                margin: 0 !important;
+                top: auto !important;
+                left: auto !important;
+                transform: none !important;
+                line-height: 1 !important;
+                font-size: .8rem;
+                text-align: center;
             }
             .enr-act:hover { transform: scale(1.08); }
             .enr-act.view { color: var(--enr-blue); background: #eaf1fb; }
@@ -128,9 +232,29 @@
 
             .enr-dialog-footer { display: flex; justify-content: flex-end; gap: .6rem; margin-top: .5rem; flex-wrap: wrap; }
 
-            /* Loading Overlay */
+            /* ===== DIÁLOGOS ===== */
+            .ui-dialog .ui-dialog-content {
+                overflow-x: hidden;
+            }
+            .enr-view-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: .8rem;
+                font-size: .9rem;
+            }
+            .enr-view-grid > div {
+                min-width: 0;
+                word-break: break-word;
+            }
+            .ui-dialog .ui-password,
+            .ui-dialog .ui-selectonemenu,
+            .ui-dialog .ui-inputfield {
+                max-width: 100%;
+            }
+
+            /* ===== LOADING ===== */
             .sc-loading-overlay {
-                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
                 z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
                 opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s ease;
@@ -140,6 +264,7 @@
                 background: var(--enr-surface); border-radius: var(--enr-radius); padding: 2.5rem 3rem;
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); display: flex; flex-direction: column;
                 align-items: center; gap: 1.2rem; border: 1px solid var(--enr-border); min-width: 260px;
+                max-width: 90vw;
                 transform: scale(0.9); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
             .sc-loading-overlay.active .sc-loading-box { transform: scale(1); }
@@ -175,16 +300,43 @@
             .sc-loading-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow)); border-radius: 99px; animation: scProgress 2s ease-in-out infinite; }
             @keyframes scProgress { 0% { width: 0%; margin-left: 0%; } 50% { width: 60%; margin-left: 20%; } 100% { width: 0%; margin-left: 100%; } }
 
+            /* ===== TABLET (até 991px) ===== */
+            @media (max-width: 991px) {
+                .enr-toolbar,
+                .enr-filters {
+                    padding-left: 1rem;
+                    padding-right: 1rem;
+                }
+                .enr-table.p-datatable .p-datatable-thead>tr>th,
+                .enr-table.p-datatable .p-datatable-tbody>tr>td {
+                    padding-left: .7rem !important;
+                    padding-right: .7rem !important;
+                }
+            }
+
+            /* ===== MOBILE (até 576px) ===== */
             @media (max-width: 576px) {
                 .enr-header { flex-direction: column; align-items: stretch; }
                 .enr-toolbar { flex-direction: column; align-items: stretch; }
+                .enr-toolbar-right { flex-direction: column; align-items: stretch; }
+                .enr-toolbar-right > * { width: 100%; }
                 .enr-toolbar-right .ui-button { width: 100%; }
                 .enr-filters { flex-direction: column; align-items: stretch; }
-                .enr-filters .ui-inputfield, .enr-filters .ui-selectonemenu { width: 100% !important; }
+                .enr-filters .ui-inputfield, .enr-filters .ui-selectonemenu, .enr-filters .ui-button { width: 100% !important; min-width: unset !important; }
+                .enr-filters > .ui-inputfield,
+                .enr-filters > .ui-selectonemenu { flex: 0 0 auto; }
                 .enr-stats { grid-template-columns: 1fr !important; }
                 .enr-dialog-footer { justify-content: stretch; }
                 .enr-dialog-footer .ui-button { flex: 1 1 auto; }
-                .sc-loading-box { padding: 2rem 1.5rem; min-width: 220px; margin: 0 1rem; }
+                .enr-actions { justify-content: center; }
+                .sc-loading-box { padding: 1.8rem 1.4rem; min-width: 0; width: 85vw; margin: 0 1rem; }
+            }
+
+            /* ===== MOBILE PEQUENO (até 420px) ===== */
+            @media (max-width: 420px) {
+                .enr-view-grid { grid-template-columns: 1fr; }
+                .enr-stat { padding: .9rem 1rem; }
+                .enr-header-icon { width: 40px; height: 40px; }
             }
         </style>
 
@@ -265,7 +417,7 @@
                             <p:commandButton value="#{msg.newUser}" icon="pi pi-plus" process="@this"
                                 actionListener="#{userController.resetNewUserFields}"
                                 oncomplete="PF('createUserDialog').show()"
-                                update=":createUserForm" styleClass="ui-button-success" />
+                                update=":createUserForm" styleClass="enr-button-gerar" />
                         </div>
                     </div>
 
@@ -282,10 +434,10 @@
                             <f:selectItem itemLabel="Inativo" itemValue="#{false}" />
                         </p:selectOneMenu>
                         <p:commandButton icon="pi pi-filter" value="#{msg.apply}" actionListener="#{userController.filterUsers}"
-                            process="@form" update="dtUsers" styleClass="ui-button-primary" />
+                            process="@form" update="dtUsers" styleClass="enr-button-gerar" />
                         <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}"
                             actionListener="#{userController.clearFilters}" process="@form"
-                            update="dtUsers @form" styleClass="ui-button-outlined ui-button-secondary" />
+                            update="dtUsers @form" styleClass="enr-button-gerar" />
                     </div>
 
                     <!-- DATA TABLE COM LAZY MODEL -->
@@ -322,7 +474,7 @@
                             </span>
                         </p:column>
 
-                        <p:column headerText="#{msg.actions}" style="width:150px; text-align:center" exportable="false">
+                        <p:column headerText="#{msg.actions}" style="width:190px; text-align:center" exportable="false">
                             <div class="enr-actions">
                                 <p:commandButton styleClass="enr-act view" icon="pi pi-eye" title="#{msg.view}"
                                     actionListener="#{userController.prepareViewUser(user)}"
@@ -332,11 +484,16 @@
                                     actionListener="#{userController.prepareEditUser(user)}"
                                     oncomplete="PF('editUserDialog').show()" update=":editUserForm" process="@this" />
 
-                                <p:commandButton styleClass="enr-act delete" icon="pi pi-trash" title="#{msg.deactivate}"
-                                    actionListener="#{userController.deleteUser}" process="@this"
-                                    update="dtUsers messages" onclick="return confirm('#{msg.confirmDeactivate}')">
-                                    <f:setPropertyActionListener value="#{user}" target="#{userController.selectedUser}" />
-                                </p:commandButton>
+                                <p:commandButton styleClass="enr-act view" icon="pi pi-envelope" title="#{msg.resendVerificationEmail}"
+                                    action="#{userController.resendEmailVerification(user.pkUser)}" process="@this"
+                                    update="dtUsers messages"
+                                    onclick="return confirm('#{msg.resendVerificationEmailConfirm}')"
+                                    rendered="#{sessionBean.admin and not user.emailVerified}" />
+
+                                <p:commandButton styleClass="enr-act delete" icon="pi pi-trash" title="#{msg.delete}"
+                                    action="#{userController.deleteUser(user.pkUser)}" process="@this"
+                                    update="dtUsers messages" onclick="return confirm('#{msg.confirmDeleteUser}')"
+                                    rendered="#{sessionBean.admin}" />
                             </div>
                         </p:column>
 
@@ -353,9 +510,47 @@
             <!-- DIALOG CRIAR USUÁRIO -->
             <h:form id="createUserForm">
                 <p:dialog widgetVar="createUserDialog" modal="true" resizable="false" header="Novo Utilizador"
-                    style="width: 90vw; max-width: 480px;" closable="true" responsive="true" fitViewport="true">
+                    style="width: 90vw; max-width: 640px;" closable="true" responsive="true" fitViewport="true">
                     <div style="padding:1.2rem;">
                         <div class="row g-3">
+                            <div class="col-12">
+                                <div style="font-weight:700; color:var(--enr-text); border-bottom:1px solid var(--enr-border); padding-bottom:.45rem;">
+                                    <i class="pi pi-user" style="color:var(--enr-red); margin-right:.4rem;" />
+                                    Dados pessoais
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h:outputLabel for="newFirstName" value="#{msg.firstName}" styleClass="form-label" />
+                                <p:inputText id="newFirstName" value="#{userController.newFirstName}" required="true"
+                                    requiredMessage="O nome é obrigatório" style="width:100%;" />
+                            </div>
+                            <div class="col-md-6">
+                                <h:outputLabel for="newMiddleName" value="#{msg.middleName}" styleClass="form-label" />
+                                <p:inputText id="newMiddleName" value="#{userController.newMiddleName}" style="width:100%;" />
+                            </div>
+                            <div class="col-md-6">
+                                <h:outputLabel for="newLastName" value="#{msg.lastName}" styleClass="form-label" />
+                                <p:inputText id="newLastName" value="#{userController.newLastName}" required="true"
+                                    requiredMessage="O apelido é obrigatório" style="width:100%;" />
+                            </div>
+                            <div class="col-md-6">
+                                <h:outputLabel for="newPhone" value="#{msg.phone}" styleClass="form-label" />
+                                <p:inputText id="newPhone" value="#{userController.newUserPhone}" style="width:100%;" />
+                            </div>
+                            <div class="col-md-6">
+                                <h:outputLabel for="newCity" value="Cidade" styleClass="form-label" />
+                                <p:inputText id="newCity" value="#{userController.newUserCity}" style="width:100%;" />
+                            </div>
+                            <div class="col-md-6">
+                                <h:outputLabel for="newAddress" value="#{msg.address}" styleClass="form-label" />
+                                <p:inputText id="newAddress" value="#{userController.newUserAddress}" style="width:100%;" />
+                            </div>
+                            <div class="col-12">
+                                <div style="font-weight:700; color:var(--enr-text); border-bottom:1px solid var(--enr-border); padding-bottom:.45rem; margin-top:.5rem;">
+                                    <i class="pi pi-lock" style="color:var(--enr-red); margin-right:.4rem;" />
+                                    Dados de acesso
+                                </div>
+                            </div>
                             <div class="col-12">
                                 <h:outputLabel for="newEmail" value="#{msg.email}" styleClass="form-label" />
                                 <p:inputText id="newEmail" value="#{userController.newUserEmail}" required="true"
@@ -436,17 +631,17 @@
                     style="width: 90vw; max-width: 520px;" closable="true" responsive="true" fitViewport="true">
                     <div style="padding: .5rem 0;">
                         <div style="text-align:center; margin-bottom:1.2rem;">
-                            <div style="width:64px; height:64px; border-radius:50%; background:var(--enr-black); color:var(--enr-yellow); font-size:1.5rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; margin:0 auto .6rem;">
+                            <div style="width:64px; height:64px; border-radius:50%; background:var(--enr-black); color:var(--enr-yellow); font-size:1.5rem; font-weight:700; line-height:1; display:inline-flex; align-items:center; justify-content:center; margin:0 auto .6rem;">
                                 <h:outputText value="#{userController.getInitials(userController.selectedUser.email)}" />
                             </div>
-                            <div style="font-size:1.15rem; font-weight:700;">#{userController.selectedUser.email}</div>
+                            <div style="font-size:1.15rem; font-weight:700; word-break:break-word;">#{userController.selectedUser.email}</div>
                             <div style="font-size:.85rem; color:var(--enr-muted); margin-top:.3rem;">
                                 <span class="enr-badge #{userController.selectedUser.perfil.name().toLowerCase()}">
                                     #{userController.getPerfilLabel(userController.selectedUser.perfil)}
                                 </span>
                             </div>
                         </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; font-size:.9rem;">
+                        <div class="enr-view-grid">
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
                                 <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.email}</div>
                                 <div style="font-weight:700;">#{userController.selectedUser.email}</div>
@@ -467,18 +662,18 @@
                                     </span>
                                 </div>
                             </div>
-                            <h:panelGroup layout="block" style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;" rendered="#{not empty userController.selectedUser.createdAt}">
+                            <h:panelGroup layout="block" style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;" rendered="#{not empty userController.selectedUser.userCreationDate}">
                                 <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.createdAt}</div>
                                 <div style="font-weight:700;">
-                                    <h:outputText value="#{userController.selectedUser.createdAt}">
+                                    <h:outputText value="#{userController.selectedUser.userCreationDate}">
                                         <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime" />
                                     </h:outputText>
                                 </div>
                             </h:panelGroup>
-                            <h:panelGroup layout="block" style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;" rendered="#{not empty userController.selectedUser.lastLogin}">
-                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">#{msg.lastLogin}</div>
+                            <h:panelGroup layout="block" style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;" rendered="#{not empty userController.selectedUser.userModificationDate}">
+                                <div style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">Última modificação</div>
                                 <div style="font-weight:700;">
-                                    <h:outputText value="#{userController.selectedUser.lastLogin}">
+                                    <h:outputText value="#{userController.selectedUser.userModificationDate}">
                                         <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime" />
                                     </h:outputText>
                                 </div>

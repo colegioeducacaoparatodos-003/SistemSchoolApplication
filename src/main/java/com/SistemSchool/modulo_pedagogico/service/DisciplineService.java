@@ -35,11 +35,14 @@ public class DisciplineService {
     // ─────────────────────────────────────────────────────────────
 
     public Discipline save(Discipline discipline) {
+        com.SistemSchool.config.PedagogicalModificationGuard
+                .requirePedagogicalForExisting(discipline.getPkDiscipline());
         discipline.setDisciplineCode(generateNextCode());
         return repository.save(discipline);
     }
 
     public void update(DisciplineDTO dto) {
+        com.SistemSchool.config.PedagogicalModificationGuard.requirePedagogical();
         Discipline discipline = repository.findById(dto.getPkDiscipline())
                 .orElseThrow(() -> new RuntimeException("Disciplina não encontrada com id: " + dto.getPkDiscipline()));
 
@@ -54,6 +57,7 @@ public class DisciplineService {
     }
 
     public void delete(Long id) {
+        com.SistemSchool.config.PedagogicalModificationGuard.requirePedagogical();
         if (!repository.existsById(id)) {
             throw new RuntimeException("Disciplina não encontrada com id: " + id);
         }

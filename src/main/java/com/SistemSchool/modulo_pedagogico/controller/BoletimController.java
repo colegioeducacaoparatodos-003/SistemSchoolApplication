@@ -8,6 +8,7 @@ import com.SistemSchool.modulo_secrtaria.model.Enrolment;
 import com.SistemSchool.modulo_secrtaria.model.Student;
 import com.SistemSchool.modulo_secrtaria.repository.EnrolmentRepository;
 import com.SistemSchool.modulo_secrtaria.repository.StudentRepository;
+import com.SistemSchool.report.OpenPdfAuditPageEvent;
 
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfPCell;
@@ -28,6 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -251,7 +254,8 @@ public class BoletimController implements Serializable {
                             .filter(r -> trimester.equals(r.getTrimester()))
                             .collect(Collectors.toList());
 
-                    generated.add(buildBoletim(studentName, enrolmentNumber, schoolClassName, trimester, results));
+                    generated.add(buildBoletim(enrolment.getStudent().getPkStudent(), studentName,
+                            enrolmentNumber, schoolClassName, trimester, results));
                 }
             }
 
@@ -283,9 +287,11 @@ public class BoletimController implements Serializable {
         rendered = false;
     }
 
-    private BoletimViewModel buildBoletim(String studentName, String enrolmentNumber, String schoolClassName,
-                                           Trimester trimester, List<TrimesterResultDTO> results) {
+    private BoletimViewModel buildBoletim(Long studentPk, String studentName, String enrolmentNumber,
+                                           String schoolClassName, Trimester trimester,
+                                           List<TrimesterResultDTO> results) {
         BoletimViewModel vm = new BoletimViewModel();
+        vm.setStudentPk(studentPk);
         vm.setStudentName(studentName);
         vm.setSchoolClassName(schoolClassName);
         vm.setEnrolmentNumber(enrolmentNumber);
@@ -358,7 +364,7 @@ public class BoletimController implements Serializable {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // PDF — FORMATO A5, estrutura do modelo oficial
+    // PDF — dois boletins por página A4 em paisagem
     // ═══════════════════════════════════════════════════════════════
 
     public StreamedContent getPdfFile() {
@@ -367,9 +373,14 @@ public class BoletimController implements Serializable {
         }
 
         byte[] bytes = gerarPdfBytes();
+        if (bytes == null || bytes.length == 0) {
+            return DefaultStreamedContent.builder().build();
+        }
+
         String nomeArquivo = boletins.size() == 1
-                ? "boletim_" + sanitize(boletins.get(0).getStudentName()) + "_T" + boletins.get(0).getTrimester() + ".pdf"
-                : "boletins_" + boletins.size() + "_A5.pdf";
+                ? "boletim_" + sanitize(boletins.get(0).getStudentName()) + "_T" + boletins.get(0).getTrimester()
+                        + "_A4_paisagem.pdf"
+                : "boletins_" + boletins.size() + ".pdf";
 
         return DefaultStreamedContent.builder()
                 .name(nomeArquivo)
@@ -380,190 +391,42 @@ public class BoletimController implements Serializable {
 
     private byte[] gerarPdfBytes() {
         try {
-            // A5 = 148 x 210 mm
-            Document document = new Document(PageSize.A5, 26, 26, 26, 26);
+            Document document = new Document(PageSize.A4.rotate(), 24, 24, 20, 20);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            PdfWriter.getInstance(document, baos);
+            PdfWriter writer = PdfWriter.getInstance(document, baos);
+            writer.setPageEvent(new OpenPdfAuditPageEvent());
             document.open();
 
-            Color brandBlack = new Color(20, 20, 20);
-            Color mutedGray  = new Color(102, 106, 112);
-            Color lineBlue   = new Color(127, 168, 217);
-            Color peach      = new Color(252, 228, 196);
-            Color lightBlue  = new Color(220, 235, 247);
-            Color zebraBlue  = new Color(244, 248, 253);
-            Color fieldGray  = new Color(154, 160, 166);
-
-            Font schoolFont   = new Font(Font.HELVETICA, 13, Font.BOLD, brandBlack);
-            Font schoolSub    = new Font(Font.HELVETICA, 7,  Font.NORMAL, mutedGray);
-            Font sloganFont   = new Font(Font.HELVETICA, 8,  Font.ITALIC, mutedGray);
-            Font titleFont    = new Font(Font.HELVETICA, 14, Font.BOLD, brandBlack);
-            Font labelFont    = new Font(Font.HELVETICA, 8,  Font.BOLD, mutedGray);
-            Font valueFont    = new Font(Font.HELVETICA, 9,  Font.NORMAL, brandBlack);
-            Font discHeadFont = new Font(Font.HELVETICA, 9,  Font.BOLD, brandBlack);
-            Font triHeadFont  = new Font(Font.HELVETICA, 9,  Font.BOLD, brandBlack);
-            Font colHeadFont  = new Font(Font.HELVETICA, 8,  Font.BOLD, brandBlack);
-            Font cellFont     = new Font(Font.HELVETICA, 8.5f, Font.NORMAL, brandBlack);
-            Font nameFont     = new Font(Font.HELVETICA, 8.5f, Font.BOLD, brandBlack);
-            Font legendTitle  = new Font(Font.HELVETICA, 7.5f, Font.BOLD, brandBlack);
-            Font legendFont   = new Font(Font.HELVETICA, 7.5f, Font.NORMAL, brandBlack);
-            Font summaryFont  = new Font(Font.HELVETICA, 8.5f, Font.BOLD, brandBlack);
-            Font signFont     = new Font(Font.HELVETICA, 7.5f, Font.NORMAL, mutedGray);
-            Font emptyFont    = new Font(Font.HELVETICA, 9, Font.ITALIC, mutedGray);
-
             String today = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
+            List<BoletimViewModel> pending = new ArrayList<>(boletins);
+            boolean firstPage = true;
 
-            boolean first = true;
-            for (BoletimViewModel boletim : boletins) {
-                if (!first) {
+            while (!pending.isEmpty()) {
+                BoletimViewModel firstBoletim = pending.remove(0);
+                BoletimViewModel secondBoletim = null;
+
+                for (int i = 0; i < pending.size(); i++) {
+                    if (!java.util.Objects.equals(firstBoletim.getStudentPk(), pending.get(i).getStudentPk())) {
+                        secondBoletim = pending.remove(i);
+                        break;
+                    }
+                }
+
+                if (!firstPage) {
                     document.newPage();
                 }
-                first = false;
+                firstPage = false;
 
-                // ── Cabeçalho: colégio + lema + linha ──
-                PdfPTable header = new PdfPTable(2);
-                header.setWidthPercentage(100);
-                header.setWidths(new float[]{1.5f, 1f});
-
-                PdfPCell brandCell = new PdfPCell();
-                brandCell.setBorder(Rectangle.NO_BORDER);
-                Paragraph brand = new Paragraph();
-                brand.add(new Chunk(SCHOOL_NAME + "\n", schoolFont));
-                brand.add(new Chunk(SCHOOL_SUB, schoolSub));
-                brandCell.addElement(brand);
-                header.addCell(brandCell);
-
-                PdfPCell sloganCell = new PdfPCell(new Phrase(SCHOOL_SLOGAN, sloganFont));
-                sloganCell.setBorder(Rectangle.NO_BORDER);
-                sloganCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                sloganCell.setVerticalAlignment(Element.ALIGN_BOTTOM);
-                header.addCell(sloganCell);
-                document.add(header);
-
-                PdfPTable headerLine = new PdfPTable(1);
-                headerLine.setWidthPercentage(100);
-                PdfPCell lineCell = new PdfPCell(new Phrase(""));
-                lineCell.setBorder(Rectangle.NO_BORDER);
-                lineCell.setBorderWidthBottom(1.4f);
-                lineCell.setBorderColorBottom(brandBlack);
-                lineCell.setFixedHeight(3);
-                headerLine.addCell(lineCell);
-                document.add(headerLine);
-
-                // ── Título ──
-                Paragraph title = new Paragraph("BOLETIM DE NOTAS", titleFont);
-                title.setAlignment(Element.ALIGN_CENTER);
-                title.setSpacingBefore(10);
-                title.setSpacingAfter(10);
-                document.add(title);
-
-                // ── Dados do aluno ──
-                PdfPTable info = new PdfPTable(4);
-                info.setWidthPercentage(100);
-                info.setWidths(new float[]{1.4f, 1f, 1f, 1f});
-                info.setSpacingAfter(12);
-
-                PdfPCell nameCell = new PdfPCell();
-                nameCell.setColspan(4);
-                nameCell.setBorder(Rectangle.NO_BORDER);
-                nameCell.setBorderWidthBottom(0.8f);
-                nameCell.setBorderColorBottom(fieldGray);
-                Paragraph nameP = new Paragraph();
-                nameP.add(new Chunk("Nome: ", labelFont));
-                nameP.add(new Chunk(boletim.getStudentName() != null ? boletim.getStudentName() : "—", valueFont));
-                nameCell.addElement(nameP);
-                info.addCell(nameCell);
-
-                info.addCell(infoField("Nº Matrícula: ", boletim.getEnrolmentNumber(), labelFont, valueFont));
-                info.addCell(infoField("Turma: ", boletim.getSchoolClassName(), labelFont, valueFont));
-                info.addCell(infoField("Trimestre: ", boletim.getTrimester() + "º", labelFont, valueFont));
-                info.addCell(infoField("Data: ", today, labelFont, valueFont));
-                document.add(info);
-
-                // ── Corpo ──
-                if (boletim.isEmpty()) {
-                    Paragraph empty = new Paragraph("Nenhum resultado encontrado para este aluno neste trimestre.", emptyFont);
-                    empty.setAlignment(Element.ALIGN_CENTER);
-                    empty.setSpacingBefore(24);
-                    document.add(empty);
-                } else {
-                    PdfPTable table = new PdfPTable(4);
-                    table.setWidthPercentage(100);
-                    table.setWidths(new float[]{3f, 1f, 1f, 1f});
-
-                    PdfPCell discHead = new PdfPCell(new Phrase("Disciplinas", discHeadFont));
-                    discHead.setRowspan(2);
-                    discHead.setBackgroundColor(peach);
-                    discHead.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    discHead.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                    discHead.setBorderColor(lineBlue);
-                    discHead.setPadding(5);
-                    table.addCell(discHead);
-
-                    PdfPCell triHead = new PdfPCell(new Phrase(boletim.getTrimesterLabel(), triHeadFont));
-                    triHead.setColspan(3);
-                    triHead.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    triHead.setBorderColor(lineBlue);
-                    triHead.setPadding(4);
-                    table.addCell(triHead);
-
-                    for (String h : new String[]{"MAC", "NPT", "MT"}) {
-                        PdfPCell c = new PdfPCell(new Phrase(h, colHeadFont));
-                        c.setBackgroundColor(lightBlue);
-                        c.setHorizontalAlignment(Element.ALIGN_CENTER);
-                        c.setBorderColor(lineBlue);
-                        c.setPadding(4);
-                        table.addCell(c);
-                    }
-
-                    boolean alt = false;
-                    for (BoletimDisciplineRow row : boletim.getDisciplines()) {
-                        Color bg = alt ? zebraBlue : Color.WHITE;
-                        table.addCell(bodyCell(row.getDisciplineName(), nameFont, Element.ALIGN_LEFT, bg, lineBlue));
-                        table.addCell(bodyCell(row.getMacFormatted(), cellFont, Element.ALIGN_CENTER, bg, lineBlue));
-                        table.addCell(bodyCell(row.getNptFormatted(), cellFont, Element.ALIGN_CENTER, bg, lineBlue));
-                        table.addCell(bodyCell(row.getMtFormatted(), cellFont, Element.ALIGN_CENTER, bg, lineBlue));
-                        alt = !alt;
-                    }
-                    document.add(table);
-
-                    // ── Legenda ──
-                    Paragraph legendTitleP = new Paragraph("Observações", legendTitle);
-                    legendTitleP.setSpacingBefore(10);
-                    legendTitleP.setSpacingAfter(2);
-                    document.add(legendTitleP);
-                    document.add(new Paragraph("MAC - Média da Avaliação Contínua (= Trabalhos de casa, sala de aula...)", legendFont));
-                    document.add(new Paragraph("NPT - Nota da Prova do Trimestre", legendFont));
-                    document.add(new Paragraph("MT - Média Final do Trimestre", legendFont));
-
-                    // ── Resumo ──
-                    PdfPTable summary = new PdfPTable(2);
-                    summary.setWidthPercentage(100);
-                    summary.setSpacingBefore(12);
-                    PdfPCell avgCell = new PdfPCell();
-                    avgCell.setBorder(Rectangle.NO_BORDER);
-                    Paragraph avgP = new Paragraph();
-                    avgP.add(new Chunk("Média Geral do Trimestre: ", summaryFont));
-                    avgP.add(new Chunk(boletim.getGeneralAverageFormatted(), summaryFont));
-                    avgCell.addElement(avgP);
-                    summary.addCell(avgCell);
-
-                    PdfPCell sitCell = new PdfPCell();
-                    sitCell.setBorder(Rectangle.NO_BORDER);
-                    sitCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                    Paragraph sitP = new Paragraph();
-                    sitP.setAlignment(Element.ALIGN_RIGHT);
-                    sitP.add(new Chunk("Situação Final: ", summaryFont));
-                    sitP.add(new Chunk(boletim.getGeneralSituation() != null ? boletim.getGeneralSituation() : "—", summaryFont));
-                    sitCell.addElement(sitP);
-                    summary.addCell(sitCell);
-                    document.add(summary);
-                }
-
-                // ── Assinatura ──
-                Paragraph sign = new Paragraph("\n\n________________________________\nO Director de Turma", signFont);
-                sign.setAlignment(Element.ALIGN_CENTER);
-                document.add(sign);
+                PdfPTable row = new PdfPTable(3);
+                row.setWidthPercentage(100);
+                row.setWidths(new float[]{1, 0.08f, 1});
+                row.setSplitRows(true);
+                row.addCell(boletimCell(firstBoletim, today));
+                row.addCell(gutterCell());
+                row.addCell(secondBoletim != null
+                        ? boletimCell(secondBoletim, today)
+                        : emptyBoletimCell());
+                document.add(row);
             }
 
             document.close();
@@ -571,6 +434,222 @@ public class BoletimController implements Serializable {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erro ao gerar PDF dos boletins", e);
             return new byte[0];
+        }
+    }
+
+    private PdfPCell boletimCell(BoletimViewModel boletim, String today) throws DocumentException {
+        Color brandRed = new Color(200, 16, 46);
+        Color brandGold = new Color(245, 180, 0);
+        Color brandBlack = new Color(20, 20, 20);
+        Color mutedGray = new Color(102, 106, 112);
+        Color lineBlue = new Color(127, 168, 217);
+        Color peach = new Color(252, 228, 196);
+        Color lightBlue = new Color(220, 235, 247);
+        Color zebraBlue = new Color(244, 248, 253);
+        Color fieldGray = new Color(154, 160, 166);
+
+        Font schoolFont = new Font(Font.HELVETICA, 11, Font.BOLD, brandBlack);
+        Font schoolSub = new Font(Font.HELVETICA, 7, Font.NORMAL, mutedGray);
+        Font sloganFont = new Font(Font.HELVETICA, 7.5f, Font.ITALIC, mutedGray);
+        Font titleFont = new Font(Font.HELVETICA, 12, Font.BOLD, brandRed);
+        Font labelFont = new Font(Font.HELVETICA, 7.5f, Font.BOLD, mutedGray);
+        Font valueFont = new Font(Font.HELVETICA, 8.5f, Font.NORMAL, brandBlack);
+        Font discHeadFont = new Font(Font.HELVETICA, 8.5f, Font.BOLD, brandBlack);
+        Font triHeadFont = new Font(Font.HELVETICA, 8.5f, Font.BOLD, brandBlack);
+        Font colHeadFont = new Font(Font.HELVETICA, 7.5f, Font.BOLD, brandBlack);
+        Font cellFont = new Font(Font.HELVETICA, 8, Font.NORMAL, brandBlack);
+        Font nameFont = new Font(Font.HELVETICA, 8, Font.BOLD, brandBlack);
+        Font legendTitle = new Font(Font.HELVETICA, 7.5f, Font.BOLD, brandBlack);
+        Font legendFont = new Font(Font.HELVETICA, 7, Font.NORMAL, brandBlack);
+        Font summaryFont = new Font(Font.HELVETICA, 8, Font.BOLD, brandBlack);
+        Font signFont = new Font(Font.HELVETICA, 7.5f, Font.NORMAL, mutedGray);
+        Font emptyFont = new Font(Font.HELVETICA, 8, Font.ITALIC, mutedGray);
+
+        PdfPCell card = new PdfPCell();
+        card.setBorderColor(new Color(220, 224, 230));
+        card.setBorderWidth(0.8f);
+        card.setPadding(8);
+        card.setVerticalAlignment(Element.ALIGN_TOP);
+
+        PdfPTable header = new PdfPTable(new float[]{0.55f, 2.4f, 1.3f});
+        header.setWidthPercentage(100);
+        header.setSpacingAfter(2);
+
+        PdfPCell logo = new PdfPCell(schoolLogo(), true);
+        logo.setBorder(Rectangle.NO_BORDER);
+        logo.setHorizontalAlignment(Element.ALIGN_CENTER);
+        logo.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        logo.setPadding(2);
+        header.addCell(logo);
+
+        PdfPCell brand = new PdfPCell();
+        brand.setBorder(Rectangle.NO_BORDER);
+        brand.setPaddingLeft(8);
+        brand.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        Paragraph school = new Paragraph(SCHOOL_NAME, schoolFont);
+        school.setSpacingAfter(2);
+        brand.addElement(school);
+        brand.addElement(new Paragraph(SCHOOL_SUB.toUpperCase(Locale.ROOT), schoolSub));
+        header.addCell(brand);
+
+        PdfPCell slogan = new PdfPCell();
+        slogan.setBorder(Rectangle.NO_BORDER);
+        slogan.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        slogan.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        Paragraph sloganP = new Paragraph(SCHOOL_SLOGAN, sloganFont);
+        sloganP.setAlignment(Element.ALIGN_RIGHT);
+        slogan.addElement(sloganP);
+        Paragraph documentLabel = new Paragraph("DOCUMENTO ESCOLAR", labelFont);
+        documentLabel.setAlignment(Element.ALIGN_RIGHT);
+        slogan.addElement(documentLabel);
+        header.addCell(slogan);
+        card.addElement(header);
+
+        PdfPTable accentLine = new PdfPTable(new float[]{1, 5});
+        accentLine.setWidthPercentage(100);
+        accentLine.setSpacingAfter(5);
+        PdfPCell redLine = new PdfPCell(new Phrase(""));
+        redLine.setBorder(Rectangle.NO_BORDER);
+        redLine.setBackgroundColor(brandRed);
+        redLine.setFixedHeight(2.5f);
+        accentLine.addCell(redLine);
+        PdfPCell goldLine = new PdfPCell(new Phrase(""));
+        goldLine.setBorder(Rectangle.NO_BORDER);
+        goldLine.setBackgroundColor(brandGold);
+        goldLine.setFixedHeight(2.5f);
+        accentLine.addCell(goldLine);
+        card.addElement(accentLine);
+
+        Paragraph title = new Paragraph("BOLETIM DE NOTAS", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(5);
+        card.addElement(title);
+
+        PdfPTable info = new PdfPTable(4);
+        info.setWidthPercentage(100);
+        info.setWidths(new float[]{1.4f, 1f, 1f, 1f});
+        info.setSpacingAfter(7);
+
+        PdfPCell nameCell = new PdfPCell();
+        nameCell.setColspan(4);
+        nameCell.setBorder(Rectangle.NO_BORDER);
+        nameCell.setBorderWidthBottom(0.8f);
+        nameCell.setBorderColorBottom(fieldGray);
+        nameCell.setPaddingBottom(4);
+        Paragraph nameP = new Paragraph();
+        nameP.add(new Chunk("Nome: ", labelFont));
+        nameP.add(new Chunk(boletim.getStudentName() != null ? boletim.getStudentName() : "—", valueFont));
+        nameCell.addElement(nameP);
+        info.addCell(nameCell);
+        info.addCell(infoField("Nº Matrícula: ", boletim.getEnrolmentNumber(), labelFont, valueFont));
+        info.addCell(infoField("Turma: ", boletim.getSchoolClassName(), labelFont, valueFont));
+        info.addCell(infoField("Trimestre: ", boletim.getTrimester() + "º", labelFont, valueFont));
+        info.addCell(infoField("Data: ", today, labelFont, valueFont));
+        card.addElement(info);
+
+        if (boletim.isEmpty()) {
+            Paragraph empty = new Paragraph("Nenhum resultado encontrado para este aluno neste trimestre.", emptyFont);
+            empty.setAlignment(Element.ALIGN_CENTER);
+            empty.setSpacingBefore(14);
+            card.addElement(empty);
+        } else {
+            PdfPTable table = new PdfPTable(4);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{3f, 1f, 1f, 1f});
+
+            PdfPCell discHead = new PdfPCell(new Phrase("Disciplinas", discHeadFont));
+            discHead.setRowspan(2);
+            discHead.setBackgroundColor(peach);
+            discHead.setHorizontalAlignment(Element.ALIGN_CENTER);
+            discHead.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            discHead.setBorderColor(lineBlue);
+            discHead.setPadding(4);
+            table.addCell(discHead);
+
+            PdfPCell triHead = new PdfPCell(new Phrase(boletim.getTrimesterLabel(), triHeadFont));
+            triHead.setColspan(3);
+            triHead.setHorizontalAlignment(Element.ALIGN_CENTER);
+            triHead.setBorderColor(lineBlue);
+            triHead.setPadding(3);
+            table.addCell(triHead);
+
+            for (String heading : new String[]{"MAC", "NPT", "MT"}) {
+                PdfPCell cell = new PdfPCell(new Phrase(heading, colHeadFont));
+                cell.setBackgroundColor(lightBlue);
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setBorderColor(lineBlue);
+                cell.setPadding(3);
+                table.addCell(cell);
+            }
+
+            boolean alternate = false;
+            for (BoletimDisciplineRow discipline : boletim.getDisciplines()) {
+                Color background = alternate ? zebraBlue : Color.WHITE;
+                table.addCell(bodyCell(discipline.getDisciplineName(), nameFont, Element.ALIGN_LEFT, background, lineBlue));
+                table.addCell(bodyCell(discipline.getMacFormatted(), cellFont, Element.ALIGN_CENTER, background, lineBlue));
+                table.addCell(bodyCell(discipline.getNptFormatted(), cellFont, Element.ALIGN_CENTER, background, lineBlue));
+                table.addCell(bodyCell(discipline.getMtFormatted(), cellFont, Element.ALIGN_CENTER, background, lineBlue));
+                alternate = !alternate;
+            }
+            card.addElement(table);
+
+            Paragraph legendHeading = new Paragraph("Observações", legendTitle);
+            legendHeading.setSpacingBefore(6);
+            legendHeading.setSpacingAfter(1);
+            card.addElement(legendHeading);
+            card.addElement(new Paragraph("MAC - Média da Avaliação Contínua (trabalhos de casa e sala de aula)", legendFont));
+            card.addElement(new Paragraph("NPT - Nota da Prova do Trimestre", legendFont));
+            card.addElement(new Paragraph("MT - Média Final do Trimestre", legendFont));
+
+            PdfPTable summary = new PdfPTable(2);
+            summary.setWidthPercentage(100);
+            summary.setSpacingBefore(6);
+            PdfPCell averageCell = new PdfPCell(new Phrase(
+                    "Média Geral: " + boletim.getGeneralAverageFormatted(), summaryFont));
+            averageCell.setBorder(Rectangle.NO_BORDER);
+            summary.addCell(averageCell);
+            PdfPCell situationCell = new PdfPCell(new Phrase(
+                    "Situação: " + (boletim.getGeneralSituation() != null ? boletim.getGeneralSituation() : "—"),
+                    summaryFont));
+            situationCell.setBorder(Rectangle.NO_BORDER);
+            situationCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            summary.addCell(situationCell);
+            card.addElement(summary);
+        }
+
+        Paragraph sign = new Paragraph("\n________________________________\nO Director de Turma", signFont);
+        sign.setAlignment(Element.ALIGN_CENTER);
+        sign.setSpacingBefore(5);
+        card.addElement(sign);
+        return card;
+    }
+
+    private PdfPCell emptyBoletimCell() {
+        PdfPCell cell = new PdfPCell(new Phrase(""));
+        cell.setBorder(Rectangle.NO_BORDER);
+        return cell;
+    }
+
+    private PdfPCell gutterCell() {
+        PdfPCell cell = new PdfPCell(new Phrase(""));
+        cell.setBorder(Rectangle.NO_BORDER);
+        return cell;
+    }
+
+    private Image schoolLogo() throws DocumentException {
+        String logoPath = "/META-INF/resources/resources/imgs/logo.jpg";
+        try (InputStream logoStream = BoletimController.class.getResourceAsStream(logoPath)) {
+            if (logoStream == null) {
+                throw new IOException("Logotipo da escola não encontrado: " + logoPath);
+            }
+            Image logo = Image.getInstance(logoStream.readAllBytes());
+            logo.scaleToFit(38, 38);
+            logo.setAlignment(Image.ALIGN_CENTER);
+            return logo;
+        } catch (IOException e) {
+            DocumentException exception = new DocumentException("Não foi possível carregar o logotipo da escola.");
+            exception.initCause(e);
+            throw exception;
         }
     }
 
@@ -605,7 +684,10 @@ public class BoletimController implements Serializable {
     }
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context != null) {
+            context.addMessage(null, new FacesMessage(severity, summary, detail));
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -636,6 +718,7 @@ public class BoletimController implements Serializable {
     public static class BoletimViewModel implements Serializable {
         private static final long serialVersionUID = 1L;
 
+        private Long studentPk;
         private String studentName;
         private String enrolmentNumber;
         private String schoolClassName;
@@ -644,6 +727,9 @@ public class BoletimController implements Serializable {
         private List<BoletimDisciplineRow> disciplines = new ArrayList<>();
         private Double generalAverage;
         private String generalSituation;
+
+        public Long getStudentPk() { return studentPk; }
+        public void setStudentPk(Long studentPk) { this.studentPk = studentPk; }
 
         public String getStudentName() { return studentName; }
         public void setStudentName(String studentName) { this.studentName = studentName; }

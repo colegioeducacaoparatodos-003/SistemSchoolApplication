@@ -83,6 +83,16 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 
     @Query("""
             SELECT g FROM Grade g
+            JOIN FETCH g.enrolment en
+            JOIN FETCH g.evaluation ev
+            JOIN FETCH ev.discipline
+            WHERE en.phEnrolment IN :enrolmentPks
+            AND g.obs IS NOT NULL
+            """)
+    List<Grade> findWithObservationsByEnrolmentPks(@Param("enrolmentPks") List<Long> enrolmentPks);
+
+    @Query("""
+            SELECT g FROM Grade g
             JOIN FETCH g.evaluation ev
             WHERE g.enrolment.phEnrolment = :enrolmentPk
             AND ev.discipline.pkDiscipline = :disciplinePk

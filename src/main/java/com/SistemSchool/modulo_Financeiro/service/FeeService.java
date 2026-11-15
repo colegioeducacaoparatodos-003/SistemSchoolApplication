@@ -67,6 +67,7 @@ public class FeeService {
     }
 
     public void update(FeeDTO dto) {
+        com.SistemSchool.config.FinancialOperationGuard.requireFinancial();
         Fee fee = repository.findById(dto.getPhFee())
                 .orElseThrow(() -> new RuntimeException("Propina não encontrada com id: " + dto.getPhFee()));
 
@@ -95,6 +96,7 @@ public class FeeService {
      * Elimina uma propina.
      */
     public void delete(Long id) {
+        com.SistemSchool.config.FinancialOperationGuard.requireFinancial();
         if (!repository.existsById(id)) {
             throw new RuntimeException("Propina não encontrada com id: " + id);
         }

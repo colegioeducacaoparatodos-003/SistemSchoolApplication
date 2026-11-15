@@ -30,6 +30,8 @@ import com.SistemSchool.modulo_Recursoa_Humano.io.QualificationLevel;
 import com.SistemSchool.modulo_Recursoa_Humano.io.TeacherStatus;
 import com.SistemSchool.modulo_Recursoa_Humano.model.Teacher;
 import com.SistemSchool.modulo_Recursoa_Humano.repository.TeacherRepository;
+import com.SistemSchool.report.OpenPdfAuditPageEvent;
+import com.SistemSchool.util.BIValidator;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -132,6 +134,7 @@ public class TeacherService {
 
     public Teacher save(Teacher teacher, UploadedFile photo) throws IOException {
 
+        validarBI(teacher.getBiNumber());
         teacher.setTeacherNumber(generateTeacherNumber());
 
         String newNameFile = DEFAULT_PHOTO;
@@ -169,6 +172,8 @@ public class TeacherService {
                     "Não é possível atualizar: identificador do professor (pkTeacher) está nulo");
         }
 
+        validarBI(dto.getBiNumber());
+
         Teacher teacher = repository.findById(dto.getPkTeacher())
                 .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
 
@@ -198,6 +203,17 @@ public class TeacherService {
         }
     }
 
+    public void validarBI(String biNumber) {
+        if (biNumber == null || biNumber.isBlank()) {
+            return;
+        }
+
+        BIValidator.Resultado resultado = BIValidator.validarOnline(biNumber);
+        if (!resultado.isValido()) {
+            throw new RuntimeException(resultado.getMotivo());
+        }
+    }
+
     public void updatePhoto(Long pkTeacher, UploadedFile photo) throws IOException {
         if (photo == null || photo.getSize() <= 0) {
             return;
@@ -219,6 +235,7 @@ public class TeacherService {
     }
 
     public void delete(Long id) {
+            com.SistemSchool.config.AdminDeleteGuard.requireAdmin();
         repository.deleteById(id);
     }
 
@@ -330,10 +347,11 @@ public class TeacherService {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=\"lista_professores.pdf\"");
 
-        Document document = new Document(PageSize.A4.rotate(), 24, 24, 30, 30);
+        Document document = new Document(PageSize.A4, 24, 24, 30, 30);
 
         try {
-            PdfWriter.getInstance(document, response.getOutputStream());
+            PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream());
+            writer.setPageEvent(new OpenPdfAuditPageEvent());
             document.open();
 
             Font titleFont = new Font(Font.HELVETICA, 16, Font.BOLD);

@@ -6,7 +6,7 @@
     xmlns:p="primefaces">
 
     <p:dialog id="createTeacherDialog" widgetVar="createTeacherDialog"
-        header="Novo Professor" modal="true" showEffect="fade" hideEffect="fade"
+        header="#{msg.newTeacher}" modal="true" showEffect="fade" hideEffect="fade"
         closeOnEscape="true" styleClass="tc-dialog-create" dynamic="true"
         resizable="false" responsive="true" fitViewport="true" width="720">
 
@@ -21,6 +21,7 @@
         <h:form id="createTeacherForm" enctype="multipart/form-data" styleClass="ui-fluid">
 
             <p:messages id="msgsCreate" showDetail="false" closable="true" globalOnly="true" />
+            <p:growl id="biGrowlCreate" showDetail="true" life="3500" styleClass="tc-bi-growl" />
 
             <div class="tc-dialog-body">
 
@@ -28,7 +29,7 @@
                      SECCAO 1 – FOTO
                      ==================================================== -->
                 <div class="tc-section">
-                    <div class="tc-section-title"><i class="pi pi-image"></i> Foto</div>
+                    <div class="tc-section-title"><i class="pi pi-image"></i> #{msg.photo}</div>
 
                     <div class="tc-photo-row">
                         <div class="tc-photo-preview">
@@ -42,7 +43,7 @@
                                 value="#{teacherController.uploadedPhoto}"
                                 allowTypes="/(\.|\/)(gif|jpe?g|png)$/"
                                 auto="false"
-                                label="Escolher foto"
+                                label="#{msg.choosePhoto}"
                                 skinSimple="true" />
                         </div>
                     </div>
@@ -52,31 +53,31 @@
                      SECCAO 2 – IDENTIFICACAO
                      ==================================================== -->
                 <div class="tc-section">
-                    <div class="tc-section-title"><i class="pi pi-id-card"></i> Identificação</div>
+                    <div class="tc-section-title"><i class="pi pi-id-card"></i> #{msg.teacherIdentification}</div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="fristName" value="Primeiro Nome" styleClass="tc-label tc-label-col req" />
+                        <p:outputLabel for="fristName" value="#{msg.firstName}" styleClass="tc-label tc-label-col req" />
                         <div class="tc-field-col">
                             <p:inputText id="fristName" value="#{teacherController.teacher.fristName}" required="true"
-                                requiredMessage="O primeiro nome é obrigatório" style="width:100%;" />
+                                requiredMessage="#{msg.firstNameRequired}" style="width:100%;" />
                             <p:message for="fristName" display="text" styleClass="tc-field-msg" />
                         </div>
                     </div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="lastName" value="Último Nome" styleClass="tc-label tc-label-col req" />
+                        <p:outputLabel for="lastName" value="#{msg.lastName}" styleClass="tc-label tc-label-col req" />
                         <div class="tc-field-col">
                             <p:inputText id="lastName" value="#{teacherController.teacher.lastName}" required="true"
-                                requiredMessage="O último nome é obrigatório" style="width:100%;" />
+                                requiredMessage="#{msg.lastNameRequired}" style="width:100%;" />
                             <p:message for="lastName" display="text" styleClass="tc-field-msg" />
                         </div>
                     </div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="gender" value="Género" styleClass="tc-label tc-label-col" />
+                        <p:outputLabel for="gender" value="#{msg.gender}" styleClass="tc-label tc-label-col" />
                         <div class="tc-field-col">
                             <p:selectOneMenu id="gender" value="#{teacherController.teacher.gender}" style="width:100%;">
-                                <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItem itemLabel="#{msg.select}" itemValue="#{null}" noSelectionOption="true" />
                                 <f:selectItems value="#{teacherController.genders}" var="g"
                                     itemLabel="#{g.descricao}" itemValue="#{g}" />
                             </p:selectOneMenu>
@@ -84,12 +85,12 @@
                     </div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="qualificationLivel" value="Nível de Qualificação"
+                        <p:outputLabel for="qualificationLivel" value="#{msg.qualificationLevel}"
                             styleClass="tc-label tc-label-col req" />
                         <div class="tc-field-col">
                             <p:selectOneMenu id="qualificationLivel" value="#{teacherController.teacher.qualificationLivel}"
-                                required="true" requiredMessage="Selecione o nível de qualificação" style="width:100%;">
-                                <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true" />
+                                required="true" requiredMessage="#{msg.qualificationRequired}" style="width:100%;">
+                                <f:selectItem itemLabel="#{msg.select}" itemValue="#{null}" noSelectionOption="true" />
                                 <f:selectItems value="#{teacherController.qualificationLevels}" var="q"
                                     itemLabel="#{q.descricao}" itemValue="#{q}" />
                             </p:selectOneMenu>
@@ -98,11 +99,11 @@
                     </div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="contractType" value="Tipo de Vínculo" styleClass="tc-label tc-label-col req" />
+                        <p:outputLabel for="contractType" value="#{msg.contractType}" styleClass="tc-label tc-label-col req" />
                         <div class="tc-field-col">
                             <p:selectOneMenu id="contractType" value="#{teacherController.teacher.contractType}"
-                                required="true" requiredMessage="Selecione o tipo de vínculo" style="width:100%;">
-                                <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true" />
+                                required="true" requiredMessage="#{msg.contractTypeRequired}" style="width:100%;">
+                                <f:selectItem itemLabel="#{msg.select}" itemValue="#{null}" noSelectionOption="true" />
                                 <f:selectItems value="#{teacherController.contractTypes}" var="c"
                                     itemLabel="#{c.descricao}" itemValue="#{c}" />
                             </p:selectOneMenu>
@@ -111,11 +112,11 @@
                     </div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="status" value="Estado" styleClass="tc-label tc-label-col req" />
+                        <p:outputLabel for="status" value="#{msg.status}" styleClass="tc-label tc-label-col req" />
                         <div class="tc-field-col">
                             <p:selectOneMenu id="status" value="#{teacherController.teacher.status}"
-                                required="true" requiredMessage="Selecione o estado" style="width:100%;">
-                                <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true" />
+                                required="true" requiredMessage="#{msg.statusRequired}" style="width:100%;">
+                                <f:selectItem itemLabel="#{msg.select}" itemValue="#{null}" noSelectionOption="true" />
                                 <f:selectItems value="#{teacherController.teacherStatuses}" var="s"
                                     itemLabel="#{s.descricao}" itemValue="#{s}" />
                             </p:selectOneMenu>
@@ -124,14 +125,16 @@
                     </div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="biNumber" value="Número do BI" styleClass="tc-label tc-label-col" />
+                        <p:outputLabel for="biNumber" value="#{msg.idCardNumber}" styleClass="tc-label tc-label-col" />
                         <div class="tc-field-col">
-                            <p:inputText id="biNumber" value="#{teacherController.teacher.biNumber}" style="width:100%;" />
+                            <p:inputText id="biNumber" value="#{teacherController.teacher.biNumber}" style="width:100%;">
+                                <p:ajax event="blur" listener="#{teacherController.validarBI}" update="biGrowlCreate" process="@this" />
+                            </p:inputText>
                         </div>
                     </div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="biExpiryDate" value="Validade do BI" styleClass="tc-label tc-label-col" />
+                        <p:outputLabel for="biExpiryDate" value="#{msg.idCardExpiryDate}" styleClass="tc-label tc-label-col" />
                         <div class="tc-field-col">
                             <p:datePicker id="biExpiryDate" value="#{teacherController.teacher.biExpiryDate}"
                                 pattern="dd/MM/yyyy" showIcon="true" monthNavigator="true" yearNavigator="true"
@@ -144,10 +147,10 @@
                      SECCAO 3 – MORADA
                      ==================================================== -->
                 <div class="tc-section">
-                    <div class="tc-section-title"><i class="pi pi-map-marker"></i> Endereço</div>
+                    <div class="tc-section-title"><i class="pi pi-map-marker"></i> #{msg.address}</div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="addressStreet" value="Endereço" styleClass="tc-label tc-label-col" />
+                        <p:outputLabel for="addressStreet" value="#{msg.addressStreet}" styleClass="tc-label tc-label-col" />
                         <div class="tc-field-col">
                             <p:inputText id="addressStreet" value="#{teacherController.teacher.addressStreet}"
                                 style="width:100%;" />
@@ -155,7 +158,7 @@
                     </div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="addressProvice" value="Província" styleClass="tc-label tc-label-col" />
+                        <p:outputLabel for="addressProvice" value="#{msg.province}" styleClass="tc-label tc-label-col" />
                         <div class="tc-field-col">
                             <p:inputText id="addressProvice" value="#{teacherController.teacher.addressProvice}"
                                 style="width:100%;" />
@@ -167,10 +170,10 @@
                      SECCAO 4 – CONTACTOS E REMUNERACAO
                      ==================================================== -->
                 <div class="tc-section">
-                    <div class="tc-section-title"><i class="pi pi-phone"></i> Contactos e Remuneração</div>
+                    <div class="tc-section-title"><i class="pi pi-phone"></i> #{msg.contactsAndSalary}</div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="email" value="Email" styleClass="tc-label tc-label-col" />
+                        <p:outputLabel for="email" value="#{msg.email}" styleClass="tc-label tc-label-col" />
                         <div class="tc-field-col">
                             <p:inputText id="email" value="#{teacherController.teacher.email}" style="width:100%;">
                                 <f:validateRegex pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$" />
@@ -179,14 +182,14 @@
                     </div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="phone" value="Telefone Fixo" styleClass="tc-label tc-label-col" />
+                        <p:outputLabel for="phone" value="#{msg.fixedPhone}" styleClass="tc-label tc-label-col" />
                         <div class="tc-field-col">
                             <p:inputText id="phone" value="#{teacherController.teacher.phone}" style="width:100%;" />
                         </div>
                     </div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="mobilePhone" value="Telemóvel" styleClass="tc-label tc-label-col" />
+                        <p:outputLabel for="mobilePhone" value="#{msg.phone2}" styleClass="tc-label tc-label-col" />
                         <div class="tc-field-col">
                             <p:inputText id="mobilePhone" value="#{teacherController.teacher.mobilePhone}"
                                 style="width:100%;" />
@@ -194,7 +197,7 @@
                     </div>
 
                     <div class="tc-field-row">
-                        <p:outputLabel for="baseSalary" value="Salário Base" styleClass="tc-label tc-label-col" />
+                        <p:outputLabel for="baseSalary" value="#{msg.baseSalary}" styleClass="tc-label tc-label-col" />
                         <div class="tc-field-col">
                             <p:inputNumber id="baseSalary" value="#{teacherController.teacher.baseSalary}"
                                 symbol=" Kz" symbolPosition="s" decimalPlaces="2" style="width:100%;" />
@@ -206,7 +209,7 @@
                      SECCAO 5 – OBSERVACOES
                      ==================================================== -->
                 <div class="tc-section">
-                    <div class="tc-section-title"><i class="pi pi-file-edit"></i> Observações</div>
+                    <div class="tc-section-title"><i class="pi pi-file-edit"></i> #{msg.observation}</div>
                     <p:inputTextarea id="obs" value="#{teacherController.teacher.obs}" rows="3" autoResize="false"
                         style="width:100%;" />
                 </div>
@@ -214,10 +217,10 @@
             </div>
 
             <div class="tc-dialog-footer">
-                <p:commandButton value="Cancelar" icon="pi pi-times" type="button"
+                <p:commandButton value="#{msg.cancel}" icon="pi pi-times" type="button"
                     onclick="PF('createTeacherDialog').hide()" styleClass="ui-button-outlined ui-button-secondary"
                     process="@this" />
-                <p:commandButton value="Gravar" icon="pi pi-save" styleClass="ui-button-success"
+                <p:commandButton value="#{msg.save}" icon="pi pi-save" styleClass="ui-button-success"
                     action="#{teacherController.save}"
                     update=":createTeacherForm:msgsCreate :formTeachers:dtTeachers :formTeachers:messages"
                     oncomplete="if(!args.validationFailed) PF('createTeacherDialog').hide()"
@@ -362,6 +365,18 @@
             }
 
             /* ============================================================
+               TOAST DE VALIDACAO DO BI
+               ============================================================ */
+            .tc-bi-growl.ui-growl {
+                position: fixed !important;
+                top: 20px !important;
+                right: 20px !important;
+                left: auto !important;
+                z-index: 100000 !important;
+                width: 320px !important;
+            }
+
+            /* ============================================================
                INPUTS
                ============================================================ */
             .tc-dialog-create .ui-inputfield,
@@ -417,6 +432,13 @@
                 border: none;
                 background: transparent;
                 padding: 0;
+            }
+
+            .tc-photo-upload-control .ui-fileupload-content {
+                border: 2px dashed var(--tc-border);
+                border-radius: 8px;
+                background: #fff;
+                margin-top: 0.5rem;
             }
 
             /* ============================================================
@@ -521,6 +543,13 @@
                 .tc-dialog-footer .ui-button {
                     flex: 1 1 auto;
                     min-width: 0;
+                }
+
+                .tc-bi-growl.ui-growl {
+                    top: 10px !important;
+                    right: 10px !important;
+                    left: 10px !important;
+                    width: auto !important;
                 }
             }
 

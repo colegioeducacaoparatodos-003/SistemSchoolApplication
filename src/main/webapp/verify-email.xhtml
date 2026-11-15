@@ -1,0 +1,250 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    locale="#{languageController.locale}">
+
+    <f:metadata>
+        <f:viewParam name="token" value="#{userController.recoveryToken}" />
+        <f:viewAction action="#{userController.verifyEmailToken}" onPostback="false" />
+    </f:metadata>
+
+    <h:head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#f4f6fa" />
+        <title>#{msg.emailVerificationPageTitle} | Gestão Escolar</title>
+        <link rel="icon" type="image/jpeg" href="#{request.contextPath}/resources/imgs/logo.jpg" />
+        <style>
+            :root {
+                color-scheme: light;
+                font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+                color: #172033;
+                background: #f4f6fa;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                min-width: 320px;
+                min-height: 100vh;
+                margin: 0;
+                background:
+                    radial-gradient(ellipse at 12% 8%, rgba(37, 99, 235, .08), transparent 34rem),
+                    radial-gradient(ellipse at 90% 92%, rgba(16, 185, 129, .07), transparent 32rem),
+                    #f4f6fa;
+            }
+
+            .verification-shell {
+                display: grid;
+                min-height: 100vh;
+                place-items: center;
+                padding: 2rem 1.25rem;
+            }
+
+            .verification-content {
+                width: min(100%, 480px);
+            }
+
+            .verification-brand {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: .75rem;
+                margin-bottom: 1.5rem;
+                color: #172033;
+                font-size: 1rem;
+                font-weight: 750;
+                letter-spacing: -.02em;
+            }
+
+            .verification-brand-mark {
+                display: grid;
+                width: 42px;
+                height: 42px;
+                place-items: center;
+                border-radius: 13px;
+                background: #9f1239;
+                color: #fff;
+                box-shadow: 0 6px 15px rgba(159, 18, 57, .18);
+            }
+
+            .verification-card {
+                overflow: hidden;
+                padding: clamp(1.5rem, 6vw, 2.5rem);
+                border: 1px solid #e4e8ef;
+                border-radius: 22px;
+                background: rgba(255, 255, 255, .96);
+                box-shadow: 0 24px 65px rgba(15, 23, 42, .09);
+                text-align: center;
+            }
+
+            .verification-icon {
+                display: grid;
+                width: 76px;
+                height: 76px;
+                place-items: center;
+                margin: 0 auto 1.35rem;
+                border: 1px solid #bbf7d0;
+                border-radius: 24px;
+                background: #f0fdf4;
+                color: #15803d;
+            }
+
+            .verification-icon--error {
+                border-color: #fecaca;
+                background: #fef2f2;
+                color: #b91c1c;
+            }
+
+            .verification-icon svg {
+                width: 34px;
+                height: 34px;
+            }
+
+            .verification-card h1 {
+                margin: 0 0 .75rem;
+                color: #111827;
+                font-size: clamp(1.45rem, 5vw, 1.8rem);
+                font-weight: 760;
+                letter-spacing: -.035em;
+                line-height: 1.2;
+            }
+
+            .verification-message {
+                max-width: 360px;
+                margin: 0 auto;
+                color: #64748b;
+                font-size: .96rem;
+                line-height: 1.65;
+            }
+
+            .verification-actions {
+                display: grid;
+                gap: .75rem;
+                margin-top: 1.8rem;
+            }
+
+            .verification-button {
+                display: inline-flex;
+                min-height: 48px;
+                align-items: center;
+                justify-content: center;
+                gap: .55rem;
+                padding: .75rem 1.1rem;
+                border: 1px solid transparent;
+                border-radius: 12px;
+                background: #1d4ed8;
+                color: #fff;
+                font-size: .94rem;
+                font-weight: 700;
+                text-decoration: none;
+                transition: background-color .15s ease, transform .15s ease;
+            }
+
+            .verification-button:hover {
+                transform: translateY(-1px);
+                background: #1e40af;
+                color: #fff;
+            }
+
+            .verification-button:focus-visible,
+            .verification-secondary:focus-visible {
+                outline: 3px solid rgba(37, 99, 235, .35);
+                outline-offset: 3px;
+            }
+
+            .verification-secondary {
+                justify-self: center;
+                padding: .4rem .6rem;
+                color: #475569;
+                font-size: .9rem;
+                font-weight: 650;
+                text-decoration: none;
+            }
+
+            .verification-secondary:hover {
+                color: #1d4ed8;
+                text-decoration: underline;
+            }
+
+            .verification-footer {
+                margin: 1.25rem 0 0;
+                color: #94a3b8;
+                font-size: .78rem;
+                text-align: center;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                *,
+                *::before,
+                *::after {
+                    scroll-behavior: auto !important;
+                    transition-duration: .01ms !important;
+                }
+            }
+        </style>
+    </h:head>
+
+    <h:body>
+        <main class="verification-shell">
+            <div class="verification-content">
+                <div class="verification-brand">
+                    <span class="verification-brand-mark" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
+                            <path d="M8 7h8M8 11h8" />
+                        </svg>
+                    </span>
+                    <span>Gestão Escolar</span>
+                </div>
+
+                <section class="verification-card" aria-live="polite"
+                    aria-labelledby="verification-title">
+                    <div class="verification-icon #{userController.emailVerificationSuccess ? '' : 'verification-icon--error'}"
+                        aria-hidden="true">
+                        <h:panelGroup layout="none" rendered="#{userController.emailVerificationSuccess}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m5 12 4 4L19 6" />
+                            </svg>
+                        </h:panelGroup>
+                        <h:panelGroup layout="none" rendered="#{not userController.emailVerificationSuccess}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 9v4m0 4h.01" />
+                                <circle cx="12" cy="12" r="10" />
+                            </svg>
+                        </h:panelGroup>
+                    </div>
+
+                    <h1 id="verification-title">
+                        <h:outputText
+                            value="#{userController.emailVerificationSuccess ? msg.emailVerificationSuccessTitle : msg.emailVerificationFailureTitle}" />
+                    </h1>
+                    <p class="verification-message">
+                        <h:outputText
+                            value="#{userController.emailVerificationSuccess ? msg.emailVerificationSuccessText : msg.emailVerificationFailureText}" />
+                    </p>
+
+                    <div class="verification-actions">
+                        <h:outputLink styleClass="verification-button"
+                            value="#{request.contextPath}/login.xhtml">
+                            <h:outputText value="#{msg.emailVerificationLogin}" />
+                        </h:outputLink>
+                        <h:outputLink styleClass="verification-secondary"
+                            value="#{request.contextPath}/components/dashboard/sign_in.xhtml">
+                            <h:outputText value="#{msg.emailVerificationSignUp}" />
+                        </h:outputLink>
+                    </div>
+                </section>
+
+                <p class="verification-footer">#{msg.emailVerificationFooter}</p>
+            </div>
+        </main>
+    </h:body>
+</f:view>

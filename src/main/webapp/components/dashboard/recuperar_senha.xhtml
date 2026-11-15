@@ -4,6 +4,9 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 
+<f:metadata>
+    <f:viewParam name="token" value="#{userController.recoveryToken}" />
+</f:metadata>
 <h:head>
     <f:facet name="first">
         <meta charset="UTF-8" />
@@ -11,6 +14,7 @@
     </f:facet>
     
     <title>Recuperar Senha | Gestão Escolar</title>
+    <link rel="icon" type="image/jpeg" href="#{request.contextPath}/resources/imgs/logo.jpg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&amp;display=swap" rel="stylesheet" />
@@ -266,7 +270,7 @@
 
                 <h:form id="recoveryForm">
 
-                    <!-- PASSO 1: Verificar Email -->
+                    <!-- PASSO 1: Solicitar link -->
                     <h:panelGroup id="step1Panel" rendered="#{userController.recoveryStep eq 1}">
                         <div class="form-group">
                             <h:outputLabel for="recoveryEmail" value="Email" styleClass="form-label">
@@ -282,11 +286,12 @@
 
                         <p class="hint-text">
                             <i class="bi bi-info-circle me-1"></i>
-                            Digite o email associado à sua conta para continuar.
+                            Enviaremos um link seguro para o email associado à sua conta.
                         </p>
 
-                        <p:commandButton value="Verificar Email" 
+                        <p:commandButton value="Enviar link de recuperação"
                             action="#{userController.verifyEmailForRecovery}"
+                            process="@this recoveryEmail"
                             update=":messages recoveryForm"
                             styleClass="btn-primary mb-3"
                             onstart="showScLoading()"
@@ -309,10 +314,10 @@
                                 <i class="bi bi-person-circle text-muted" style="font-size: 1.25rem;"></i>
                                 <div>
                                     <div class="small fw-semibold" style="color: var(--enr-text);">
-                                        #{userController.recoveryUser.email}
+                                        Link de recuperação válido
                                     </div>
                                     <div class="small" style="color: var(--enr-muted);">
-                                        #{userController.getPerfilLabel(userController.recoveryUser.perfil)}
+                                        Defina uma nova senha para continuar.
                                     </div>
                                 </div>
                             </div>

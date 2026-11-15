@@ -43,6 +43,8 @@ public class ScheduleService {
     // ─────────────────────────────────────────────────────────────
 
     public Schedule save(Schedule schedule) {
+        com.SistemSchool.config.PedagogicalModificationGuard
+                .requirePedagogicalForExisting(schedule.getPkSchedule());
         if (schedule.getDiscipline() == null || schedule.getDiscipline().getPkDiscipline() == null) {
             throw new RuntimeException("É necessário indicar a disciplina para o horário.");
         }
@@ -70,6 +72,7 @@ public class ScheduleService {
     }
 
     public void update(ScheduleDTO dto) {
+        com.SistemSchool.config.PedagogicalModificationGuard.requirePedagogical();
         Schedule schedule = repository.findById(dto.getPkSchedule())
                 .orElseThrow(() -> new RuntimeException("Horário não encontrado com id: " + dto.getPkSchedule()));
 
@@ -104,6 +107,7 @@ public class ScheduleService {
     }
 
     public void delete(Long id) {
+        com.SistemSchool.config.PedagogicalModificationGuard.requirePedagogical();
         if (!repository.existsById(id)) {
             throw new RuntimeException("Horário não encontrado com id: " + id);
         }

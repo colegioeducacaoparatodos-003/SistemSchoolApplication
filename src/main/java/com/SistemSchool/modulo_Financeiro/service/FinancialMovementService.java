@@ -23,6 +23,8 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -94,6 +96,7 @@ public class FinancialMovementService {
     }
 
     public void update(FinancialMovementDTO dto) {
+        com.SistemSchool.config.FinancialOperationGuard.requireFinancial();
         FinancialMovement movement = repository.findById(dto.getPhMovement())
                 .orElseThrow(() -> new RuntimeException("Movimento não encontrado com id: " + dto.getPhMovement()));
 
@@ -142,6 +145,7 @@ public class FinancialMovementService {
     }
 
     public void delete(Long id) {
+        com.SistemSchool.config.FinancialOperationGuard.requireFinancial();
         FinancialMovement movement = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Movimento não encontrado com id: " + id));
 
@@ -190,6 +194,13 @@ public class FinancialMovementService {
 
     public Page<FinancialMovementTableProjection> findLazy(int page, int size, Sort sort,
             Map<String, Object> filters) {
+        if (filters != null && !filters.isEmpty()) {
+            List<FinancialMovementTableProjection> filtered = getAllForTable(filters);
+            int from = Math.min(page * size, filtered.size());
+            int to = Math.min(from + size, filtered.size());
+            return new org.springframework.data.domain.PageImpl<>(filtered.subList(from, to),
+                PageRequest.of(page, size, sort), filtered.size());
+        }
         Pageable pageable = PageRequest.of(page, size, sort);
         return repository.findAllForTable(pageable);
     }
@@ -197,6 +208,35 @@ public class FinancialMovementService {
     public List<FinancialMovementTableProjection> getAllForTable() {
         return repository.findAllForTable(Pageable.unpaged()).getContent();
     }
+
+        public List<FinancialMovementTableProjection> getAllForTable(Map<String, Object> filters) {
+        return getAllForTable().stream()
+            .filter(movement -> matchesFilters(movement, filters))
+            .collect(Collectors.toList());
+        }
+
+        private boolean matchesFilters(FinancialMovementTableProjection movement, Map<String, Object> filters) {
+        Object type = filters.get("type");
+        if (type instanceof MovementType value && !value.name().equals(movement.getType())) return false;
+
+        Object status = filters.get("status");
+        if (status instanceof MovementStatus value && !value.name().equals(movement.getStatus())) return false;
+
+        Object category = filters.get("category");
+        if (category instanceof String value && !value.isBlank()
+            && (movement.getCategory() == null
+                || !movement.getCategory().toLowerCase().contains(value.toLowerCase()))) return false;
+
+        Object startDate = filters.get("startDate");
+        if (startDate instanceof java.time.LocalDateTime value
+            && (movement.getMovementDate() == null || movement.getMovementDate().isBefore(value))) return false;
+
+        Object endDate = filters.get("endDate");
+        if (endDate instanceof java.time.LocalDateTime value
+            && (movement.getMovementDate() == null || movement.getMovementDate().isAfter(value))) return false;
+
+        return true;
+        }
 
     // ─────────────────────────────────────────────────────────────
     // QUERIES UTILITÁRIAS

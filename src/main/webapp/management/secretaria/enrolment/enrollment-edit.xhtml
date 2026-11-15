@@ -11,179 +11,58 @@
             <p:messages id="msgsEdit" showDetail="true" closable="true" globalOnly="true" />
 
             <div style="padding: .5rem 0 1rem;">
-
-                <!-- 1 - IDENTIFICACAO DO ALUNO -->
                 <div style="font-size:1rem; font-weight:700; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem;">
-                    <i class="pi pi-user" style="color:var(--enr-red, #c8102e);"></i> #{msg.studentIdentification}
+                    <i class="pi pi-id-card" style="color:var(--enr-red, #c8102e);"></i> #{msg.enrollmentData}
                 </div>
 
                 <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
                     columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
-
-                    <p:outputLabel for="editStudentNumber" value="#{msg.studentNumber}" styleClass="sc-label" />
-                    <p:inputText id="editStudentNumber" value="#{studentController.editDto.sudentNumber}"
+                    <p:outputLabel for="editEnrollmentNumber" value="#{msg.enrollmentNumber}" styleClass="sc-label" />
+                    <p:inputText id="editEnrollmentNumber" value="#{enrolmentController.editDto.enrolmentNumber}"
                         readonly="true" styleClass="sc-readonly-field" style="background:#f3f4f6;" />
 
-                    <p:outputLabel for="editFirstName" value="#{msg.firstName}" styleClass="sc-label req" />
-                    <h:panelGroup>
-                        <p:inputText id="editFirstName" value="#{studentController.editDto.fristName}"
-                            required="true" requiredMessage="#{msg.requiredField}"
-                            placeholder="#{msg.firstNamePlaceholder}" style="width:100%;" />
-                        <p:message for="editFirstName" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
+                    <p:outputLabel for="editStudent" value="#{msg.selectStudent}" styleClass="sc-label req" />
+                    <p:selectOneMenu id="editStudent" value="#{enrolmentController.selectedStudentId}" required="true"
+                        requiredMessage="#{msg.requiredStudent}" filter="true" filterMatchMode="contains" style="width:100%;">
+                        <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItems value="#{enrolmentController.students}" var="st"
+                            itemLabel="#{st.fullName} (#{st.sudentNumber})" itemValue="#{st.pkStudent}" />
+                    </p:selectOneMenu>
 
-                    <p:outputLabel for="editLastName" value="#{msg.lastName}" styleClass="sc-label req" />
-                    <h:panelGroup>
-                        <p:inputText id="editLastName" value="#{studentController.editDto.lastName}" required="true"
-                            requiredMessage="#{msg.requiredField}" placeholder="#{msg.lastNamePlaceholder}"
-                            style="width:100%;" />
-                        <p:message for="editLastName" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
+                    <p:outputLabel for="editSchoolClass" value="#{msg.selectSchoolClass}" styleClass="sc-label req" />
+                    <p:selectOneMenu id="editSchoolClass" value="#{enrolmentController.selectedSchoolClassId}" required="true"
+                        requiredMessage="#{msg.requiredSchoolClass}" filter="true" filterMatchMode="contains" style="width:100%;">
+                        <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItems value="#{enrolmentController.schoolClasses}" var="sc"
+                            itemLabel="#{sc.classCode} — #{sc.className}" itemValue="#{sc.pkSchoolClass}" />
+                    </p:selectOneMenu>
 
-                    <p:outputLabel for="editGender" value="#{msg.gender}" styleClass="sc-label req" />
-                    <h:panelGroup>
-                        <p:selectOneMenu id="editGender" value="#{studentController.editDto.gender}" required="true"
-                            requiredMessage="#{msg.requiredField}" style="width:100%;">
-                            <f:selectItem itemLabel="- #{msg.select} -" itemValue="#{null}" noSelectionOption="true" />
-                            <f:selectItems value="#{studentController.genders}" />
-                        </p:selectOneMenu>
-                        <p:message for="editGender" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
+                    <p:outputLabel for="editShift" value="#{msg.selectShift}" styleClass="sc-label req" />
+                    <p:selectOneMenu id="editShift" value="#{enrolmentController.editDto.shift}" required="true"
+                        requiredMessage="#{msg.requiredShift}" style="width:100%;">
+                        <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItems value="#{enrolmentController.shifts}" var="sh" itemLabel="#{msg[sh]}" itemValue="#{sh}" />
+                    </p:selectOneMenu>
 
-                    <p:outputLabel for="editNascDate" value="#{msg.birthDate}" styleClass="sc-label req" />
-                    <h:panelGroup>
-                        <p:datePicker id="editNascDate" value="#{studentController.editDto.nascDate}"
-                            pattern="dd/MM/yyyy" showIcon="true" required="true"
-                            requiredMessage="#{msg.requiredField}" yearNavigator="true"
-                            monthNavigator="true" yearRange="1980:2026" style="width:100%;" />
-                        <p:message for="editNascDate" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
+                    <p:outputLabel for="editEnrolmentType" value="#{msg.enrollmentTypeLabel}" styleClass="sc-label req" />
+                    <p:selectOneMenu id="editEnrolmentType" value="#{enrolmentController.editDto.enrolmentType}" required="true"
+                        requiredMessage="#{msg.requiredType}" style="width:100%;">
+                        <f:selectItem itemLabel="#{msg.selectOption}" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItems value="#{enrolmentController.enrolmentTypes}" var="et" itemLabel="#{msg[et]}" itemValue="#{et}" />
+                    </p:selectOneMenu>
 
-                </p:panelGrid>
-
-                <!-- 2 - DOCUMENTOS E CONTACTO DO ALUNO -->
-                <div style="font-size:1rem; font-weight:700; margin:1.4rem 0 1rem; display:flex; align-items:center; gap:.5rem;">
-                    <i class="pi pi-id-card" style="color:var(--enr-red, #c8102e);"></i> #{msg.documentsAndContact}
-                </div>
-
-                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
-                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
-
-                    <p:outputLabel for="editBiNumber" value="#{msg.idCardNumber}" styleClass="sc-label" />
-                    <h:panelGroup>
-                        <p:inputText id="editBiNumber" value="#{studentController.editDto.biNumber}" maxlength="14"
-                            placeholder="#{msg.idCardPlaceholder}" style="width:100%;">
-                            <p:ajax event="blur" listener="#{studentController.validarBI}" process="@this"
-                                update="msgsEdit" />
-                        </p:inputText>
-                        <p:message for="editBiNumber" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
-
-                    <p:outputLabel for="editBiExpiry" value="#{msg.idCardExpiryDate}" styleClass="sc-label" />
-                    <p:datePicker id="editBiExpiry" value="#{studentController.editDto.biExpiryData}"
-                        pattern="dd/MM/yyyy" showIcon="true" yearNavigator="true"
-                        monthNavigator="true" yearRange="2024:2040"
-                        style="width:100%;" />
-
-                    <p:outputLabel for="editEmail" value="#{msg.email}" styleClass="sc-label" />
-                    <h:panelGroup>
-                        <p:inputText id="editEmail" value="#{studentController.editDto.email}"
-                            placeholder="aluno@escola.ao" style="width:100%;">
-                            <f:validateRegex pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" />
-                        </p:inputText>
-                        <p:message for="editEmail" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
-
-                    <p:outputLabel for="editPhone1" value="#{msg.phone1}" styleClass="sc-label" />
-                    <p:inputText id="editPhone1" value="#{studentController.editDto.phone_1}"
-                        placeholder="+244 9xx xxx xxx" style="width:100%;" />
-
-                    <p:outputLabel for="editPhone2" value="#{msg.phone2}" styleClass="sc-label" />
-                    <p:inputText id="editPhone2" value="#{studentController.editDto.phone_2}"
-                        placeholder="+244 9xx xxx xxx" style="width:100%;" />
-
-                </p:panelGrid>
-
-                <!-- 3 - MORADA DO ALUNO -->
-                <div style="font-size:1rem; font-weight:700; margin:1.4rem 0 1rem; display:flex; align-items:center; gap:.5rem;">
-                    <i class="pi pi-map-marker" style="color:var(--enr-red, #c8102e);"></i> #{msg.residentialAddress}
-                </div>
-
-                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
-                    columnClasses="p-col-12 p-md-8, p-col-12 p-md-4">
-
-                    <p:outputLabel for="editAddressStreet" value="#{msg.addressStreet}" styleClass="sc-label" />
-                    <p:inputText id="editAddressStreet" value="#{studentController.editDto.addressStreet}"
-                        placeholder="#{msg.addressStreetPlaceholder}" style="width:100%;" />
-
-                    <p:outputLabel for="editProvince" value="#{msg.province}" styleClass="sc-label" />
-                    <p:inputText id="editProvince" value="#{studentController.editDto.addressProvice}"
-                        placeholder="#{msg.provincePlaceholder}" style="width:100%;" />
-
-                </p:panelGrid>
-
-                <!-- 4 - FILIACAO -->
-                <div style="font-size:1rem; font-weight:700; margin:1.4rem 0 1rem; display:flex; align-items:center; gap:.5rem;">
-                    <i class="pi pi-users" style="color:var(--enr-red, #c8102e);"></i> #{msg.affiliation}
-                </div>
-
-                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
-                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
-
-                    <p:outputLabel for="editFatherName" value="#{msg.fatherName}" styleClass="sc-label" />
-                    <p:inputText id="editFatherName" value="#{studentController.editDto.nameFather}"
-                        placeholder="#{msg.fatherNamePlaceholder}" style="width:100%;" />
-
-                    <p:outputLabel for="editMotherName" value="#{msg.motherName}" styleClass="sc-label" />
-                    <p:inputText id="editMotherName" value="#{studentController.editDto.nameMather}"
-                        placeholder="#{msg.motherNamePlaceholder}" style="width:100%;" />
-
-                </p:panelGrid>
-
-                <!-- 5 - STATUS, FOTO E NOTAS -->
-                <div style="font-size:1rem; font-weight:700; margin:1.4rem 0 1rem; display:flex; align-items:center; gap:.5rem;">
-                    <i class="pi pi-check-circle" style="color:var(--enr-red, #c8102e);"></i> #{msg.registrationFinalization}
-                </div>
-
-                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank"
-                    columnClasses="p-col-12 p-md-6, p-col-12 p-md-6">
-
-                    <p:outputLabel for="editStatus" value="#{msg.status}" styleClass="sc-label req" />
-                    <h:panelGroup>
-                        <p:selectOneMenu id="editStatus" value="#{studentController.editDto.status}" required="true"
-                            requiredMessage="#{msg.requiredField}" style="width:100%;">
-                            <f:selectItem itemLabel="- #{msg.select} -" itemValue="#{null}" noSelectionOption="true" />
-                            <f:selectItems value="#{studentController.studentStatuses}" />
-                        </p:selectOneMenu>
-                        <p:message for="editStatus" display="text" styleClass="sc-field-msg" />
-                    </h:panelGroup>
-
-                    <p:outputLabel for="editPhoto" value="#{msg.studentPhoto}" styleClass="sc-label" />
-                    <div class="photo-preview-wrap">
-                        <div class="photo-preview">
-                            <p:graphicImage value="#{studentController.editDto.uploadPhoto}"
-                                rendered="#{not empty studentController.editDto.uploadPhoto}" alt="#{msg.studentPhoto}"
-                                style="width:100%; height:100%; object-fit:cover;" />
-                            <i class="pi pi-user" rendered="#{empty studentController.editDto.uploadPhoto}" />
-                        </div>
-                        <div>
-                            <p:fileUpload id="editPhoto" value="#{studentController.uploadedPhoto}" mode="simple"
-                                skinSimple="true" label="#{msg.choose}" styleClass="p-button-sm" />
-                            <div class="photo-info mt-1">
-                                <i class="pi pi-info-circle" /> #{msg.photoFormats}
-                            </div>
-                        </div>
-                    </div>
-
+                    <p:outputLabel for="editEnrolmentData" value="#{msg.enrollmentDate}" styleClass="sc-label" />
+                    <p:datePicker id="editEnrolmentData" value="#{enrolmentController.editDto.enrolmentData}"
+                        pattern="dd/MM/yyyy" showIcon="true" locale="pt" monthNavigator="true" yearNavigator="true"
+                        yearRange="2020:2030" style="width:100%;" />
                 </p:panelGrid>
 
                 <div style="margin-top:1.2rem;">
-                    <p:outputLabel for="editNotes" value="#{msg.notes}" styleClass="sc-label" />
-                    <p:inputTextarea id="editNotes" value="#{studentController.editDto.obs}" rows="3" maxlength="500"
+                    <p:outputLabel for="editNotes" value="#{msg.observations}" styleClass="sc-label" />
+                    <p:inputTextarea id="editNotes" value="#{enrolmentController.editDto.obs}" rows="3" maxlength="500"
                         counter="notesCounterEdit" counterTemplate="{0} / 500"
                         placeholder="#{msg.additionalNotesPlaceholder}" autoResize="true" style="width:100%;" />
-                    <h:outputText id="notesCounterEdit"
-                        style="display:block; text-align:right; font-size:11px; color:#888; margin-top:2px;" />
+                    <h:outputText id="notesCounterEdit" style="display:block; text-align:right; font-size:11px; color:#888; margin-top:2px;" />
                 </div>
 
             </div>

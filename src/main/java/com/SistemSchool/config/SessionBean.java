@@ -41,6 +41,10 @@ public class SessionBean implements Serializable {
     private static final String ATTR_LOGGED_USER = "loggedUser";
 
     public UserDTO.UserResponseDTO getLoggedUser() {
+        return getLoggedUserForCurrentRequest();
+    }
+
+    public static UserDTO.UserResponseDTO getLoggedUserForCurrentRequest() {
         ExternalContext externalContext = currentExternalContext();
         if (externalContext == null) {
             return null;
@@ -86,6 +90,10 @@ public class SessionBean implements Serializable {
         return hasPerfil(Perfil.ADMIN);
     }
 
+    public boolean isAdminOrFinancial() {
+        return hasPerfil(Perfil.ADMIN) || hasPerfil(Perfil.FINANCIAL);
+    }
+
     public boolean isSecretary() {
         return hasPerfil(Perfil.SECRETARY);
     }
@@ -103,7 +111,7 @@ public class SessionBean implements Serializable {
         return loggedUser != null && loggedUser.getPerfil() == perfil;
     }
 
-    private ExternalContext currentExternalContext() {
+    private static ExternalContext currentExternalContext() {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         return facesContext != null ? facesContext.getExternalContext() : null;
     }

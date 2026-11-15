@@ -12,8 +12,10 @@
                             styleClass="sidebar-toggle-button ui-button-flat" type="button"
                             aria-label="#{msg.toggleSidebar}" onclick="toggleSidebar(); return false;" />
 
-                        <p:button value="#{msg.dashboard}" outcome="/components/public/dashboard.xhtml"
-                            icon="pi pi-home" styleClass="dashboard-nav-button ui-button-flat" />
+                        <p:button outcome="/components/public/dashboard.xhtml"
+                            icon="pi pi-home" styleClass="dashboard-nav-button ui-button-flat"
+                            aria-label="#{msg.dashboard}" />
+                        <span id="dashboardPageTitle" class="dashboard-page-title">#{msg.dashboard}</span>
                     </div>
                 </f:facet>
 
@@ -24,6 +26,8 @@
                             styleClass="rounded-button ui-button-flat ui-button-outlined"
                             aria-label="#{msg.toggleLanguageMenu}" />
                         <p:menu overlay="true" trigger="langMenuButton" my="left top" at="left bottom">
+                            <p:menuitem value="English" actionListener="#{languageController.actionIngles}"
+                                update="@all" />
                             <p:menuitem value="Português" actionListener="#{languageController.actionPortugues}"
                                 update="@all" />
                             <p:menuitem value="Español" actionListener="#{languageController.actionEspanhol}"
@@ -62,6 +66,32 @@
         function toggleSidebar() {
             document.getElementById('mainLayout').classList.toggle('sidebar-visible');
         }
+
+        // Mantém o título da barra sincronizado com o item escolhido na sidebar.
+        (function () {
+            function setPageTitle(title) {
+                var titleElement = document.getElementById('dashboardPageTitle');
+                if (!titleElement || !title) return;
+                titleElement.textContent = title;
+                window.sessionStorage.setItem('dashboardPageTitle', title);
+            }
+
+            function restorePageTitle() {
+                var savedTitle = window.sessionStorage.getItem('dashboardPageTitle');
+                if (savedTitle) setPageTitle(savedTitle);
+            }
+
+            document.addEventListener('click', function (event) {
+                var menuLink = event.target.closest('.admin-sidebar-menu .ui-menuitem-link');
+                if (!menuLink) return;
+
+                var menuText = menuLink.querySelector('.ui-menuitem-text');
+                if (menuText) setPageTitle(menuText.textContent.trim());
+            });
+
+            document.addEventListener('DOMContentLoaded', restorePageTitle);
+            restorePageTitle();
+        })();
 
         // Fecha sidebar ao clicar no overlay (mobile)
         document.addEventListener('click', function(e) {

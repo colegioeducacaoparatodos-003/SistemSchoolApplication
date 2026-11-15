@@ -6,6 +6,7 @@ import com.SistemSchool.modulo_secrtaria.io.StudentStatus;
 import com.SistemSchool.modulo_secrtaria.lazy.StudentLazyModel;
 import com.SistemSchool.modulo_secrtaria.model.Student;
 import com.SistemSchool.modulo_secrtaria.service.StudentService;
+import com.SistemSchool.report.PdfReportService;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
@@ -22,6 +23,7 @@ import org.primefaces.model.file.UploadedFile;
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,6 +58,7 @@ public class StudentController implements Serializable {
 
     public StudentController(StudentService studentService) {
         this.studentService = studentService;
+        this.editDto = new StudentDTO();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -65,6 +68,9 @@ public class StudentController implements Serializable {
     @PostConstruct
     public void init() {
         this.lazyModel = new StudentLazyModel(studentService);
+        if (this.editDto == null) {
+            this.editDto = new StudentDTO();
+        }
         prepararNovo();
     }
 
@@ -102,6 +108,7 @@ public class StudentController implements Serializable {
             prepararNovo();
         } catch (RuntimeException e) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao guardar", e.getMessage());
+            LOGGER.log(Level.WARNING, "Erro ao criar aluno", e);
         }
     }
 
@@ -295,13 +302,26 @@ public class StudentController implements Serializable {
     // ═══════════════════════════════════════════════════════════
 
     public void exportStudentsPdf() {
-        // TODO: gerar PDF com todos os alunos (respeitando filtros atuais se desejado)
-        addMessage(FacesMessage.SEVERITY_INFO, "Exportar", "PDF completo em desenvolvimento.");
+        exportStudentListPdf(studentService.getAllStudents(), "alunos_completo.pdf");
     }
 
     public void exportActiveStudentsPdf() {
-        // TODO: gerar PDF apenas com alunos ativos
-        addMessage(FacesMessage.SEVERITY_INFO, "Exportar", "PDF de alunos ativos em desenvolvimento.");
+        List<Student> activeStudents =
+                studentService.getByStatus(StudentStatus.ACTIVE);
+        List<StudentDTO> activeStudentDtos = activeStudents.stream()
+                .map(StudentDTO::fromEntity)
+                .toList();
+        exportStudentListPdf(activeStudentDtos, "alunos_ativos.pdf");
+    }
+
+    private void exportStudentListPdf(List<StudentDTO> students, String fileName) {
+        try {
+            byte[] pdf = PdfReportService.generateStudentListReport(students);
+            PdfReportService.streamToResponse(pdf, fileName);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Erro ao exportar lista de alunos para PDF", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao exportar", "Não foi possível gerar o PDF.");
+        }
     }
 
     public void printStudentCard(Long studentId) {
@@ -420,6 +440,9 @@ public class StudentController implements Serializable {
     }
 
     public StudentDTO getEditDto() {
+        if (editDto == null) {
+            editDto = new StudentDTO();
+        }
         return editDto;
     }
 

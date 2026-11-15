@@ -5,5 +5,9 @@ public enum FeeType {
     MATRICULA,
     CONFIRMACAO,
     BOLETIM,
-    FALTAS
+    FALTAS,
+    CARTAO,
+    UNIFORME,
+    CERTIFICADO,
+    DECLARACAO
 }

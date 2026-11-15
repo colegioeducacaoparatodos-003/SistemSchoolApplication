@@ -68,6 +68,8 @@ public class GradeService {
     // ─────────────────────────────────────────────────────────────
 
     public Grade save(Grade grade) {
+        com.SistemSchool.config.PedagogicalModificationGuard
+                .requirePedagogicalForExisting(grade.getPkGrade());
         if (grade.getEvaluation() == null || grade.getEvaluation().getPkEvaluation() == null) {
             throw new RuntimeException("É necessário indicar a avaliação para a nota.");
         }
@@ -89,6 +91,7 @@ public class GradeService {
     }
 
     public void update(GradeDTO dto) {
+        com.SistemSchool.config.PedagogicalModificationGuard.requirePedagogical();
         Grade grade = repository.findById(dto.getPkGrade())
                 .orElseThrow(() -> new RuntimeException("Nota não encontrada com id: " + dto.getPkGrade()));
 
@@ -105,6 +108,7 @@ public class GradeService {
     }
 
     public void delete(Long id) {
+        com.SistemSchool.config.PedagogicalModificationGuard.requirePedagogical();
         if (!repository.existsById(id)) {
             throw new RuntimeException("Nota não encontrada com id: " + id);
         }

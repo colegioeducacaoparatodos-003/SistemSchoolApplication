@@ -3,6 +3,7 @@ package com.SistemSchool.modulo_secrtaria.lazy;
 import com.SistemSchool.modulo_secrtaria.dto.PagamentoDTO;
 import com.SistemSchool.modulo_secrtaria.io.EstadoPagamento;
 import com.SistemSchool.modulo_secrtaria.io.FormaPagamento;
+import com.SistemSchool.modulo_secrtaria.io.MesReferencia;
 import com.SistemSchool.modulo_secrtaria.service.PagamentoService;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortMeta;
@@ -22,8 +23,10 @@ public class PagamentoLazyModel extends LazyDataModel<PagamentoDTO> {
     // Filtros externos (do controller)
     private String filtroNumeroDocumento;
     private String filtroStudentName;
+    private Long filtroSchoolClassId;
     private FormaPagamento filtroFormaPagamento;
     private EstadoPagamento filtroEstado;
+    private MesReferencia filtroMesReferencia;
     private LocalDateTime filtroDataInicio;
     private LocalDateTime filtroDataFim;
 
@@ -46,7 +49,7 @@ public class PagamentoLazyModel extends LazyDataModel<PagamentoDTO> {
         var result = pagamentoService.findLazy(
                 page, pageSize, sort,
                 filtroNumeroDocumento, filtroStudentName,
-                filtroFormaPagamento, filtroEstado,
+                filtroSchoolClassId, filtroFormaPagamento, filtroEstado, filtroMesReferencia,
                 filtroDataInicio, filtroDataFim);
 
         setRowCount((int) result.getTotalElements());
@@ -58,7 +61,7 @@ public class PagamentoLazyModel extends LazyDataModel<PagamentoDTO> {
         var result = pagamentoService.findLazy(
                 0, 1, Sort.unsorted(),
                 filtroNumeroDocumento, filtroStudentName,
-                filtroFormaPagamento, filtroEstado,
+                filtroSchoolClassId, filtroFormaPagamento, filtroEstado, filtroMesReferencia,
                 filtroDataInicio, filtroDataFim);
         return (int) result.getTotalElements();
     }
@@ -82,10 +85,14 @@ public class PagamentoLazyModel extends LazyDataModel<PagamentoDTO> {
     public void setFiltroNumeroDocumento(String v) { this.filtroNumeroDocumento = v; }
     public String getFiltroStudentName() { return filtroStudentName; }
     public void setFiltroStudentName(String v) { this.filtroStudentName = v; }
+    public Long getFiltroSchoolClassId() { return filtroSchoolClassId; }
+    public void setFiltroSchoolClassId(Long v) { this.filtroSchoolClassId = v; }
     public FormaPagamento getFiltroFormaPagamento() { return filtroFormaPagamento; }
     public void setFiltroFormaPagamento(FormaPagamento v) { this.filtroFormaPagamento = v; }
     public EstadoPagamento getFiltroEstado() { return filtroEstado; }
     public void setFiltroEstado(EstadoPagamento v) { this.filtroEstado = v; }
+    public MesReferencia getFiltroMesReferencia() { return filtroMesReferencia; }
+    public void setFiltroMesReferencia(MesReferencia v) { this.filtroMesReferencia = v; }
     public LocalDateTime getFiltroDataInicio() { return filtroDataInicio; }
     public void setFiltroDataInicio(LocalDateTime v) { this.filtroDataInicio = v; }
     public LocalDateTime getFiltroDataFim() { return filtroDataFim; }

@@ -119,6 +119,8 @@ public class TrimesterResultService {
     // ─────────────────────────────────────────────────────────────
 
     public TrimesterResult save(TrimesterResult result) {
+        com.SistemSchool.config.PedagogicalModificationGuard
+                .requirePedagogicalForExisting(result.getPkTrimesterResult());
         if (result.getEnrolment() == null || result.getEnrolment().getPhEnrolment() == null) {
             throw new RuntimeException("É necessário indicar a matrícula para o resultado.");
         }
@@ -138,6 +140,7 @@ public class TrimesterResultService {
     }
 
     public void update(TrimesterResultDTO dto) {
+        com.SistemSchool.config.PedagogicalModificationGuard.requirePedagogical();
         TrimesterResult result = repository.findById(dto.getPkTrimesterResult())
                 .orElseThrow(() -> new RuntimeException("Resultado não encontrado com id: " + dto.getPkTrimesterResult()));
 
@@ -152,6 +155,7 @@ public class TrimesterResultService {
     }
 
     public void delete(Long id) {
+        com.SistemSchool.config.PedagogicalModificationGuard.requirePedagogical();
         if (!repository.existsById(id)) {
             throw new RuntimeException("Resultado não encontrado com id: " + id);
         }

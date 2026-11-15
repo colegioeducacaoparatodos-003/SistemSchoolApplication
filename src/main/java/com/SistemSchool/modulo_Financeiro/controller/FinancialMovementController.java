@@ -10,6 +10,8 @@ import com.SistemSchool.modulo_Financeiro.repository.CashBoxRepository;
 import com.SistemSchool.modulo_Financeiro.service.FinancialMovementService;
 import com.SistemSchool.modulo_secrtaria.model.Pagamento;
 import com.SistemSchool.modulo_secrtaria.repository.PagamentoRepository;
+import com.SistemSchool.report.PdfReportService;
+import com.itextpdf.text.DocumentException;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
@@ -19,6 +21,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.io.Serializable;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -359,12 +362,56 @@ public class FinancialMovementController implements Serializable {
         }
     }
 
+    public void exportFinancialMovementListPdf() {
+        streamFinancialMovementListPdf(false);
+    }
+
+    public void printFinancialMovementListPdf() {
+        streamFinancialMovementListPdf(true);
+    }
+
+    private void streamFinancialMovementListPdf(boolean inline) {
+        try {
+            List<FinancialMovementDTO> movements = financialMovementService.getAllFinancialMovements().stream()
+                    .filter(this::matchesCurrentFilters)
+                    .toList();
+            if (movements == null || movements.isEmpty()) {
+                addMessage(FacesMessage.SEVERITY_WARN, "Nenhum movimento para exportar", "");
+                return;
+            }
+            byte[] pdf = PdfReportService.generateFinancialMovementListReport(movements);
+            String fileName = "lista_movimentos_financeiros_" + LocalDate.now() + ".pdf";
+            PdfReportService.streamToResponse(pdf, fileName, inline);
+        } catch (DocumentException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Erro ao gerar PDF dos movimentos financeiros", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao gerar PDF", e.getMessage());
+        }
+    }
+
+        private boolean matchesCurrentFilters(FinancialMovementDTO movement) {
+        if (filterType != null && movement.getType() != filterType) return false;
+        if (filterStatus != null && movement.getStatus() != filterStatus) return false;
+        if (filterCategory != null && !filterCategory.isBlank()
+            && (movement.getCategory() == null
+                || !movement.getCategory().toLowerCase().contains(filterCategory.toLowerCase()))) return false;
+        if (filterStartDate != null
+            && (movement.getMovementDate() == null
+                || movement.getMovementDate().toLocalDate().isBefore(filterStartDate))) return false;
+        if (filterEndDate != null
+            && (movement.getMovementDate() == null
+                || movement.getMovementDate().toLocalDate().isAfter(filterEndDate))) return false;
+        return true;
+        }
+
     // ─────────────────────────────────────────────────────────────
     // UTIL
     // ─────────────────────────────────────────────────────────────
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context != null) {
+            context.addMessage(null, new FacesMessage(severity, summary, detail));
+        }
     }
 
     // ─────────────────────────────────────────────────────────────

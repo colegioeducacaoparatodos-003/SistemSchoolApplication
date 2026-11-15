@@ -118,6 +118,25 @@ public class TeacherController implements Serializable {
         this.uploadedPhoto = event.getFile();
     }
 
+    public void validarBI() {
+        String bi = teacher != null ? teacher.getBiNumber() : (editDto != null ? editDto.getBiNumber() : null);
+        if (bi == null || bi.isBlank()) {
+            return;
+        }
+
+        try {
+            var resultado = com.SistemSchool.util.BIValidator.validarOnline(bi);
+            if (resultado.isValido()) {
+                addMessage(FacesMessage.SEVERITY_INFO, "BI válido", resultado.getMotivo());
+            } else {
+                addMessage(FacesMessage.SEVERITY_WARN, "BI inválido", resultado.getMotivo());
+            }
+        } catch (Exception e) {
+            addMessage(FacesMessage.SEVERITY_WARN, "BI inválido",
+                    "Não foi possível validar o BI no momento.");
+        }
+    }
+
     /* ---------------- CRUD ---------------- */
     public void save() {
         try {
@@ -151,6 +170,9 @@ public class TeacherController implements Serializable {
             refreshStats();
             addMessage(FacesMessage.SEVERITY_INFO, "Professor", "Professor registado com sucesso");
             log.info("Professor registado com sucesso");
+
+            load();
+            
         } catch (IOException e) {
             log.error("Erro de I/O ao salvar professor", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Professor", "Erro ao processar a imagem: " + e.getMessage());
@@ -250,7 +272,10 @@ public class TeacherController implements Serializable {
 
     /* ---------------- UTIL ---------------- */
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context != null) {
+            context.addMessage(null, new FacesMessage(severity, summary, detail));
+        }
     }
 
     /* ---------------- GETTERS E SETTERS ---------------- */

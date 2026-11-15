@@ -146,7 +146,8 @@
                     action="#{pagamentoController.saveUpdate}" process="@form"
                     update=":formPagamentos:dtPagamentos msgsEdit :formPagamentos:messages"
                     onstart="showScLoading()"
-                    oncomplete="if (!args.validationFailed) { hideScLoading(); PF('editPagamentoDialog').hide(); } else { hideScLoading(); }" />
+                    oncomplete="if (!args.validationFailed) { hideScLoading(); PF('editPagamentoDialog').hide(); } else { hideScLoading(); }"
+                    rendered="#{sessionBean.financial}" />
             </div>
         </h:form>
 

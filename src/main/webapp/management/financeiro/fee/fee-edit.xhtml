@@ -97,7 +97,8 @@
                 <p:commandButton value="#{msg.save}" icon="pi pi-save" styleClass="ui-button-success"
                     action="#{feeController.saveUpdate}" process="@form"
                     update=":feeEditForm:msgsEdit :formFees:dtFees :formFees:messages"
-                    oncomplete="if (!args.validationFailed) { PF('editFeeDialog').hide(); }" />
+                    oncomplete="if (!args.validationFailed) { PF('editFeeDialog').hide(); }"
+                    rendered="#{sessionBean.financial}" />
             </div>
         </h:form>
 

@@ -5,17 +5,18 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 
+import com.SistemSchool.config.AuthorizationFilter;
 import jakarta.faces.webapp.FacesServlet;
 import jakarta.servlet.MultipartConfigElement;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
 public class SistemSchoolApplication {
-
     static {
         System.setProperty("org.jboss.weld.environment.servlet.archive.isolation", "false");
     }
@@ -27,6 +28,16 @@ public class SistemSchoolApplication {
     @Bean
     public ServletListenerRegistrationBean<StartupServletContextListener> myFacesStartupListener() {
         return new ServletListenerRegistrationBean<>(new StartupServletContextListener());
+    }
+
+    @Bean
+    public FilterRegistrationBean<AuthorizationFilter> authorizationFilterRegistration() {
+        FilterRegistrationBean<AuthorizationFilter> registration =
+                new FilterRegistrationBean<>(new AuthorizationFilter());
+        registration.addUrlPatterns("/*");
+        registration.setName("authorizationFilter");
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return registration;
     }
 
     @Bean

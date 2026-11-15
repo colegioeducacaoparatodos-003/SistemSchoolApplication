@@ -10,7 +10,9 @@ import com.SistemSchool.modulo_pedagogico.service.ScheduleService;
 import com.SistemSchool.modulo_Recursoa_Humano.model.Teacher;
 import com.SistemSchool.modulo_secrtaria.model.SchoolClass;
 import com.SistemSchool.modulo_secrtaria.repository.SchoolClassRepository;
+import com.SistemSchool.report.PdfReportService;
 
+import com.itextpdf.text.DocumentException;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
@@ -18,7 +20,9 @@ import jakarta.inject.Inject;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Named;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -293,6 +297,22 @@ public class ScheduleController implements Serializable {
         if (dto != null) {
             this.selectedSchedule = dto;
             this.selectedId = id;
+        }
+    }
+
+    public void exportPdf() {
+        try {
+            List<ScheduleDTO> schedules = getFilteredSchedules();
+            if (schedules.isEmpty()) {
+                addMessage(FacesMessage.SEVERITY_WARN, "Exportar", "Não existem horários para exportar.");
+                return;
+            }
+
+            byte[] pdf = PdfReportService.generateScheduleListReport(schedules);
+            PdfReportService.streamToResponse(pdf, "lista_horarios_" + LocalDate.now() + ".pdf");
+        } catch (DocumentException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Erro ao gerar PDF dos horários", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao gerar PDF", "Não foi possível exportar os horários.");
         }
     }
 

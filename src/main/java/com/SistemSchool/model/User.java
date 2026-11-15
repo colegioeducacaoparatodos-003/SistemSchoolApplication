@@ -10,6 +10,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Column;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -37,6 +38,13 @@ public class User {
 
     private String salt; // mantido só se ainda usares noutro sítio; com BCrypt deixa de ser necessário
     private String deviceToken;
+    private Boolean emailVerified;
+    @Column(unique = true)
+    private String emailVerificationToken;
+    private LocalDateTime emailVerificationTokenExpiry;
+    @Column(unique = true)
+    private String resetToken;
+    private LocalDateTime resetTokenExpiry;
     private LocalDateTime userCreationDate;
     private LocalDateTime userModificationDate;
 
@@ -87,6 +95,23 @@ public class User {
 
     public String getDeviceToken() { return deviceToken; }
     public void setDeviceToken(String deviceToken) { this.deviceToken = deviceToken; }
+
+    public Boolean getEmailVerified() { return emailVerified; }
+    public void setEmailVerified(Boolean emailVerified) { this.emailVerified = emailVerified; }
+
+    public String getEmailVerificationToken() { return emailVerificationToken; }
+    public void setEmailVerificationToken(String emailVerificationToken) { this.emailVerificationToken = emailVerificationToken; }
+
+    public LocalDateTime getEmailVerificationTokenExpiry() { return emailVerificationTokenExpiry; }
+    public void setEmailVerificationTokenExpiry(LocalDateTime emailVerificationTokenExpiry) {
+        this.emailVerificationTokenExpiry = emailVerificationTokenExpiry;
+    }
+
+    public String getResetToken() { return resetToken; }
+    public void setResetToken(String resetToken) { this.resetToken = resetToken; }
+
+    public LocalDateTime getResetTokenExpiry() { return resetTokenExpiry; }
+    public void setResetTokenExpiry(LocalDateTime resetTokenExpiry) { this.resetTokenExpiry = resetTokenExpiry; }
 
     @Override
     public String toString() {

@@ -1,9 +1,10 @@
 package com.SistemSchool.modulo_secrtaria.controller;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.io.Serializable;
 import java.util.List;
 
@@ -67,9 +68,12 @@ public class DocumentController implements Serializable {
         try {
             lazyModel = new DocumentLazyModel(service);
         } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Erro ao processar",
-                            e.getMessage()));
+            FacesContext context = FacesContext.getCurrentInstance();
+            if (context != null) {
+                context.addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Erro ao processar",
+                                e.getMessage()));
+            }
             e.printStackTrace();
         }
         return "/management/secretaria/documents.xhtml?faces-redirect=true";
@@ -80,9 +84,12 @@ public class DocumentController implements Serializable {
         try {
             lazyModel = new DocumentLazyModel(service);
         } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Erro ao processar",
-                            e.getMessage()));
+            FacesContext context = FacesContext.getCurrentInstance();
+            if (context != null) {
+                context.addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Erro ao processar",
+                                e.getMessage()));
+            }
             e.printStackTrace();
         }
         return "/documents.xhtml?faces-redirect=true";
@@ -120,8 +127,10 @@ public class DocumentController implements Serializable {
     }
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance()
-                .addMessage(null, new FacesMessage(severity, summary, detail));
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context != null) {
+            context.addMessage(null, new FacesMessage(severity, summary, detail));
+        }
     }
 
     // ================== UPLOAD ==================
@@ -172,36 +181,42 @@ public class DocumentController implements Serializable {
         ExternalContext ec = facesContext.getExternalContext();
 
         try {
+            if (selectedId == null) {
+                throw new IllegalArgumentException("Documento não selecionado.");
+            }
+
             Document document = service.findById(selectedId);
             File file = service.resolveFile(document);
 
-            if (!file.exists()) {
-                addMessage(FacesMessage.SEVERITY_ERROR, "Documento", "Ficheiro não encontrado em disco.");
-                return;
+            if (!file.isFile() || !file.canRead()) {
+                throw new IOException("Ficheiro não encontrado em disco.");
             }
 
-            try (InputStream fileStream = new FileInputStream(file);
-                    OutputStream out = ec.getResponseOutputStream()) {
-
-                ec.responseReset();
-                ec.setResponseContentType(document.getContentType());
-                ec.setResponseContentLength((int) file.length());
-                ec.setResponseHeader(
-                        "Content-Disposition",
-                        "attachment; filename=\"" + document.getFileName() + "\"");
-
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = fileStream.read(buffer)) != -1) {
-                    out.write(buffer, 0, bytesRead);
-                }
-
-                out.flush();
-                facesContext.responseComplete();
+            String fileName = document.getFileName();
+            if (fileName == null || fileName.isBlank()) {
+                fileName = file.getName();
+            } else if (!fileName.contains(".") && file.getName().contains(".")) {
+                fileName += file.getName().substring(file.getName().lastIndexOf('.'));
             }
+
+            String contentType = document.getContentType();
+            if (contentType == null || contentType.isBlank()) {
+                contentType = Files.probeContentType(file.toPath());
+            }
+            if (contentType == null || contentType.isBlank()) {
+                contentType = "application/octet-stream";
+            }
+
+            ec.responseReset();
+            ec.setResponseContentType(contentType);
+            ec.setResponseContentLengthLong(file.length());
+            ec.setResponseHeader("Content-Disposition", "attachment; filename*=UTF-8''"
+                    + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20"));
+
+            Files.copy(file.toPath(), ec.getResponseOutputStream());
+            facesContext.responseComplete();
 
         } catch (Exception e) {
-            e.printStackTrace();
             addMessage(FacesMessage.SEVERITY_ERROR, "Documento", "Falha no download: " + e.getMessage());
         }
     }

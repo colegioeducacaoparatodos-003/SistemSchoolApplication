@@ -1,8 +1,12 @@
 package com.SistemSchool.modulo_dashboard_charts.controller;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import com.SistemSchool.modulo_dashboard_charts.dto.CategoryTotalDTO;
 import com.SistemSchool.modulo_dashboard_charts.dto.DashboardFilterDTO;
@@ -30,6 +34,7 @@ import software.xdev.chartjs.model.options.Plugins;
 import software.xdev.chartjs.model.options.Title;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -52,6 +57,7 @@ public class DashboardController implements Serializable {
     private List<String> movementTypes = List.of("INCOME", "EXPENSE");
     private String categoryChartJson;
     private String monthlyEvolutionChartJson;
+    private Locale chartLocale;
 
     @PostConstruct
     public void init() {
@@ -100,12 +106,12 @@ public class DashboardController implements Serializable {
 
         List<RGBAColor> barColors = new java.util.ArrayList<>();
         BarDataset dataset = new BarDataset()
-                .setLabel("Distribuição por Função")
+                .setLabel(message("dashboardRoleDistribution"))
                 .setBackgroundColor(barColors)
                 .setBorderWidth(0);
 
         if (dados == null || dados.isEmpty()) {
-            data.addLabels("Sem dados");
+            data.addLabels(message("dashboardNoData"));
             dataset.addData(0);
             data.addDataset(dataset);
             return new BarChart(data, new BarOptions()).toJson();
@@ -127,15 +133,35 @@ public class DashboardController implements Serializable {
 
     private String toProfileLabel(com.SistemSchool.io.Perfil perfil) {
         if (perfil == null) {
-            return "Não definido";
+            return message("dashboardUndefinedRole");
         }
 
-        return switch (perfil) {
-            case ADMIN -> "Administrador";
-            case SECRETARY -> "Secretária";
-            case FINANCIAL -> "Financeiro";
-            case PEDAGOGICAL -> "Pedagógico";
-        };
+        return message(perfil.name());
+    }
+
+    private String message(String key) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ResourceBundle bundle = context != null
+                ? context.getApplication().getResourceBundle(context, "msg")
+                : ResourceBundle.getBundle("messages", Locale.getDefault());
+        return bundle.getString(key);
+    }
+
+    private void refreshChartsForLocale() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        Locale currentLocale = context != null && context.getViewRoot() != null
+                ? context.getViewRoot().getLocale()
+                : Locale.getDefault();
+        if (currentLocale.equals(chartLocale)) {
+            return;
+        }
+
+        chartLocale = currentLocale;
+        usersByProfileChartJson = buildUsersByProfileChartJson(usersByProfile);
+        if (financialStats != null) {
+            categoryChartJson = buildCategoryChartJson(financialStats.getCategoryTotals());
+            monthlyEvolutionChartJson = buildMonthlyEvolutionChartJson(financialStats.getMonthlyEvolution());
+        }
     }
 
     public String getFilterPeriodLabel() {
@@ -162,7 +188,7 @@ public class DashboardController implements Serializable {
                 new RGBAColor(90, 90, 90, 0.85));
 
         PieDataset dataset = new PieDataset()
-                .setLabel("Total por Categoria")
+                .setLabel(message("dashboardTotalByCategory"))
                 .setBackgroundColor(palette);
 
         for (CategoryTotalDTO item : categoryTotals) {
@@ -172,7 +198,7 @@ public class DashboardController implements Serializable {
 
         data.addDataset(dataset);
 
-        Title title = new Title().setDisplay(true).setText("Movimentos por Categoria");
+        Title title = new Title().setDisplay(true).setText(message("dashboardMovementsByCategory"));
         Plugins plugins = new Plugins().setTitle(title);
 
         // PieChart exige PieOptions, não BarOptions
@@ -190,7 +216,7 @@ public class DashboardController implements Serializable {
         LineData data = new LineData();
 
         LineDataset incomeDataset = new LineDataset()
-                .setLabel("Receitas")
+                .setLabel(message("dashboardIncome"))
                 .setBorderColor(new RGBAColor(60, 140, 90, 1.0))
                 .setBackgroundColor(new RGBAColor(60, 140, 90, 0.2));
         // .setFill(...) removido: a versão atual da lib exige um objeto
@@ -202,7 +228,7 @@ public class DashboardController implements Serializable {
         // exata da lib (confere no teu pom.xml).
 
         LineDataset expenseDataset = new LineDataset()
-                .setLabel("Despesas")
+                .setLabel(message("dashboardExpenses"))
                 .setBorderColor(new RGBAColor(180, 40, 40, 1.0))
                 .setBackgroundColor(new RGBAColor(180, 40, 40, 0.2));
 
@@ -215,7 +241,7 @@ public class DashboardController implements Serializable {
         data.addDataset(incomeDataset);
         data.addDataset(expenseDataset);
 
-        Title title = new Title().setDisplay(true).setText("Evolução Mensal (Receitas x Despesas)");
+        Title title = new Title().setDisplay(true).setText(message("dashboardMonthlyEvolutionTitle"));
         Plugins plugins = new Plugins().setTitle(title);
 
         // LineChart exige LineOptions, não BarOptions
@@ -235,6 +261,7 @@ public class DashboardController implements Serializable {
     }
 
     public String getUsersByProfileChartJson() {
+        refreshChartsForLocale();
         return usersByProfileChartJson;
     }
 
@@ -254,6 +281,44 @@ public class DashboardController implements Serializable {
         return financialStats;
     }
 
+    public BigDecimal getIncomeSharePercentage() {
+        return calculatePercentage(financialStats != null ? financialStats.getTotalIncome() : null, false);
+    }
+
+    public BigDecimal getExpenseSharePercentage() {
+        return calculatePercentage(financialStats != null ? financialStats.getTotalExpense() : null, false);
+    }
+
+    public BigDecimal getBalanceSharePercentage() {
+        return calculatePercentage(financialStats != null ? financialStats.getSaldoLiquido() : null, true);
+    }
+
+    public BigDecimal getBalanceDonutProgress() {
+        return getBalanceSharePercentage().abs();
+    }
+
+    private BigDecimal calculatePercentage(BigDecimal value, boolean signed) {
+        if (financialStats == null) {
+            return BigDecimal.ZERO.setScale(1);
+        }
+
+        BigDecimal income = financialStats.getTotalIncome() != null
+                ? financialStats.getTotalIncome().abs()
+                : BigDecimal.ZERO;
+        BigDecimal expense = financialStats.getTotalExpense() != null
+                ? financialStats.getTotalExpense().abs()
+                : BigDecimal.ZERO;
+        BigDecimal total = income.add(expense);
+
+        if (total.signum() == 0 || value == null) {
+            return BigDecimal.ZERO.setScale(1);
+        }
+
+        BigDecimal numerator = signed ? value : value.abs();
+        return numerator.multiply(BigDecimal.valueOf(100))
+                .divide(total, 1, RoundingMode.HALF_UP);
+    }
+
     public List<String> getAvailableCategories() {
         return availableCategories;
     }
@@ -263,10 +328,12 @@ public class DashboardController implements Serializable {
     }
 
     public String getCategoryChartJson() {
+        refreshChartsForLocale();
         return categoryChartJson;
     }
 
     public String getMonthlyEvolutionChartJson() {
+        refreshChartsForLocale();
         return monthlyEvolutionChartJson;
     }
 }

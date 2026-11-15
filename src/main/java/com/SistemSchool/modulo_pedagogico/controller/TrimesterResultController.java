@@ -156,6 +156,7 @@ public class TrimesterResultController implements Serializable {
     // ═══════════════════════════════════════════════════════════════
 
     public void calcularResultados(Long enrolmentPk, Long disciplinePk, Trimester trimester) {
+        com.SistemSchool.config.PedagogicalModificationGuard.requirePedagogical();
         try {
             trimesterResultService.calcularTrimesterResult(enrolmentPk, disciplinePk, trimester);
             init();
@@ -372,7 +373,10 @@ public class TrimesterResultController implements Serializable {
     }
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context != null) {
+            context.addMessage(null, new FacesMessage(severity, summary, detail));
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
