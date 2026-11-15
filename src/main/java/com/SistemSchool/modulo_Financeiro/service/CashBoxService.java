@@ -5,6 +5,7 @@ import com.SistemSchool.modulo_Financeiro.interfaces.CashBoxTableProjection;
 import com.SistemSchool.modulo_Financeiro.io.CashBoxStatus;
 import com.SistemSchool.modulo_Financeiro.model.CashBox;
 import com.SistemSchool.modulo_Financeiro.repository.CashBoxRepository;
+import com.SistemSchool.config.FinancialOperationGuard;
 
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -53,6 +54,7 @@ public class CashBoxService {
     }
 
     public void update(CashBoxDTO dto) {
+        FinancialOperationGuard.requireFinancial();
         CashBox cashBox = repository.findById(dto.getPhCashBox())
                 .orElseThrow(() -> new RuntimeException("Caixa não encontrado com id: " + dto.getPhCashBox()));
 
@@ -69,6 +71,7 @@ public class CashBoxService {
     }
 
     public void delete(Long id) {
+        FinancialOperationGuard.requireFinancial();
         if (!repository.existsById(id)) {
             throw new RuntimeException("Caixa não encontrado com id: " + id);
         }
@@ -146,6 +149,7 @@ public class CashBoxService {
     // ─────────────────────────────────────────────────────────────
 
     public void closeCashBox(Long id, BigDecimal closingBalance, String observation) {
+        FinancialOperationGuard.requireFinancial();
         CashBox cashBox = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Caixa não encontrado com id: " + id));
 

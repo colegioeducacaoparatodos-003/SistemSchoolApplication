@@ -1,7 +1,6 @@
 package com.SistemSchool.dto;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 import com.SistemSchool.io.Perfil;
 
@@ -16,6 +15,12 @@ public class UserDTO {
         private String password;
         private boolean active;
         private String deviceToken;
+        private String firstName;
+        private String middleName;
+        private String lastName;
+        private String phone;
+        private String address;
+        private String city;
 
         // Getters e Setters
         public int getFkPerson() {
@@ -72,6 +77,54 @@ public class UserDTO {
 
         public void setDeviceToken(String deviceToken) {
             this.deviceToken = deviceToken;
+        }
+
+        public String getFirstName() {
+            return firstName;
+        }
+
+        public void setFirstName(String firstName) {
+            this.firstName = firstName;
+        }
+
+        public String getMiddleName() {
+            return middleName;
+        }
+
+        public void setMiddleName(String middleName) {
+            this.middleName = middleName;
+        }
+
+        public String getLastName() {
+            return lastName;
+        }
+
+        public void setLastName(String lastName) {
+            this.lastName = lastName;
+        }
+
+        public String getPhone() {
+            return phone;
+        }
+
+        public void setPhone(String phone) {
+            this.phone = phone;
+        }
+
+        public String getAddress() {
+            return address;
+        }
+
+        public void setAddress(String address) {
+            this.address = address;
+        }
+
+        public String getCity() {
+            return city;
+        }
+
+        public void setCity(String city) {
+            this.city = city;
         }
     }
 
@@ -150,7 +203,9 @@ public class UserDTO {
         private int fkCustomer;
         private Perfil perfil;
         private String email;
+        private String personName;
         private boolean active;
+        private boolean emailVerified;
         private String deviceToken;
         private LocalDateTime userCreationDate;
         private LocalDateTime userModificationDate;
@@ -196,12 +251,28 @@ public class UserDTO {
             this.email = email;
         }
 
+        public String getPersonName() {
+            return personName;
+        }
+
+        public void setPersonName(String personName) {
+            this.personName = personName;
+        }
+
         public boolean isActive() {
             return active;
         }
 
         public void setActive(boolean active) {
             this.active = active;
+        }
+
+        public boolean isEmailVerified() {
+            return emailVerified;
+        }
+
+        public void setEmailVerified(boolean emailVerified) {
+            this.emailVerified = emailVerified;
         }
 
         public String getDeviceToken() {

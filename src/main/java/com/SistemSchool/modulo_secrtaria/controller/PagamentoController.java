@@ -7,8 +7,11 @@ import com.SistemSchool.modulo_secrtaria.io.MesReferencia;
 import com.SistemSchool.modulo_secrtaria.lazy.PagamentoLazyModel;
 import com.SistemSchool.modulo_secrtaria.model.Enrolment;
 import com.SistemSchool.modulo_secrtaria.model.Pagamento;
+import com.SistemSchool.modulo_secrtaria.model.SchoolClass;
 import com.SistemSchool.modulo_secrtaria.repository.EnrolmentRepository;
 import com.SistemSchool.modulo_secrtaria.service.PagamentoService;
+import com.SistemSchool.config.SessionBean;
+import com.SistemSchool.repository.UserRepository;
 import com.SistemSchool.report.PdfReportService;
 import com.SistemSchool.modulo_Financeiro.model.CashBox;
 import com.SistemSchool.modulo_Financeiro.model.Fee;
@@ -16,7 +19,6 @@ import com.SistemSchool.modulo_Financeiro.repository.CashBoxRepository;
 import com.SistemSchool.modulo_Financeiro.repository.FeeRepository;
 
 import com.itextpdf.text.DocumentException;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 import java.io.IOException;
 
@@ -34,7 +36,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,6 +53,8 @@ public class PagamentoController implements Serializable {
     private Pagamento pagamento = new Pagamento();
     private PagamentoDTO editDto = new PagamentoDTO();
     private PagamentoDTO selectedPagamento = new PagamentoDTO();
+    private List<PagamentoDTO> pagamentosSelecionados = new ArrayList<>();
+    private Map<Long, Boolean> selecaoPagamentos = new LinkedHashMap<>();
     private Long selectedId;
     private Long selectedEnrolmentId;
     private Long selectedFeeId;
@@ -64,6 +71,7 @@ public class PagamentoController implements Serializable {
     private String observacaoConfirmar;
 
     private List<Enrolment> enrolments = new java.util.ArrayList<>();
+    private List<SchoolClass> schoolClasses = new java.util.ArrayList<>();
     private List<Fee> fees = new java.util.ArrayList<>();
     private List<CashBox> cashBoxes = new java.util.ArrayList<>();
 
@@ -73,13 +81,18 @@ public class PagamentoController implements Serializable {
 
     private String filtroNumeroDocumento;
     private String filtroStudentName;
+    private Long filtroSchoolClassId;
     private FormaPagamento filtroFormaPagamento;
     private EstadoPagamento filtroEstado;
+    private MesReferencia filtroMesReferencia;
     private LocalDateTime filtroDataInicio;
     private LocalDateTime filtroDataFim;
 
     @Inject private PagamentoService pagamentoService;
+    @Inject private SessionBean sessionBean;
+    @Inject private UserRepository userRepository;
     @Inject private EnrolmentRepository enrolmentRepository;
+    @Inject private com.SistemSchool.modulo_secrtaria.repository.SchoolClassRepository schoolClassRepository;
     @Inject private FeeRepository feeRepository;
     @Inject private CashBoxRepository cashBoxRepository;
     private transient PagamentoLazyModel lazyModel;
@@ -87,7 +100,14 @@ public class PagamentoController implements Serializable {
     @PostConstruct
     public void init() {
         lazyModel = new PagamentoLazyModel(pagamentoService);
+        if (this.editDto == null) {
+            this.editDto = new PagamentoDTO();
+        }
+        if (this.selectedPagamento == null) {
+            this.selectedPagamento = new PagamentoDTO();
+        }
         loadEnrolments();
+        schoolClasses = schoolClassRepository.findAll();
         loadFees();
         loadCashBoxes();
         computeStatistics();
@@ -159,8 +179,10 @@ public class PagamentoController implements Serializable {
         if (lazyModel != null) {
             lazyModel.setFiltroNumeroDocumento(blankToNull(filtroNumeroDocumento));
             lazyModel.setFiltroStudentName(blankToNull(filtroStudentName));
+            lazyModel.setFiltroSchoolClassId(filtroSchoolClassId);
             lazyModel.setFiltroFormaPagamento(filtroFormaPagamento);
             lazyModel.setFiltroEstado(filtroEstado);
+            lazyModel.setFiltroMesReferencia(filtroMesReferencia);
             lazyModel.setFiltroDataInicio(filtroDataInicio);
             lazyModel.setFiltroDataFim(filtroDataFim);
         }
@@ -169,15 +191,19 @@ public class PagamentoController implements Serializable {
     public void limparFiltros() {
         filtroNumeroDocumento = null;
         filtroStudentName = null;
+        filtroSchoolClassId = null;
         filtroFormaPagamento = null;
         filtroEstado = null;
+        filtroMesReferencia = null;
         filtroDataInicio = null;
         filtroDataFim = null;
         if (lazyModel != null) {
             lazyModel.setFiltroNumeroDocumento(null);
             lazyModel.setFiltroStudentName(null);
+            lazyModel.setFiltroSchoolClassId(null);
             lazyModel.setFiltroFormaPagamento(null);
             lazyModel.setFiltroEstado(null);
+            lazyModel.setFiltroMesReferencia(null);
             lazyModel.setFiltroDataInicio(null);
             lazyModel.setFiltroDataFim(null);
         }
@@ -190,7 +216,7 @@ public class PagamentoController implements Serializable {
     public List<PagamentoDTO> getPagamentosFiltrados() {
         return pagamentoService.buscarComFiltros(
                 filtroNumeroDocumento, filtroStudentName,
-                filtroFormaPagamento, filtroEstado,
+                filtroSchoolClassId, filtroFormaPagamento, filtroEstado, filtroMesReferencia,
                 filtroDataInicio, filtroDataFim);
     }
 
@@ -216,6 +242,7 @@ public class PagamentoController implements Serializable {
             pagamento.setDataPagamento(resolverDataHoraAtual(dataPagamentoData));
 
             pagamento.setTotal(calcularTotal(pagamento.getValor(), pagamento.getMulta()));
+            pagamento.setRegistradoPor(resolveOperatorName());
             pagamentoService.save(pagamento);
 
             pagamento = new Pagamento();
@@ -271,19 +298,36 @@ public class PagamentoController implements Serializable {
         }
     }
 
-    private String resolveOperatorName() { return "Sistema"; }
+    private String resolveOperatorName() {
+        com.SistemSchool.dto.UserDTO.UserResponseDTO loggedUser = sessionBean.getLoggedUser();
+        if (loggedUser == null) {
+            return "Usuário não identificado";
+        }
+        String personName = userRepository.findPersonNameById(loggedUser.getFkPerson()).orElse(null);
+        if (personName != null && !personName.isBlank()) {
+            return personName;
+        }
+        return loggedUser.getEmail() != null && !loggedUser.getEmail().isBlank()
+                ? loggedUser.getEmail()
+                : "Usuário não identificado";
+    }
 
     public void openEditDialog(Long id) {
         if (id == null) { addMessage(FacesMessage.SEVERITY_ERROR, "Nenhum pagamento selecionado!", ""); return; }
         this.selectedId = id;
         PagamentoDTO dto = pagamentoService.getAllPagamentos().stream().filter(p -> id.equals(p.getPkPagamento())).findFirst().orElse(null);
         if (dto != null) {
-            mapDtoFields(dto, editDto = new PagamentoDTO());
-            mapDtoFields(dto, selectedPagamento);
+            this.editDto = dto;
+            this.selectedPagamento = dto;
             selectedEnrolmentId = dto.getEnrolmentPk();
             selectedFeeId = dto.getFeePk();
             selectedCashBoxId = dto.getCashBoxPk();
             dataPagamentoDataEdit = dto.getDataPagamento() != null ? dto.getDataPagamento().toLocalDate() : LocalDate.now();
+            if (selectedEnrolmentId != null && selectedFeeId != null && selectedCashBoxId != null) {
+                this.editDto.setEnrolmentPk(selectedEnrolmentId);
+                this.editDto.setFeePk(selectedFeeId);
+                this.editDto.setCashBoxPk(selectedCashBoxId);
+            }
         } else {
             addMessage(FacesMessage.SEVERITY_WARN, "Pagamento nao encontrado", "");
         }
@@ -420,7 +464,7 @@ public class PagamentoController implements Serializable {
 
     public void exportPagamentoListPdf() {
         try {
-            List<PagamentoDTO> pagamentos = pagamentoService.getAllPagamentos();
+            List<PagamentoDTO> pagamentos = getPagamentosFiltrados();
             if (pagamentos == null || pagamentos.isEmpty()) {
                 addMessage(FacesMessage.SEVERITY_WARN, "Nenhum pagamento para exportar", ""); return;
             }
@@ -435,6 +479,26 @@ public class PagamentoController implements Serializable {
 
     public void baixarPdf(Long id) { streamPdf(id, "attachment"); }
     public void imprimirPdf(Long id) { streamPdf(id, "inline"); }
+
+    public void imprimirPagamentosSelecionados() {
+        streamPagamentosSelecionados("inline");
+    }
+
+    public void baixarPagamentosSelecionados() {
+        streamPagamentosSelecionados("attachment");
+    }
+
+    private void streamPagamentosSelecionados(String disposition) {
+        List<Long> ids = selecaoPagamentos.entrySet().stream()
+            .filter(entry -> Boolean.TRUE.equals(entry.getValue()))
+            .map(Map.Entry::getKey)
+            .toList();
+        if (ids.isEmpty()) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Pagamentos", "Selecione pelo menos um pagamento.");
+            return;
+        }
+        streamPdf(ids, disposition);
+    }
 
     private void streamPdf(Long id, String disposition) {
         if (id == null) { addMessage(FacesMessage.SEVERITY_WARN, "Nenhum pagamento selecionado!", ""); return; }
@@ -453,6 +517,27 @@ public class PagamentoController implements Serializable {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Erro ao gerar PDF do pagamento", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Pagamento", "Nao foi possivel gerar o PDF: " + e.getMessage());
+        }
+    }
+
+    private void streamPdf(List<Long> ids, String disposition) {
+        try {
+            byte[] pdfBytes = pagamentoService.gerarComprovativoPdf(ids);
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            externalContext.setResponseHeader("Content-Disposition", disposition
+                    + "; filename=\"comprovativo-pagamentos-"
+                    + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".pdf\"");
+            externalContext.setResponseContentLength(pdfBytes.length);
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(pdfBytes);
+            out.flush();
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Erro ao gerar PDF dos pagamentos selecionados", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Pagamentos", e.getMessage());
         }
     }
 
@@ -480,15 +565,27 @@ public class PagamentoController implements Serializable {
     }
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context != null) {
+            context.addMessage(null, new FacesMessage(severity, summary, detail));
+        }
     }
 
     public Pagamento getPagamento() { return pagamento; }
     public void setPagamento(Pagamento pagamento) { this.pagamento = pagamento; }
-    public PagamentoDTO getEditDto() { return editDto; }
+    public PagamentoDTO getEditDto() {
+        if (editDto == null) {
+            editDto = new PagamentoDTO();
+        }
+        return editDto;
+    }
     public void setEditDto(PagamentoDTO editDto) { this.editDto = editDto; }
     public PagamentoDTO getSelectedPagamento() { return selectedPagamento; }
     public void setSelectedPagamento(PagamentoDTO selectedPagamento) { this.selectedPagamento = selectedPagamento; }
+    public List<PagamentoDTO> getPagamentosSelecionados() { return pagamentosSelecionados; }
+    public void setPagamentosSelecionados(List<PagamentoDTO> pagamentosSelecionados) { this.pagamentosSelecionados = pagamentosSelecionados; }
+    public Map<Long, Boolean> getSelecaoPagamentos() { return selecaoPagamentos; }
+    public void setSelecaoPagamentos(Map<Long, Boolean> selecaoPagamentos) { this.selecaoPagamentos = selecaoPagamentos; }
     public Long getSelectedId() { return selectedId; }
     public void setSelectedId(Long selectedId) { this.selectedId = selectedId; }
     public Long getSelectedEnrolmentId() { return selectedEnrolmentId; }
@@ -522,6 +619,7 @@ public class PagamentoController implements Serializable {
     public EstadoPagamento[] getEstados() { return EstadoPagamento.values(); }
     public MesReferencia[] getMesesReferencia() { return MesReferencia.values(); }
     public List<Enrolment> getEnrolments() { return enrolments; }
+    public List<SchoolClass> getSchoolClasses() { return schoolClasses; }
     public List<Fee> getFees() { return fees; }
     public List<CashBox> getCashBoxes() { return cashBoxes; }
     public void refreshEnrolments() { loadEnrolments(); }
@@ -533,10 +631,14 @@ public class PagamentoController implements Serializable {
     public void setFiltroNumeroDocumento(String filtroNumeroDocumento) { this.filtroNumeroDocumento = filtroNumeroDocumento; }
     public String getFiltroStudentName() { return filtroStudentName; }
     public void setFiltroStudentName(String filtroStudentName) { this.filtroStudentName = filtroStudentName; }
+    public Long getFiltroSchoolClassId() { return filtroSchoolClassId; }
+    public void setFiltroSchoolClassId(Long filtroSchoolClassId) { this.filtroSchoolClassId = filtroSchoolClassId; }
     public FormaPagamento getFiltroFormaPagamento() { return filtroFormaPagamento; }
     public void setFiltroFormaPagamento(FormaPagamento filtroFormaPagamento) { this.filtroFormaPagamento = filtroFormaPagamento; }
     public EstadoPagamento getFiltroEstado() { return filtroEstado; }
     public void setFiltroEstado(EstadoPagamento filtroEstado) { this.filtroEstado = filtroEstado; }
+    public MesReferencia getFiltroMesReferencia() { return filtroMesReferencia; }
+    public void setFiltroMesReferencia(MesReferencia filtroMesReferencia) { this.filtroMesReferencia = filtroMesReferencia; }
     public LocalDateTime getFiltroDataInicio() { return filtroDataInicio; }
     public void setFiltroDataInicio(LocalDateTime filtroDataInicio) { this.filtroDataInicio = filtroDataInicio; }
     public LocalDateTime getFiltroDataFim() { return filtroDataFim; }

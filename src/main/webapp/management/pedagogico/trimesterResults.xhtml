@@ -2,7 +2,7 @@
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:define name="titulo">Resultados Trimestrais</ui:define>
+    <ui:define name="titulo">#{msg.trimesterResults}</ui:define>
 
     <ui:define name="content">
         <style>
@@ -21,6 +21,49 @@
                 --stu-shadow: 0 4px 20px rgba(20, 20, 20, .10);
                 --font-mono: 'DM Mono', monospace;
             }
+
+            .btn-new, .ui-button.btn-new {
+                background: linear-gradient(135deg, var(--stu-black) 0%, var(--stu-red) 100%) !important;
+                color: #fff !important;
+                border: none !important;
+                border-radius: 8px !important;
+                padding: 9px 18px !important;
+                font-size: .85rem !important;
+                font-weight: 700 !important;
+                cursor: pointer;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28);
+                transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
+            }
+            .btn-new:hover, .ui-button.btn-new:hover { filter: brightness(1.12); box-shadow: 0 5px 14px rgba(200, 16, 46, .36); }
+            .btn-ghost, .ui-button.btn-ghost {
+                background: #fff !important;
+                color: var(--stu-text) !important;
+                border: 1px solid var(--stu-border) !important;
+                border-radius: 8px !important;
+                padding: 9px 18px !important;
+                font-size: .85rem !important;
+                font-weight: 600 !important;
+                cursor: pointer;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+            }
+            .btn-ghost:hover, .ui-button.btn-ghost:hover { background: var(--stu-surface-2) !important; border-color: #d3d3d7 !important; }
+            .btn-outline-yellow, .ui-button.btn-outline-yellow {
+                background: #fff !important;
+                color: #8a6400 !important;
+                border: 1px solid rgba(245, 180, 0, .55) !important;
+                border-radius: 8px !important;
+                padding: 9px 18px !important;
+                font-size: .85rem !important;
+                font-weight: 600 !important;
+            }
+            .btn-outline-yellow:hover, .ui-button.btn-outline-yellow:hover { background: #fff8e1 !important; border-color: rgba(245, 180, 0, .8) !important; }
 
             .breadcrumb-pill {
                 display: inline-flex;
@@ -297,8 +340,8 @@
             .stu-act {
                 width: 30px;
                 height: 30px;
-                border-radius: 6px;
-                border: 1px solid var(--stu-border);
+                border-radius: 8px;
+                border: 1px solid var(--stu-border) !important;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -308,37 +351,146 @@
             }
 
             .stu-act:hover {
-                transform: scale(1.08);
+                transform: translateY(-1px);
             }
 
-            .stu-act.view {
-                color: var(--stu-blue);
-                background: #eaf1fb;
+            .stu-act.view,
+            .stu-act.boletim {
+                color: #fff !important;
+                background: linear-gradient(135deg, var(--stu-black) 0%, var(--stu-red) 100%) !important;
+                border: none !important;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28);
+            }
+
+            .stu-act.view .ui-button-icon-left,
+            .stu-act.boletim .ui-button-icon-left {
+                color: #fff !important;
+            }
+
+            .stu-act.view:hover,
+            .stu-act.boletim:hover {
+                filter: brightness(1.12);
+                box-shadow: 0 5px 14px rgba(200, 16, 46, .36);
             }
 
             .stu-act.edit {
-                color: #8a6400;
-                background: #fff8e1;
+                color: #8a6400 !important;
+                background: #fff8e1 !important;
             }
 
             .stu-act.delete {
-                color: var(--stu-red);
-                background: #fdecee;
+                color: var(--stu-red) !important;
+                background: #fdecee !important;
             }
 
             .stu-act.calc {
-                color: var(--stu-green);
-                background: #d1fae5;
-            }
-
-            .stu-act.boletim {
-                color: #6f2dbd;
-                background: #f1e9fb;
+                color: var(--stu-green) !important;
+                background: #e8f6ec !important;
             }
 
             .stu-act.lancar {
-                color: var(--stu-text);
-                background: var(--stu-surface-2);
+                color: var(--stu-black) !important;
+                background: #fff8e1 !important;
+            }
+
+            .ui-button.stu-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: .45rem;
+                min-height: 36px;
+                padding: .5rem .85rem !important;
+                border: 1px solid transparent !important;
+                border-radius: 8px !important;
+                font-size: .82rem !important;
+                font-weight: 700 !important;
+                line-height: 1.2;
+                box-shadow: none !important;
+                transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .15s ease;
+            }
+
+            .ui-button.stu-button .ui-button-text,
+            .ui-button.stu-button .ui-button-icon-left,
+            .ui-button.stu-button .ui-button-icon-right {
+                color: inherit !important;
+            }
+
+            .ui-button.stu-button-primary {
+                color: #fff !important;
+                background: var(--stu-red) !important;
+                border-color: var(--stu-red) !important;
+            }
+
+            .ui-button.stu-button-success {
+                color: #fff !important;
+                background: var(--stu-green) !important;
+                border-color: var(--stu-green) !important;
+            }
+
+            .ui-button.stu-button-danger {
+                color: #fff !important;
+                background: var(--stu-red) !important;
+                border-color: var(--stu-red) !important;
+            }
+
+            .ui-button.stu-button-outline {
+                color: var(--stu-black) !important;
+                background: var(--stu-surface) !important;
+                border-color: var(--stu-border) !important;
+            }
+
+            .ui-button.stu-button-neutral {
+                color: var(--stu-muted) !important;
+                background: var(--stu-surface-2) !important;
+                border-color: var(--stu-border) !important;
+            }
+
+            .ui-button.stu-button-primary:not(.ui-state-disabled):hover,
+            .ui-button.stu-button-danger:not(.ui-state-disabled):hover {
+                background: #a80d26 !important;
+                border-color: #a80d26 !important;
+            }
+
+            .ui-button.stu-button-success:not(.ui-state-disabled):hover {
+                background: #176f31 !important;
+                border-color: #176f31 !important;
+            }
+
+            .ui-button.stu-button-outline:not(.ui-state-disabled):hover,
+            .ui-button.stu-button-neutral:not(.ui-state-disabled):hover {
+                color: var(--stu-black) !important;
+                background: #fff8e1 !important;
+                border-color: var(--stu-yellow) !important;
+            }
+
+            .ui-button.stu-button:focus {
+                box-shadow: 0 0 0 3px rgba(200, 16, 46, .18) !important;
+            }
+
+            .ui-button.stu-button.ui-state-disabled {
+                opacity: .55;
+                cursor: not-allowed;
+            }
+
+            .ui-button.stu-button-gerar,
+            .ui-menubutton.stu-button-gerar > .ui-button {
+                color: var(--stu-yellow) !important;
+                background: linear-gradient(135deg, var(--stu-black) 0%, var(--stu-red) 100%) !important;
+                border-color: var(--stu-red) !important;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28) !important;
+            }
+
+            .ui-button.stu-button-gerar .ui-button-text,
+            .ui-button.stu-button-gerar .ui-button-icon-left,
+            .ui-menubutton.stu-button-gerar > .ui-button .ui-button-text,
+            .ui-menubutton.stu-button-gerar > .ui-button .ui-button-icon-left {
+                color: var(--stu-yellow) !important;
+            }
+
+            .ui-button.stu-button-gerar:not(.ui-state-disabled):hover,
+            .ui-menubutton.stu-button-gerar > .ui-button:not(.ui-state-disabled):hover {
+                filter: brightness(1.12);
+                box-shadow: 0 5px 14px rgba(200, 16, 46, .36) !important;
             }
 
             .stu-empty {
@@ -886,6 +1038,302 @@
                     gap: .6rem;
                 }
             }
+
+            /* ══════════════════════════════════════════════════════════
+               DIÁLOGO BOLETIM DO ALUNO — RESPONSIVO
+               Largura máx. 1000px; em telas menores respeita margem lateral.
+               Altura limitada ao viewport, deixando margem embaixo. O corpo
+               rola internamente e o rodapé (botões) fica sempre visível.
+               ══════════════════════════════════════════════════════════ */
+            .ui-dialog.boletim-dialog {
+                width: 1000px !important;
+                max-width: calc(100vw - 2rem) !important;
+                max-height: calc(100vh - 2rem);
+                max-height: calc(100dvh - 2rem);
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+            }
+            .ui-dialog.boletim-dialog .ui-dialog-titlebar {
+                flex: 0 0 auto;
+            }
+            .ui-dialog.boletim-dialog .ui-dialog-content {
+                flex: 1 1 auto;
+                display: flex;
+                flex-direction: column;
+                box-sizing: border-box;
+                min-height: 0;
+                width: auto !important;
+                height: auto !important;
+                max-height: none !important;
+                overflow: hidden;
+            }
+            .ui-dialog.boletim-dialog .ui-dialog-content > .ui-messages {
+                flex: 0 0 auto;
+            }
+            .ui-dialog.boletim-dialog .doc-body {
+                flex: 1 1 auto;
+                min-height: 0;
+                max-height: none !important;
+                overflow-y: auto;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
+            .ui-dialog.boletim-dialog .stu-dialog-footer {
+                flex: 0 0 auto;
+                margin-top: 0;
+                margin-bottom: 0;
+                padding-top: .8rem;
+                padding-bottom: .8rem;
+                background: var(--stu-surface);
+            }
+            .ui-dialog.boletim-dialog .bol-info > div {
+                min-width: 0;
+            }
+            .ui-dialog.boletim-dialog .bol-info-value {
+                overflow-wrap: anywhere;
+                word-break: break-word;
+            }
+            .ui-dialog.boletim-dialog .doc-table {
+                min-width: 460px;
+            }
+
+            @media (max-width: 576px) {
+                .ui-dialog.boletim-dialog {
+                    max-width: calc(100vw - 1.5rem) !important;
+                    max-height: calc(100vh - 1.5rem);
+                    max-height: calc(100dvh - 1.5rem);
+                }
+                .ui-dialog.boletim-dialog .doc-body {
+                    padding: .75rem .85rem;
+                }
+                .ui-dialog.boletim-dialog .bol-info {
+                    padding: .75rem .85rem;
+                    gap: .7rem;
+                }
+                .ui-dialog.boletim-dialog .bol-footer {
+                    padding: .85rem;
+                }
+                .ui-dialog.boletim-dialog .bol-info-value {
+                    font-size: .85rem;
+                }
+                .ui-dialog.boletim-dialog .doc-table {
+                    font-size: .76rem;
+                }
+                .ui-dialog.boletim-dialog .stu-dialog-footer {
+                    padding-left: .85rem;
+                    padding-right: .85rem;
+                    padding-bottom: .8rem;
+                    margin-bottom: 0;
+                }
+            }
+
+            /* Telas muito baixas (celular na horizontal) */
+            @media (max-height: 520px) {
+                .ui-dialog.boletim-dialog {
+                    max-height: calc(100vh - 1rem);
+                    max-height: calc(100dvh - 1rem);
+                }
+                .ui-dialog.boletim-dialog .stu-dialog-footer {
+                    flex-direction: row;
+                    justify-content: flex-end;
+                    padding-top: .5rem;
+                    padding-bottom: .5rem;
+                }
+                .ui-dialog.boletim-dialog .stu-dialog-footer .ui-button {
+                    width: auto;
+                }
+            }
+
+            /* ══════════════════════════════════════════════════════════
+               PÁGINA — RESPONSIVO PARA QUALQUER TELA
+               Margem lateral e inferior garantidas; nada estoura a largura.
+               ══════════════════════════════════════════════════════════ */
+            .stu-page {
+                box-sizing: border-box;
+                width: 100%;
+                max-width: 100%;
+                padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+            }
+
+            @media (min-width: 768px) {
+                .stu-page {
+                    padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+                }
+            }
+
+            .stu-page *,
+            .stu-page *::before,
+            .stu-page *::after {
+                box-sizing: border-box;
+            }
+
+            .stu-header-left {
+                min-width: 0;
+                flex: 1 1 260px;
+            }
+
+            .stu-header-title {
+                min-width: 0;
+            }
+
+            .stu-header-title h1,
+            .stu-header-title p {
+                overflow-wrap: anywhere;
+            }
+
+            .breadcrumb-pill {
+                max-width: 100%;
+                flex-wrap: wrap;
+                line-height: 1.4;
+            }
+
+            .stu-stat {
+                min-width: 0;
+                gap: .6rem;
+            }
+
+            .stu-stat-value {
+                overflow-wrap: anywhere;
+            }
+
+            .stu-stat-icon {
+                flex-shrink: 0;
+            }
+
+            .stu-toolbar-left {
+                min-width: 0;
+            }
+
+            .stu-filters > .ui-selectonemenu {
+                flex: 1 1 160px;
+                min-width: 0;
+                max-width: 100%;
+            }
+
+            .stu-filters .stu-search-input {
+                flex: 1 1 200px;
+                min-width: 0;
+            }
+
+            /* Tabela: rolagem horizontal em telas médias, paginador quebra linha */
+            .stu-card .ui-datatable-tablewrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .stu-table .ui-paginator {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+                gap: .3rem;
+                padding: .6rem .8rem;
+            }
+
+            .stu-table .ui-paginator .ui-paginator-current {
+                flex: 0 0 100%;
+                text-align: center;
+            }
+
+            @media (min-width: 641px) {
+                .stu-table table {
+                    min-width: 760px;
+                }
+            }
+
+            @media (max-width: 992px) {
+                .stu-toolbar-right {
+                    width: 100%;
+                }
+            }
+
+            @media (max-width: 640px) {
+                .stu-table table {
+                    min-width: 0;
+                }
+
+                .stu-table .ui-datatable-data > tr > td {
+                    width: 100% !important;
+                    overflow-wrap: anywhere;
+                }
+
+                .stu-table .ui-datatable-data > tr > td .stu-actions {
+                    justify-content: flex-start;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .stu-page {
+                    padding: .8rem .8rem calc(2rem + env(safe-area-inset-bottom, 0px));
+                }
+
+                .stu-header-left {
+                    flex: 1 1 100%;
+                }
+
+                .stu-header-icon {
+                    width: 40px;
+                    height: 40px;
+                }
+
+                .stu-header-title h1 {
+                    font-size: 1.15rem;
+                }
+
+                .stu-toolbar,
+                .stu-filters {
+                    padding-left: .8rem;
+                    padding-right: .8rem;
+                }
+
+                .stu-toolbar-right > *,
+                .stu-toolbar-right .ui-menubutton {
+                    width: 100%;
+                }
+
+                .stu-filters > .ui-selectonemenu,
+                .stu-filters .stu-search-input {
+                    flex: 0 0 auto;
+                    width: 100% !important;
+                }
+
+                .sc-loading-box {
+                    padding: 1.6rem 1.4rem;
+                    min-width: 0;
+                    width: calc(100vw - 2rem);
+                    max-width: 320px;
+                }
+            }
+
+            @media (max-width: 360px) {
+                .stu-stat {
+                    padding: .9rem;
+                }
+
+                .stu-stat-value {
+                    font-size: 1.25rem;
+                }
+
+                .stu-stat-icon {
+                    width: 36px;
+                    height: 36px;
+                }
+            }
+
+            /* Diálogo de eliminação */
+            .ui-dialog.delete-dialog {
+                max-width: calc(100vw - 2rem) !important;
+                max-height: calc(100vh - 2rem);
+                max-height: calc(100dvh - 2rem);
+                box-sizing: border-box;
+            }
+
+            .ui-dialog.delete-dialog .ui-dialog-content {
+                overflow-y: auto;
+                max-height: calc(100dvh - 6rem);
+            }
         </style>
 
         <div id="scLoadingOverlay" class="sc-loading-overlay no-print">
@@ -893,8 +1341,8 @@
                 <div class="sc-loader-rings">
                     <div class="sc-loader-core"></div>
                 </div>
-                <div class="sc-loading-text">A processar<span class="sc-loading-dots"></span></div>
-                <div class="sc-loading-sub">Por favor aguarde</div>
+                <div class="sc-loading-text">#{msg.processing}<span class="sc-loading-dots"></span></div>
+                <div class="sc-loading-sub">#{msg.pleaseWait}</div>
                 <div class="sc-loading-progress">
                     <div class="sc-loading-progress-bar"></div>
                 </div>
@@ -909,8 +1357,8 @@
                     <div class="stu-header-left">
                         <div class="stu-header-icon"><i class="pi pi-chart-bar" /></div>
                         <div class="stu-header-title">
-                            <h1>Resultados Trimestrais</h1>
-                            <p>MAC, NPT e MT por aluno, disciplina e trimestre</p>
+                            <h1>#{msg.trimesterResults}</h1>
+                            <p>#{msg.miniReportDescription}</p>
                         </div>
                     </div>
                     <span class="breadcrumb-pill"><i class="pi pi-home" style="font-size:.65rem" /> Gestão › Pedagógico
@@ -931,7 +1379,7 @@
                     </div>
                     <div class="stu-stat">
                         <div>
-                            <div class="stu-stat-label">Aprovados</div>
+                            <div class="stu-stat-label">#{msg.approvedPlural}</div>
                             <div class="stu-stat-value">
                                 <h:outputText value="#{trimesterResultController.approvedCount}">
                                     <f:convertNumber pattern="#,##0" />
@@ -942,7 +1390,7 @@
                     </div>
                     <div class="stu-stat">
                         <div>
-                            <div class="stu-stat-label">Reprovados</div>
+                            <div class="stu-stat-label">#{msg.reprovedPlural}</div>
                             <div class="stu-stat-value">
                                 <h:outputText value="#{trimesterResultController.failedCount}">
                                     <f:convertNumber pattern="#,##0" />
@@ -953,7 +1401,7 @@
                     </div>
                     <div class="stu-stat">
                         <div>
-                            <div class="stu-stat-label">Em Curso</div>
+                            <div class="stu-stat-label">#{msg.inProgress}</div>
                             <div class="stu-stat-value">
                                 <h:outputText value="#{trimesterResultController.inProgressCount}">
                                     <f:convertNumber pattern="#,##0" />
@@ -971,7 +1419,8 @@
                                     style="color:var(--stu-red); margin-right:.4rem;" /> Registos</span>
                         </div>
                         <div class="stu-toolbar-right">
-                            <p:menuButton value="Exportar" icon="pi pi-file-export" styleClass="ui-button-outlined">
+                            <p:menuButton value="Exportar" icon="pi pi-file-export"
+                                styleClass="stu-button stu-button-outline stu-button-gerar">
                                 <p:menuitem value="PDF" icon="pi pi-file-pdf"
                                     action="#{trimesterResultController.exportPdf}" ajax="false" />
                                 <p:menuitem value="Excel" icon="pi pi-file-excel">
@@ -987,13 +1436,16 @@
                                     onclick="window.print(); return false;" />
                             </p:menuButton>
 
-                            <p:button value="Mini-Pauta" icon="pi pi-table" styleClass="ui-button-outlined"
+                            <p:button value="Mini-Pauta" icon="pi pi-table"
+                                styleClass="stu-button stu-button-outline stu-button-gerar"
                                 outcome="/management/pedagogico/mini-pauta" />
-                            <p:commandButton value="Boletim" icon="pi pi-id-card" styleClass="ui-button-outlined"
+                            <p:commandButton value="Boletim" icon="pi pi-id-card"
+                                styleClass="stu-button stu-button-outline stu-button-gerar"
                                 action="/management/pedagogico/boletim.xhtml?faces-redirect=true" ajax="false" />
 
-                            <p:button value="Lançar Notas" icon="pi pi-pencil" styleClass="ui-button-success"
-                                outcome="grades-lancamento" />
+                            <p:button value="Lançar Notas" icon="pi pi-pencil"
+                                styleClass="stu-button stu-button-success stu-button-gerar"
+                                outcome="grades-lancamento" rendered="#{sessionBean.pedagogical}" />
                         </div>
                     </div>
 
@@ -1023,15 +1475,10 @@
                             placeholder="Nome do aluno..." styleClass="stu-search-input" />
                         <p:commandButton icon="pi pi-filter" value="Aplicar"
                             action="#{trimesterResultController.applyFilters}" update="dtResultados messages"
-                            styleClass="ui-button-primary" />
+                            styleClass="stu-button stu-button-primary stu-button-gerar" />
                         <p:commandButton icon="pi pi-filter-slash" value="Limpar"
                             action="#{trimesterResultController.clearFilters}" update="@form"
-                            styleClass="ui-button-outlined ui-button-secondary" />
-                        <p:commandButton icon="pi pi-table" value="Mini-Pauta desta turma"
-                            styleClass="ui-button-outlined"
-                            disabled="#{trimesterResultController.filterSchoolClassId eq null}"
-                            action="#{trimesterResultController.goToMiniPautaWithParams(trimesterResultController.filterSchoolClassId, trimesterResultController.filterTrimester)}"
-                            process="@this" />
+                            styleClass="stu-button stu-button-primary stu-button-gerar" />
                     </div>
 
                     <p:dataTable id="dtResultados" widgetVar="dtResultados" styleClass="stu-table" var="r"
@@ -1039,7 +1486,7 @@
                         paginatorPosition="bottom"
                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                         currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
-                        rowsPerPageTemplate="5,10,20,50" emptyMessage="Nenhum resultado encontrado.">
+                        rowsPerPageTemplate="5,10,20,50" emptyMessage="#{msg.noneResultFound}">
 
                         <p:column headerText="Aluno" sortBy="#{r.studentFullName}">
                             <div style="font-weight:700; color:var(--stu-text);">#{r.studentFullName}</div>
@@ -1081,7 +1528,8 @@
                                 <p:commandButton styleClass="stu-act calc" icon="pi pi-refresh" title="Calcular"
                                     action="#{trimesterResultController.calcularResultados(r.enrolmentPk, r.disciplinePk, r.trimester)}"
                                     onstart="showScLoading()" oncomplete="hideScLoading()"
-                                    update=":formResultados:dtResultados :formResultados:messages" process="@this" />
+                                    update=":formResultados:dtResultados :formResultados:messages" process="@this"
+                                    rendered="#{sessionBean.pedagogical}" />
                                 <p:commandButton styleClass="stu-act boletim" icon="pi pi-id-card"
                                     title="Boletim do aluno"
                                     actionListener="#{boletimController.abrirParaMatricula(r.enrolmentPk, r.trimester)}"
@@ -1089,11 +1537,12 @@
                                     oncomplete="hideScLoading(); PF('boletimDocDialog').show()" update=":boletimDocForm"
                                     process="@this" />
                                 <p:button styleClass="stu-act lancar" icon="pi pi-pencil" title="Lançar Notas"
-                                    outcome="grades-lancamento" />
+                                    outcome="grades-lancamento" rendered="#{sessionBean.pedagogical}" />
                                 <p:commandButton styleClass="stu-act delete" icon="pi pi-trash" title="Eliminar"
                                     onstart="showScLoading()"
                                     oncomplete="hideScLoading(); PF('deleteResultDialog').show()"
-                                    update=":deleteResultForm" process="@this">
+                                    update=":deleteResultForm" process="@this"
+                                    rendered="#{sessionBean.pedagogical}">
                                     <f:setPropertyActionListener value="#{r.pkTrimesterResult}"
                                         target="#{trimesterResultController.selectedId}" />
                                 </p:commandButton>
@@ -1106,7 +1555,7 @@
             <!-- DELETE -->
             <h:form id="deleteResultForm">
                 <p:dialog widgetVar="deleteResultDialog" modal="true" resizable="false" header="Confirmar Eliminação"
-                    style="width:90vw; max-width:420px;" closable="true" responsive="true" fitViewport="true">
+                    style="width:90vw; max-width:420px;" styleClass="delete-dialog" closable="true" responsive="true" fitViewport="true">
                     <div style="padding:.8rem 0 1.2rem; display:flex; gap:1rem; align-items:flex-start;">
                         <i class="pi pi-exclamation-triangle"
                             style="color:var(--stu-red); font-size:1.8rem; flex-shrink:0;" />
@@ -1118,11 +1567,13 @@
                     </div>
                     <div class="stu-dialog-footer">
                         <p:commandButton value="Cancelar" type="button" onclick="PF('deleteResultDialog').hide()"
-                            styleClass="ui-button-outlined ui-button-secondary" />
-                        <p:commandButton value="Sim, eliminar" icon="pi pi-trash" styleClass="ui-button-danger"
+                            styleClass="stu-button stu-button-neutral" />
+                        <p:commandButton value="Sim, eliminar" icon="pi pi-trash"
+                            styleClass="stu-button stu-button-danger"
                             action="#{trimesterResultController.deleteResult}" process="@this"
                             oncomplete="PF('deleteResultDialog').hide()"
-                            update=":formResultados:dtResultados :formResultados:messages" />
+                            update=":formResultados:dtResultados :formResultados:messages"
+                            rendered="#{sessionBean.pedagogical}" />
                     </div>
                 </p:dialog>
             </h:form>
@@ -1130,8 +1581,7 @@
             <!-- BOLETIM (aberto apenas pelo botão de ação da linha) -->
             <h:form id="boletimDocForm">
                 <p:dialog widgetVar="boletimDocDialog" header="Boletim do Aluno" modal="true"
-                    styleClass="doc-dialog boletim-dialog" resizable="false" responsive="true" fitViewport="true"
-                    style="width:95vw; max-width:1000px;">
+                    styleClass="doc-dialog boletim-dialog" resizable="false" responsive="true" fitViewport="true">
 
                     <p:messages showDetail="true" closable="true" styleClass="no-print" />
 
@@ -1217,12 +1667,12 @@
 
                     <div class="stu-dialog-footer no-print">
                         <p:commandButton value="Fechar" type="button" onclick="PF('boletimDocDialog').hide()"
-                            styleClass="ui-button-outlined ui-button-secondary" />
+                            styleClass="stu-button stu-button-neutral" />
                         <p:commandButton value="Imprimir" icon="pi pi-print" type="button"
-                            onclick="window.print(); return false;" styleClass="ui-button-outlined"
+                            onclick="window.print(); return false;" styleClass="stu-button stu-button-outline"
                             disabled="#{not boletimController.rendered or empty boletimController.boletins}" />
                         <p:commandButton value="Baixar PDF" icon="pi pi-file-pdf" ajax="false"
-                            styleClass="ui-button-primary"
+                            styleClass="stu-button stu-button-primary"
                             disabled="#{not boletimController.rendered or empty boletimController.boletins}">
                             <p:fileDownload value="#{boletimController.pdfFile}" />
                         </p:commandButton>

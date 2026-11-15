@@ -225,7 +225,7 @@
             /* <![CDATA[ */
             function scPreviewSelectedFile(widgetVar, imgId, iconId) {
                 var widget = window.PF ? PF(widgetVar) : null;
-                if (widget &amp;&amp; widget.files &amp;&amp; widget.files.length &gt; 0) {
+                if (widget && widget.files && widget.files.length > 0) {
                     var file = widget.files[0];
                     var reader = new FileReader();
                     reader.onload = function (e) {

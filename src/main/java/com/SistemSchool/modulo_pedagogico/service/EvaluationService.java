@@ -36,6 +36,8 @@ public class EvaluationService {
     // ─────────────────────────────────────────────────────────────
 
     public Evaluation save(Evaluation evaluation) {
+        com.SistemSchool.config.PedagogicalModificationGuard
+                .requirePedagogicalForExisting(evaluation.getPkEvaluation());
         if (evaluation.getDiscipline() == null || evaluation.getDiscipline().getPkDiscipline() == null) {
             throw new RuntimeException("É necessário indicar a disciplina para a avaliação.");
         }
@@ -48,6 +50,7 @@ public class EvaluationService {
     }
 
     public void update(EvaluationDTO dto) {
+        com.SistemSchool.config.PedagogicalModificationGuard.requirePedagogical();
         Evaluation evaluation = repository.findById(dto.getPkEvaluation())
                 .orElseThrow(() -> new RuntimeException("Avaliação não encontrada com id: " + dto.getPkEvaluation()));
 
@@ -69,6 +72,7 @@ public class EvaluationService {
     }
 
     public void delete(Long id) {
+        com.SistemSchool.config.PedagogicalModificationGuard.requirePedagogical();
         if (!repository.existsById(id)) {
             throw new RuntimeException("Avaliação não encontrada com id: " + id);
         }

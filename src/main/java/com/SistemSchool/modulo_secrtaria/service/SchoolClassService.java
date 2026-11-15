@@ -58,6 +58,7 @@ public class SchoolClassService {
     }
 
     public void delete(Long id) {
+            com.SistemSchool.config.AdminDeleteGuard.requireAdmin();
         if (!repository.existsById(id)) {
             throw new RuntimeException("Turma não encontrada com id: " + id);
         }

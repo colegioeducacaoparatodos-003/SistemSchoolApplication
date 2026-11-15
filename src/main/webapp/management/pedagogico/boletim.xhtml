@@ -3,7 +3,7 @@
     xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions">
 
-    <ui:define name="titulo">Boletim</ui:define>
+    <ui:define name="titulo">#{msg.report}</ui:define>
 
     <ui:define name="content">
         <style>
@@ -26,6 +26,69 @@
                 --bl-head: #dcebf7;
                 --bl-zebra: #f4f8fd;
             }
+
+            .btn-new, .ui-button.btn-new {
+                background: linear-gradient(135deg, var(--stu-black) 0%, var(--stu-red) 100%) !important;
+                color: #fff !important;
+                border: none !important;
+                border-radius: 8px !important;
+                padding: 9px 18px !important;
+                font-size: .85rem !important;
+                font-weight: 700 !important;
+                cursor: pointer;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28);
+                transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
+            }
+            .btn-new:hover, .ui-button.btn-new:hover { filter: brightness(1.12); box-shadow: 0 5px 14px rgba(200, 16, 46, .36); }
+            .btn-ghost, .ui-button.btn-ghost {
+                background: #fff !important;
+                color: var(--stu-text) !important;
+                border: 1px solid var(--stu-border) !important;
+                border-radius: 8px !important;
+                padding: 9px 18px !important;
+                font-size: .85rem !important;
+                font-weight: 600 !important;
+                cursor: pointer;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+            }
+            .btn-ghost:hover, .ui-button.btn-ghost:hover { background: var(--stu-surface-2) !important; border-color: #d3d3d7 !important; }
+            .btn-outline-yellow, .ui-button.btn-outline-yellow {
+                background: #fff !important;
+                color: #8a6400 !important;
+                border: 1px solid rgba(245, 180, 0, .55) !important;
+                border-radius: 8px !important;
+                padding: 9px 18px !important;
+                font-size: .85rem !important;
+                font-weight: 600 !important;
+            }
+            .btn-outline-yellow:hover, .ui-button.btn-outline-yellow:hover { background: #fff8e1 !important; border-color: rgba(245, 180, 0, .8) !important; }
+
+            .ui-button.boletim-button-gerar {
+                color: var(--stu-yellow) !important;
+                background: linear-gradient(135deg, var(--stu-black) 0%, var(--stu-red) 100%) !important;
+                border: none !important;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28) !important;
+                transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
+            }
+
+            .ui-button.boletim-button-gerar .ui-button-text,
+            .ui-button.boletim-button-gerar .ui-button-icon-left,
+            .ui-button.boletim-button-gerar .ui-button-icon-right {
+                color: var(--stu-yellow) !important;
+            }
+
+            .ui-button.boletim-button-gerar:not(.ui-state-disabled):hover {
+                filter: brightness(1.12);
+                box-shadow: 0 5px 14px rgba(200, 16, 46, .36) !important;
+            }
+
             .breadcrumb-pill {
                 display: inline-flex; align-items: center; gap: 5px;
                 background: #fff8e1; border: 1px solid rgba(245, 180, 0, .35);
@@ -204,13 +267,168 @@
                 .stu-dialog-footer .ui-button { width: 100%; margin: 0 !important; }
                 .bl-row { grid-template-columns: 1fr 1fr; }
             }
+
+            /* ══════════════════════════════════════════════════════════
+               RESPONSIVIDADE COMPLETA DA VIEW (somente em tela)
+               Margens laterais e inferior em qualquer dispositivo, sem
+               estouro horizontal. A tabela de notas rola dentro do próprio
+               cartão. Nada aqui afeta a impressão A5.
+               ══════════════════════════════════════════════════════════ */
+            @media screen {
+                .stu-page {
+                    box-sizing: border-box;
+                    width: 100%;
+                    max-width: 1400px;
+                    margin: 0 auto;
+                    padding-left: max(1.2rem, env(safe-area-inset-left, 0px));
+                    padding-right: max(1.2rem, env(safe-area-inset-right, 0px));
+                    padding-bottom: max(2.5rem, calc(1.5rem + env(safe-area-inset-bottom, 0px)));
+                }
+                .stu-page form,
+                .stu-page .stu-card,
+                .stu-page .stu-header,
+                .stu-page .doc-filters,
+                .stu-page .doc-body {
+                    min-width: 0;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                }
+
+                /* Cabeçalho */
+                .stu-header-left,
+                .stu-header-title { min-width: 0; }
+                .stu-header-title h1,
+                .stu-header-title p { overflow-wrap: anywhere; }
+                .stu-header-right { min-width: 0; max-width: 100%; }
+                .stu-header .breadcrumb-pill { max-width: 100%; flex-wrap: wrap; }
+
+                /* Filtros: a grelha nunca força largura maior que o cartão */
+                .doc-filters {
+                    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+                }
+                .doc-filters > div { min-width: 0; }
+                .doc-filters .ui-selectcheckboxmenu {
+                    width: 100% !important;
+                    min-width: 0;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                }
+                .doc-filters .ui-selectcheckboxmenu .ui-selectcheckboxmenu-label-container {
+                    min-width: 0;
+                    overflow: hidden;
+                }
+                .doc-filters .ui-selectcheckboxmenu .ui-selectcheckboxmenu-label {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+                .doc-filters .field-actions { flex-wrap: wrap; min-width: 0; }
+
+                /* Painéis suspensos nunca passam da largura do ecrã */
+                .ui-selectcheckboxmenu-panel {
+                    max-width: calc(100vw - 1rem);
+                    box-sizing: border-box;
+                }
+                .ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-items-wrapper {
+                    max-height: min(280px, 45vh) !important;
+                }
+
+                /* Contador de boletins e rodapé */
+                .boletim-count-pill { max-width: 100%; flex-wrap: wrap; justify-content: center; }
+                .stu-dialog-footer { min-width: 0; }
+
+                /* Boletim: cartão encolhe com o ecrã */
+                .bl-doc { width: 100%; box-sizing: border-box; min-width: 0; }
+                .bl-header { gap: .6rem; flex-wrap: wrap; }
+                .bl-brand { min-width: 0; }
+                .bl-school { min-width: 0; overflow-wrap: anywhere; }
+                .bl-table-wrap {
+                    max-width: 100%;
+                    -webkit-overflow-scrolling: touch;
+                    overscroll-behavior-x: contain;
+                }
+                .bl-table .name { overflow-wrap: anywhere; }
+                .bl-summary > div { min-width: 0; overflow-wrap: anywhere; }
+                .bl-legend { overflow-wrap: anywhere; }
+                .bl-sign .line { max-width: 100%; box-sizing: border-box; }
+
+                /* Caixa de carregamento */
+                .sc-loading-box {
+                    box-sizing: border-box;
+                    max-width: calc(100vw - 2rem);
+                }
+                .sc-loading-text,
+                .sc-loading-sub { overflow-wrap: anywhere; }
+            }
+
+            /* Tablet: botões dividem a linha */
+            @media screen and (min-width: 577px) and (max-width: 991px) {
+                .doc-filters .field-actions > .ui-button { flex: 1 1 140px; }
+                .stu-dialog-footer { justify-content: center; }
+                .stu-header { gap: .8rem; }
+            }
+
+            /* Telemóvel */
+            @media screen and (max-width: 576px) {
+                .stu-page {
+                    padding-top: 1rem;
+                    padding-left: max(.85rem, env(safe-area-inset-left, 0px));
+                    padding-right: max(.85rem, env(safe-area-inset-right, 0px));
+                    padding-bottom: max(2rem, calc(1.25rem + env(safe-area-inset-bottom, 0px)));
+                }
+                .stu-header { margin-bottom: 1rem; gap: .7rem; }
+                .stu-header-title h1 { font-size: 1.2rem; }
+                .stu-header-title p { font-size: .8rem; }
+                .stu-header-right { flex-direction: column; align-items: stretch; }
+                .stu-header-right .breadcrumb-pill { align-self: flex-start; }
+                .stu-header-right .ui-button { width: 100%; justify-content: center; }
+                .doc-filters {
+                    grid-template-columns: minmax(0, 1fr);
+                    padding: 1rem .9rem 1.1rem;
+                    gap: .85rem;
+                }
+                .doc-filters .field-actions { gap: .6rem; }
+                .doc-filters .field-actions > .ui-button { width: 100%; }
+                .doc-body { padding: .9rem .75rem; }
+                .doc-empty { padding: 2rem .8rem; }
+                .stu-dialog-footer { padding: .9rem .85rem; }
+
+                .bl-block { margin-bottom: 1.2rem; }
+                .bl-header { padding: .8rem .85rem .45rem; }
+                .bl-title { font-size: .95rem; }
+                .bl-info { padding: 0 .85rem .6rem; }
+                .bl-table-wrap { padding: .1rem .85rem 0; }
+                .bl-table { min-width: 300px; }
+                .bl-table th, .bl-table td { padding: .38rem .4rem; }
+                .bl-legend { padding: .6rem .85rem 0; }
+                .bl-summary { padding: .6rem .85rem 0; }
+                .bl-sign { padding: .4rem .85rem 1rem; }
+                .bl-sign .line { width: 180px; }
+            }
+
+            /* Telemóveis muito estreitos */
+            @media screen and (max-width: 380px) {
+                .stu-header-icon { width: 40px; height: 40px; font-size: 1.05rem; }
+                .bl-row { grid-template-columns: minmax(0, 1fr); }
+                .bl-slogan { display: block; width: 100%; }
+                .sc-loading-box { padding: 1.5rem 1rem; min-width: 0; margin: 0 .75rem; }
+            }
+
+            /* Ecrãs baixos (telemóvel na horizontal) */
+            @media screen and (max-height: 520px) {
+                .stu-page { padding-top: .8rem; }
+                .stu-header { margin-bottom: .8rem; }
+                .doc-filters { padding-top: .8rem; padding-bottom: .9rem; }
+                .doc-body { padding-top: .8rem; padding-bottom: .8rem; }
+                .sc-loading-box { padding: 1.2rem 1.6rem; gap: .8rem; }
+            }
         </style>
 
         <div id="scLoadingOverlay" class="sc-loading-overlay no-print">
             <div class="sc-loading-box">
                 <div class="sc-loader-rings"><div class="sc-loader-core"></div></div>
-                <div class="sc-loading-text">A processar<span class="sc-loading-dots"></span></div>
-                <div class="sc-loading-sub">Por favor aguarde</div>
+                <div class="sc-loading-text">#{msg.processing}<span class="sc-loading-dots"></span></div>
+                <div class="sc-loading-sub">#{msg.pleaseWait}</div>
             </div>
         </div>
 
@@ -272,12 +490,12 @@
                         </div>
                         <div class="field-actions">
                             <p:commandButton id="bGerarBtn" value="Gerar" icon="pi pi-search"
-                                styleClass="ui-button-primary"
+                                styleClass="btn-new boletim-button-gerar"
                                 disabled="#{empty boletimController.selectedEnrolmentIds or empty boletimController.selectedTrimesters}"
                                 actionListener="#{boletimController.gerarBoletins}" onstart="showScLoading()"
                                 oncomplete="hideScLoading()" update=":boletimForm" process="@form" />
                             <p:commandButton value="Limpar" icon="pi pi-filter-slash"
-                                styleClass="ui-button-outlined ui-button-secondary"
+                                styleClass="btn-ghost boletim-button-gerar"
                                 actionListener="#{boletimController.clear}" onstart="showScLoading()"
                                 oncomplete="hideScLoading()" update=":boletimForm" process="@this" />
                         </div>
@@ -297,7 +515,7 @@
                                         <div class="bl-header">
                                             <div class="bl-brand">
                                                 <div class="bl-logo">S</div>
-                                                <div class="bl-school">SistemSchool<small>Gestão Escolar</small></div>
+                                                <div class="bl-school">Escola Educação Para Todos<small>Gestão Escolar</small></div>
                                             </div>
                                             <div class="bl-slogan">Ensinamos Valores para a Vida</div>
                                         </div>
@@ -364,7 +582,7 @@
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{boletim.isEmpty()}">
                                             <div class="doc-empty" style="padding:2rem 1rem;">
-                                                <i class="pi pi-info-circle"></i>Nenhum resultado encontrado para este aluno neste trimestre.
+                                                <i class="pi pi-info-circle"></i>#{msg.noneResultFound}
                                             </div>
                                         </h:panelGroup>
 
@@ -382,10 +600,10 @@
 
                     <div class="stu-dialog-footer no-print">
                         <p:commandButton value="Imprimir" icon="pi pi-print" type="button"
-                            onclick="window.print(); return false;" styleClass="ui-button-outlined"
+                            onclick="window.print(); return false;" styleClass="ui-button-outlined boletim-button-gerar"
                             disabled="#{not boletimController.rendered or empty boletimController.boletins}" />
                         <p:commandButton value="Baixar Todos em PDF (A5)" icon="pi pi-file-pdf" ajax="false"
-                            styleClass="ui-button-primary"
+                            styleClass="ui-button-primary boletim-button-gerar"
                             disabled="#{not boletimController.rendered or empty boletimController.boletins}">
                             <p:fileDownload value="#{boletimController.pdfFile}" />
                         </p:commandButton>

@@ -23,6 +23,28 @@
                 --font-mono: 'DM Mono', monospace;
             }
 
+            .ui-button.enr-button-gerar,
+            .ui-menubutton.enr-button-gerar > .ui-button {
+                color: var(--enr-yellow) !important;
+                background: linear-gradient(135deg, var(--enr-black) 0%, var(--enr-red) 100%) !important;
+                border: none !important;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28) !important;
+                transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
+            }
+
+            .ui-button.enr-button-gerar .ui-button-text,
+            .ui-button.enr-button-gerar .ui-button-icon-left,
+            .ui-menubutton.enr-button-gerar > .ui-button .ui-button-text,
+            .ui-menubutton.enr-button-gerar > .ui-button .ui-button-icon-left {
+                color: var(--enr-yellow) !important;
+            }
+
+            .ui-button.enr-button-gerar:not(.ui-state-disabled):hover,
+            .ui-menubutton.enr-button-gerar > .ui-button:not(.ui-state-disabled):hover {
+                filter: brightness(1.12);
+                box-shadow: 0 5px 14px rgba(200, 16, 46, .36) !important;
+            }
+
             .breadcrumb-pill {
                 display: inline-flex;
                 align-items: center;
@@ -48,13 +70,36 @@
                 font-size: .75rem;
             }
 
+            /* ===== PÁGINA (margens laterais e inferior responsivas) ===== */
             .enr-page {
-                padding: 1.2rem;
+                box-sizing: border-box;
+                width: 100%;
+                max-width: 1600px;
+                margin: 0 auto;
+                padding: 1rem 1rem calc(2rem + env(safe-area-inset-bottom, 0px));
+            }
+
+            .enr-page *,
+            .enr-page *::before,
+            .enr-page *::after {
+                box-sizing: border-box;
+            }
+
+            @media(min-width:576px) {
+                .enr-page {
+                    padding: 1.2rem 1.5rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
+                }
             }
 
             @media(min-width:768px) {
                 .enr-page {
-                    padding: 1.6rem 2rem 2.5rem;
+                    padding: 1.6rem 2rem calc(3rem + env(safe-area-inset-bottom, 0px));
+                }
+            }
+
+            @media(min-width:1400px) {
+                .enr-page {
+                    padding: 2rem 3rem 3.5rem;
                 }
             }
 
@@ -71,6 +116,7 @@
                 display: flex;
                 align-items: center;
                 gap: 1rem;
+                min-width: 0;
             }
 
             .enr-header-icon {
@@ -86,11 +132,16 @@
                 flex-shrink: 0;
             }
 
+            .enr-header-title {
+                min-width: 0;
+            }
+
             .enr-header-title h1 {
                 font-size: 1.35rem;
                 font-weight: 800;
                 margin: 0 0 .2rem;
                 color: var(--enr-text);
+                word-break: break-word;
             }
 
             .enr-header-title p {
@@ -127,7 +178,13 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                gap: .6rem;
+                min-width: 0;
                 transition: transform .2s;
+            }
+
+            .enr-stat > div:first-child {
+                min-width: 0;
             }
 
             .enr-stat:hover {
@@ -157,6 +214,7 @@
                 align-items: center;
                 justify-content: center;
                 font-size: 1.1rem;
+                flex-shrink: 0;
             }
 
             .enr-stat-icon.dark {
@@ -185,6 +243,8 @@
                 border-radius: var(--enr-radius);
                 box-shadow: var(--enr-shadow);
                 overflow: hidden;
+                width: 100%;
+                max-width: 100%;
             }
 
             .enr-toolbar {
@@ -388,6 +448,7 @@
                 gap: 1.2rem;
                 border: 1px solid var(--enr-border);
                 min-width: 260px;
+                max-width: 90vw;
                 transform: scale(0.9);
                 transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
@@ -553,6 +614,110 @@
                 }
             }
 
+            /* ===== RESPONSIVIDADE GERAL (todas as telas) ===== */
+
+            /* Filtros: distribuem-se em linhas flexíveis em qualquer largura */
+            .enr-filters > .ui-selectonemenu,
+            .enr-filters > .ui-calendar,
+            .enr-filters > .ui-datepicker,
+            .enr-filters > .p-datepicker {
+                flex: 1 1 160px;
+                max-width: 100%;
+            }
+
+            .enr-filters .ui-selectonemenu {
+                min-width: 0 !important;
+            }
+
+            .enr-filters .ui-calendar,
+            .enr-filters .ui-datepicker,
+            .enr-filters .p-datepicker {
+                min-width: 0;
+            }
+
+            .enr-filters .ui-calendar .ui-inputfield,
+            .enr-filters .ui-datepicker .ui-inputfield,
+            .enr-filters .p-datepicker .ui-inputfield {
+                width: 100%;
+                min-width: 0;
+            }
+
+            /* Tabela: nunca ultrapassa o cartão; rola na horizontal se precisar */
+            .enr-card .ui-datatable,
+            .enr-card .ui-datatable-tablewrapper {
+                max-width: 100%;
+            }
+
+            .enr-card .ui-datatable-tablewrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .enr-card .ui-paginator {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+                gap: .25rem;
+                padding: .6rem .8rem;
+            }
+
+            /* Dropdown do menu (export/impressão) nunca sai da tela */
+            .ui-menu.ui-menu-overlay {
+                max-width: calc(100vw - 1rem);
+            }
+
+            /* Diálogos sempre dentro da tela, com rolagem interna */
+            .ui-dialog {
+                max-width: 95vw;
+            }
+
+            .ui-dialog .ui-dialog-content {
+                overflow-x: hidden;
+                overflow-y: auto;
+                max-height: 80vh;
+            }
+
+            /* Grelha do diálogo de detalhes */
+            .enr-view-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: .8rem;
+                font-size: .9rem;
+            }
+
+            .enr-view-grid > div {
+                min-width: 0;
+                word-break: break-word;
+            }
+
+            /* ===== TABLET (577px – 991px) ===== */
+            @media (min-width: 577px) and (max-width: 991px) {
+                .enr-toolbar-right {
+                    margin-left: auto;
+                }
+
+                .enr-filters > .ui-selectonemenu,
+                .enr-filters > .ui-calendar,
+                .enr-filters > .ui-datepicker,
+                .enr-filters > .p-datepicker {
+                    flex: 1 1 calc(33.333% - .6rem);
+                }
+            }
+
+            /* ===== TELAS PEQUENAS / TABLET RETRATO (até 768px) ===== */
+            @media (max-width: 768px) {
+                .enr-card .ui-datatable-tablewrapper > table {
+                    min-width: 0;
+                }
+
+                .enr-table .ui-paginator .ui-paginator-current {
+                    width: 100%;
+                    text-align: center;
+                    margin-bottom: .2rem;
+                }
+            }
+
             /* ===== RESPONSIVIDADE MOBILE ===== */
             @media (max-width: 576px) {
                 .enr-header {
@@ -574,6 +739,11 @@
                     width: 100%;
                 }
 
+                .enr-toolbar-right {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
                 .enr-toolbar-right .ui-button,
                 .enr-toolbar-right .ui-menubutton {
                     width: 100%;
@@ -588,9 +758,13 @@
                 .enr-filters .ui-inputfield,
                 .enr-filters .ui-selectonemenu,
                 .enr-filters .p-datepicker,
+                .enr-filters .ui-calendar,
+                .enr-filters .ui-datepicker,
                 .enr-filters .ui-button {
                     width: 100% !important;
                     min-width: unset !important;
+                    max-width: 100%;
+                    flex: 1 1 auto;
                 }
 
                 .enr-stat-value {
@@ -615,10 +789,65 @@
                     flex: 1 1 auto;
                 }
 
+                .enr-view-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                /* Tabela em modo "reflow": células ocupam toda a largura */
+                .enr-table .ui-datatable-data > tr > td {
+                    width: auto !important;
+                    max-width: 100%;
+                }
+
+                .enr-table .ui-datatable-data > tr > td .enr-actions {
+                    justify-content: flex-start;
+                }
+
                 .sc-loading-box {
                     padding: 2rem 1.5rem;
                     min-width: 220px;
                     margin: 0 1rem;
+                }
+            }
+
+            /* ===== TELAS MUITO PEQUENAS (até 380px) ===== */
+            @media (max-width: 380px) {
+                .enr-page {
+                    padding: .75rem .75rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
+                }
+
+                .enr-header-icon {
+                    width: 40px;
+                    height: 40px;
+                    font-size: 1.05rem;
+                }
+
+                .enr-header-title h1 {
+                    font-size: 1.15rem;
+                }
+
+                .enr-header-title p {
+                    font-size: .8rem;
+                }
+
+                .enr-toolbar,
+                .enr-filters {
+                    padding: .7rem .8rem;
+                }
+
+                .enr-stat {
+                    padding: .9rem 1rem;
+                }
+
+                .breadcrumb-pill {
+                    font-size: .68rem;
+                }
+            }
+
+            /* ===== TELAS ENORMES (TV / ultrawide) ===== */
+            @media (min-width: 1920px) {
+                .enr-page {
+                    max-width: 1800px;
                 }
             }
         </style>
@@ -721,7 +950,7 @@
                         </div>
                         <div class="enr-toolbar-right">
                             <p:menuButton value="#{msg.exportPrint}" icon="pi pi-file-export"
-                                styleClass="ui-button-outlined">
+                                styleClass="enr-button-gerar">
                                 <p:menuitem value="#{msg.enrollmentCardA6}" icon="pi pi-id-card"
                                     action="#{enrolmentController.printEnrolmentCardA6(enrolmentController.selectedEnrolment.phEnrolment)}"
                                     ajax="false" />
@@ -747,7 +976,7 @@
                             <p:commandButton value="#{msg.newEnrollment}" icon="pi pi-plus"
                                 actionListener="#{enrolmentController.prepareNewEnrolment}" onstart="showScLoading()"
                                 oncomplete="hideScLoading(); PF('createEnrollmentDialog').show()"
-                                update=":enrollmentCreateForm" process="@this" styleClass="ui-button-success" />
+                                update=":enrollmentCreateForm" process="@this" styleClass="enr-button-gerar" />
                         </div>
                     </div>
 
@@ -795,10 +1024,10 @@
 
                         <p:commandButton icon="pi pi-filter" value="#{msg.apply}"
                             action="#{enrolmentController.applyFilters}" update="dtEnrollments messages"
-                            styleClass="ui-button-primary" />
+                            styleClass="enr-button-gerar" />
                         <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}"
                             action="#{enrolmentController.clearFilters}" update="@form"
-                            styleClass="ui-button-outlined ui-button-secondary" />
+                            styleClass="enr-button-gerar" />
                     </div>
 
                     <!-- TABLE -->
@@ -843,13 +1072,13 @@
                             style="width:120px; text-align:center">
                             <span class="enr-badge shift">
                                 <i class="pi pi-clock" style="font-size:.65rem" />
-                                #{enr.shift}
+                                #{msg[enr.shift]}
                             </span>
                         </p:column>
 
                         <p:column headerText="#{msg.type}" sortBy="#{enr.enrolmentType}" filterBy="#{enr.enrolmentType}"
                             style="width:130px; text-align:center">
-                            <span class="enr-badge type">#{enr.enrolmentType}</span>
+                            <span class="enr-badge type">#{msg[enr.enrolmentType]}</span>
                         </p:column>
 
                         <p:column headerText="#{msg.date}" sortBy="#{enr.enrolmentData}"
@@ -884,7 +1113,7 @@
                                 <p:commandButton styleClass="enr-act delete" icon="pi pi-trash" title="#{msg.delete}"
                                     action="#{enrolmentController.openDeleteDialog(enr.phEnrolment)}"
                                     onstart="showScLoading()" oncomplete="hideScLoading(); PF('deleteDialog').show()"
-                                    update=":deleteForm" process="@this" />
+                                    update=":deleteForm" process="@this" rendered="#{sessionBean.admin}" />
                             </div>
                         </p:column>
 
@@ -919,7 +1148,8 @@
                         <p:commandButton value="#{msg.yesDelete}" icon="pi pi-trash" styleClass="ui-button-danger"
                             action="#{enrolmentController.deleteEnrolment}" process="@this"
                             oncomplete="PF('deleteDialog').hide()"
-                            update=":formEnrollments:dtEnrollments :formEnrollments:messages" />
+                            update=":formEnrollments:dtEnrollments :formEnrollments:messages"
+                            rendered="#{sessionBean.admin}" />
                     </div>
                 </p:dialog>
             </h:form>
@@ -941,7 +1171,7 @@
                             <div style="font-size:.85rem; color:var(--enr-muted);">#{msg.number}
                                 #{enrolmentController.selectedEnrolment.studentNumber}</div>
                         </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; font-size:.9rem;">
+                        <div class="enr-view-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; font-size:.9rem;">
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
                                 <div
                                     style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">
@@ -960,13 +1190,13 @@
                                 <div
                                     style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">
                                     #{msg.shift}</div>
-                                <div style="font-weight:700;">#{enrolmentController.selectedEnrolment.shift}</div>
+                                <div style="font-weight:700;">#{msg[enrolmentController.selectedEnrolment.shift]}</div>
                             </div>
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
                                 <div
                                     style="font-size:.72rem; color:var(--enr-muted); text-transform:uppercase; font-weight:700;">
                                     #{msg.type}</div>
-                                <div style="font-weight:700;">#{enrolmentController.selectedEnrolment.enrolmentType}
+                                <div style="font-weight:700;">#{msg[enrolmentController.selectedEnrolment.enrolmentType]}
                                 </div>
                             </div>
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px; grid-column:1 / -1;">

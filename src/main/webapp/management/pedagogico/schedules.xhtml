@@ -2,7 +2,7 @@
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:define name="titulo">Horários</ui:define>
+    <ui:define name="titulo">#{msg.schedules}</ui:define>
 
     <ui:define name="content">
         <style>
@@ -22,6 +22,71 @@
                 --font-mono: 'DM Mono', monospace;
             }
 
+            .btn-new, .ui-button.btn-new {
+                background: linear-gradient(135deg, var(--stu-black) 0%, var(--stu-red) 100%) !important;
+                color: #fff !important;
+                border: none !important;
+                border-radius: 8px !important;
+                padding: 9px 18px !important;
+                font-size: .85rem !important;
+                font-weight: 700 !important;
+                cursor: pointer;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28);
+                transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
+            }
+            .btn-new:hover, .ui-button.btn-new:hover { filter: brightness(1.12); box-shadow: 0 5px 14px rgba(200, 16, 46, .36); }
+            .btn-ghost, .ui-button.btn-ghost {
+                background: #fff !important;
+                color: var(--stu-text) !important;
+                border: 1px solid var(--stu-border) !important;
+                border-radius: 8px !important;
+                padding: 9px 18px !important;
+                font-size: .85rem !important;
+                font-weight: 600 !important;
+                cursor: pointer;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+            }
+            .btn-ghost:hover, .ui-button.btn-ghost:hover { background: var(--stu-surface-2) !important; border-color: #d3d3d7 !important; }
+            .btn-outline-yellow, .ui-button.btn-outline-yellow {
+                background: #fff !important;
+                color: #8a6400 !important;
+                border: 1px solid rgba(245, 180, 0, .55) !important;
+                border-radius: 8px !important;
+                padding: 9px 18px !important;
+                font-size: .85rem !important;
+                font-weight: 600 !important;
+            }
+            .btn-outline-yellow:hover, .ui-button.btn-outline-yellow:hover { background: #fff8e1 !important; border-color: rgba(245, 180, 0, .8) !important; }
+
+            .ui-button.stu-button-gerar,
+            .ui-menubutton.stu-button-gerar > .ui-button {
+                color: var(--stu-yellow) !important;
+                background: linear-gradient(135deg, var(--stu-black) 0%, var(--stu-red) 100%) !important;
+                border: none !important;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28) !important;
+                transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
+            }
+
+            .ui-button.stu-button-gerar .ui-button-text,
+            .ui-button.stu-button-gerar .ui-button-icon-left,
+            .ui-menubutton.stu-button-gerar > .ui-button .ui-button-text,
+            .ui-menubutton.stu-button-gerar > .ui-button .ui-button-icon-left {
+                color: var(--stu-yellow) !important;
+            }
+
+            .ui-button.stu-button-gerar:not(.ui-state-disabled):hover,
+            .ui-menubutton.stu-button-gerar > .ui-button:not(.ui-state-disabled):hover {
+                filter: brightness(1.12);
+                box-shadow: 0 5px 14px rgba(200, 16, 46, .36) !important;
+            }
+
             .breadcrumb-pill {
                 display: inline-flex;
                 align-items: center;
@@ -33,16 +98,22 @@
                 padding: 3px 12px;
                 font-size: .72rem;
                 font-weight: 600;
+                max-width: 100%;
+                flex-wrap: wrap;
+            }
+
+            /* ===== PÁGINA: margens laterais e inferior responsivas ===== */
+            .stu-page,
+            .stu-page * {
+                box-sizing: border-box;
             }
 
             .stu-page {
-                padding: 1.2rem;
-            }
-
-            @media(min-width:768px) {
-                .stu-page {
-                    padding: 1.6rem 2rem 2.5rem;
-                }
+                width: 100%;
+                max-width: 1600px;
+                margin: 0 auto;
+                padding: clamp(.75rem, 3vw, 2rem);
+                padding-bottom: clamp(2rem, 6vw, 3.5rem);
             }
 
             .stu-header {
@@ -58,6 +129,7 @@
                 display: flex;
                 align-items: center;
                 gap: 1rem;
+                min-width: 0;
             }
 
             .stu-header-icon {
@@ -73,11 +145,25 @@
                 flex-shrink: 0;
             }
 
+            /* ===== ÍCONES CENTRALIZADOS ===== */
+            .stu-header-icon i,
+            .stu-stat-icon i {
+                display: block;
+                line-height: 1;
+                margin: 0;
+                text-align: center;
+            }
+
+            .stu-header-title {
+                min-width: 0;
+            }
+
             .stu-header-title h1 {
-                font-size: 1.35rem;
+                font-size: clamp(1.1rem, 2.5vw, 1.35rem);
                 font-weight: 800;
                 margin: 0 0 .2rem;
                 color: var(--stu-text);
+                word-break: break-word;
             }
 
             .stu-header-title p {
@@ -108,6 +194,8 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                gap: .6rem;
+                min-width: 0;
                 transition: transform .2s;
             }
 
@@ -124,7 +212,7 @@
             }
 
             .stu-stat-value {
-                font-size: 1.5rem;
+                font-size: clamp(1.2rem, 3vw, 1.5rem);
                 font-weight: 800;
                 color: var(--stu-text);
                 margin-top: .15rem;
@@ -138,6 +226,7 @@
                 align-items: center;
                 justify-content: center;
                 font-size: 1.1rem;
+                flex-shrink: 0;
             }
 
             .stu-stat-icon.dark {
@@ -161,6 +250,8 @@
                 border-radius: var(--stu-radius);
                 box-shadow: var(--stu-shadow);
                 overflow: hidden;
+                width: 100%;
+                max-width: 100%;
             }
 
             .stu-toolbar {
@@ -203,6 +294,54 @@
                 min-width: 160px;
             }
 
+            .stu-filters > .stu-search-input,
+            .stu-filters > .ui-selectonemenu {
+                flex: 1 1 180px;
+                max-width: 100%;
+            }
+
+            .stu-search-wrap {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+
+            .stu-search-wrap .pi-search {
+                position: absolute;
+                left: 10px;
+                color: var(--stu-muted);
+                font-size: .8rem;
+            }
+
+            .stu-search-input {
+                padding: 7px 10px 7px 30px;
+                border: 1px solid var(--stu-border);
+                border-radius: 8px;
+                font-size: .85rem;
+                width: 100%;
+                background: var(--stu-surface-2);
+                outline: none;
+            }
+
+            @media(min-width:768px) {
+                .stu-search-input {
+                    width: auto;
+                    min-width: 200px;
+                }
+            }
+
+            .stu-search-input:focus {
+                border-color: var(--stu-red);
+                box-shadow: 0 0 0 3px rgba(200, 16, 46, .1);
+            }
+
+            /* ===== TABELA ===== */
+            .stu-table .ui-datatable-tablewrapper,
+            .stu-table .p-datatable-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
             .stu-table.p-datatable .p-datatable-thead>tr>th {
                 background: var(--stu-black) !important;
                 color: var(--stu-yellow) !important;
@@ -219,6 +358,15 @@
 
             .stu-table.p-datatable .p-datatable-tbody>tr:hover {
                 background: var(--stu-surface-2) !important;
+            }
+
+            .stu-table .ui-paginator {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+                gap: .25rem;
+                white-space: normal;
             }
 
             .stu-badge {
@@ -256,25 +404,53 @@
                 color: #7c3aed;
             }
 
+            /* ===== AÇÕES: ícones centralizados ===== */
             .stu-actions {
                 display: flex;
                 align-items: center;
                 gap: 4px;
                 justify-content: center;
                 flex-wrap: wrap;
+                width: 100%;
             }
 
-            .stu-act {
-                width: 30px;
-                height: 30px;
+            .stu-act,
+            .ui-button.stu-act {
+                width: 30px !important;
+                height: 30px !important;
+                min-width: 30px !important;
+                padding: 0 !important;
+                margin: 0 !important;
                 border-radius: 6px;
                 border: 1px solid var(--stu-border);
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
                 font-size: .8rem;
+                line-height: 1;
                 cursor: pointer;
                 transition: all .15s;
+                text-align: center;
+            }
+
+            .stu-act .ui-button-text,
+            .ui-button.stu-act .ui-button-text {
+                display: none !important;
+            }
+
+            .stu-act .ui-button-icon-left,
+            .stu-act .ui-icon,
+            .ui-button.stu-act .ui-button-icon-left,
+            .ui-button.stu-act .ui-icon {
+                position: static !important;
+                display: block !important;
+                margin: 0 !important;
+                top: auto !important;
+                left: auto !important;
+                transform: none !important;
+                line-height: 1 !important;
+                font-size: .8rem;
+                text-align: center;
             }
 
             .stu-act:hover {
@@ -317,12 +493,52 @@
                 flex-wrap: wrap;
             }
 
+            /* ===== DIÁLOGOS ===== */
+            .ui-dialog.st-dialog-create {
+                width: min(92vw, 520px) !important;
+                max-width: 92vw !important;
+            }
+
+            .ui-dialog .ui-dialog-content {
+                overflow-x: hidden;
+            }
+
+            .stu-view-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: .8rem;
+                font-size: .9rem;
+            }
+
+            .stu-view-grid > div {
+                min-width: 0;
+                word-break: break-word;
+            }
+
+            .stu-time-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .stu-time-grid > div {
+                min-width: 0;
+            }
+
+            .stu-time-grid .ui-datepicker,
+            .stu-time-grid .p-datepicker,
+            .stu-time-grid .ui-inputfield {
+                width: 100%;
+            }
+
+            /* ===== LOADING ===== */
             .sc-loading-overlay {
                 position: fixed;
                 top: 0;
                 left: 0;
-                width: 100vw;
-                height: 100vh;
+                width: 100%;
+                height: 100%;
                 background: rgba(20, 20, 20, 0.85);
                 -webkit-backdrop-filter: blur(8px);
                 backdrop-filter: blur(8px);
@@ -352,6 +568,7 @@
                 gap: 1.2rem;
                 border: 1px solid var(--stu-border);
                 min-width: 260px;
+                max-width: 90vw;
                 transform: scale(0.9);
                 transition: transform .35s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
@@ -517,6 +734,22 @@
                 }
             }
 
+            /* ===== TABLET (até 991px) ===== */
+            @media (max-width: 991px) {
+                .stu-toolbar,
+                .stu-filters {
+                    padding-left: 1rem;
+                    padding-right: 1rem;
+                }
+
+                .stu-table.p-datatable .p-datatable-thead>tr>th,
+                .stu-table.p-datatable .p-datatable-tbody>tr>td {
+                    padding-left: .7rem !important;
+                    padding-right: .7rem !important;
+                }
+            }
+
+            /* ===== MOBILE (até 576px) ===== */
             @media (max-width: 576px) {
                 .stu-header {
                     flex-direction: column;
@@ -528,7 +761,18 @@
                     align-items: stretch;
                 }
 
-                .stu-toolbar-right .ui-button {
+                .stu-toolbar-right {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .stu-toolbar-right > * {
+                    width: 100%;
+                }
+
+                .stu-toolbar-right .ui-button,
+                .stu-toolbar-right .ui-menubutton,
+                .stu-toolbar-right .ui-menubutton > .ui-button {
                     width: 100%;
                 }
 
@@ -544,12 +788,44 @@
                     min-width: unset !important;
                 }
 
+                .stu-filters > .stu-search-input,
+                .stu-filters > .ui-selectonemenu {
+                    flex: 0 0 auto;
+                }
+
                 .stu-dialog-footer {
                     justify-content: stretch;
                 }
 
                 .stu-dialog-footer .ui-button {
                     flex: 1 1 auto;
+                }
+
+                .stu-actions {
+                    justify-content: center;
+                }
+
+                .sc-loading-box {
+                    padding: 1.8rem 1.4rem;
+                    min-width: 0;
+                    width: 85vw;
+                }
+            }
+
+            /* ===== MOBILE PEQUENO (até 420px) ===== */
+            @media (max-width: 420px) {
+                .stu-view-grid,
+                .stu-time-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .stu-stat {
+                    padding: .9rem 1rem;
+                }
+
+                .stu-header-icon {
+                    width: 40px;
+                    height: 40px;
                 }
             }
         </style>
@@ -559,8 +835,8 @@
                 <div class="sc-loader-rings">
                     <div class="sc-loader-core"></div>
                 </div>
-                <div class="sc-loading-text">A processar<span class="sc-loading-dots"></span></div>
-                <div class="sc-loading-sub">Por favor aguarde</div>
+                <div class="sc-loading-text">#{msg.processing}<span class="sc-loading-dots"></span></div>
+                <div class="sc-loading-sub">#{msg.pleaseWait}</div>
                 <div class="sc-loading-progress">
                     <div class="sc-loading-progress-bar"></div>
                 </div>
@@ -578,7 +854,7 @@
                         <div class="stu-header-icon"><i class="pi pi-clock" /></div>
                         <div class="stu-header-title">
                             <h1>Horários</h1>
-                            <p>Gestão de horários de aulas por turma e disciplina</p>
+                            <p>#{msg.lessonScheduleManagement}</p>
                         </div>
                     </div>
                     <span class="breadcrumb-pill"><i class="pi pi-home" style="font-size:.65rem" /> Gestão › Pedagógico
@@ -588,7 +864,7 @@
                 <div class="stu-stats">
                     <div class="stu-stat">
                         <div>
-                            <div class="stu-stat-label">Total de Horários</div>
+                            <div class="stu-stat-label">#{msg.totalSchedules}</div>
                             <div class="stu-stat-value">
                                 <h:outputText value="#{scheduleController.totalScheduleCount}">
                                     <f:convertNumber pattern="#,#00" />
@@ -628,7 +904,8 @@
                                     style="color:var(--stu-red); margin-right:.4rem;" /> Registos</span>
                         </div>
                         <div class="stu-toolbar-right">
-                            <p:menuButton value="Exportar" icon="pi pi-file-export" styleClass="ui-button-outlined">
+                            <p:menuButton value="Exportar" icon="pi pi-file-export"
+                                styleClass="stu-button-gerar">
                                 <p:menuitem value="PDF" icon="pi pi-file-pdf" action="#{scheduleController.exportPdf}"
                                     ajax="false" />
                                 <p:menuitem value="Excel" icon="pi pi-file-excel">
@@ -641,7 +918,8 @@
                                 <p:menuitem value="Imprimir" icon="pi pi-print"
                                     onclick="window.print(); return false;" />
                             </p:menuButton>
-                            <p:commandButton value="Novo Horário" icon="pi pi-plus" styleClass="ui-button-success"
+                            <p:commandButton value="Novo Horário" icon="pi pi-plus"
+                                styleClass="stu-button-gerar"
                                 actionListener="#{scheduleController.prepareNewSchedule}" onstart="showScLoading()"
                                 oncomplete="hideScLoading(); PF('createScheduleDialog').show()"
                                 update=":scheduleCreateForm" process="@this" />
@@ -667,10 +945,10 @@
                         <p:inputText value="#{scheduleController.filterAnoLectivo}" placeholder="Ano letivo..."
                             styleClass="stu-search-input" />
                         <p:commandButton icon="pi pi-filter" value="Aplicar" action="#{scheduleController.applyFilters}"
-                            update="dtHorarios messages" styleClass="ui-button-primary" />
+                            update="dtHorarios messages" styleClass="stu-button-gerar" />
                         <p:commandButton icon="pi pi-filter-slash" value="Limpar"
                             action="#{scheduleController.clearFilters}" update="@form"
-                            styleClass="ui-button-outlined ui-button-secondary" />
+                            styleClass="stu-button-gerar" />
                     </div>
 
                     <p:dataTable id="dtHorarios" widgetVar="dtHorarios" styleClass="stu-table" var="s"
@@ -678,7 +956,7 @@
                         paginatorPosition="bottom"
                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                         currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
-                        rowsPerPageTemplate="5,10,20,50" emptyMessage="Nenhum horário encontrado.">
+                        rowsPerPageTemplate="5,10,20,50" emptyMessage="#{msg.noneScheduleFound}">
 
                         <p:column headerText="Disciplina" sortBy="#{s.disciplineName}">
                             <div style="font-weight:700; color:var(--stu-text);">#{s.disciplineName}</div>
@@ -716,11 +994,13 @@
                                     action="#{scheduleController.openEditDialog(s.pkSchedule)}"
                                     onstart="showScLoading()"
                                     oncomplete="hideScLoading(); PF('editScheduleDialog').show()"
-                                    update=":scheduleEditForm" process="@this" />
+                                    update=":scheduleEditForm" process="@this"
+                                    rendered="#{sessionBean.pedagogical}" />
                                 <p:commandButton styleClass="stu-act delete" icon="pi pi-trash" title="Eliminar"
                                     onstart="showScLoading()"
                                     oncomplete="hideScLoading(); PF('deleteScheduleDialog').show()"
-                                    update=":deleteScheduleForm" process="@this">
+                                    update=":deleteScheduleForm" process="@this"
+                                    rendered="#{sessionBean.pedagogical}">
                                     <f:setPropertyActionListener value="#{s.pkSchedule}"
                                         target="#{scheduleController.selectedId}" />
                                 </p:commandButton>
@@ -738,14 +1018,14 @@
                         <div style="text-align:center; margin-bottom:1.2rem;">
                             <div
                                 style="width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg, var(--stu-black), var(--stu-red)); color:var(--stu-yellow); display:flex; align-items:center; justify-content:center; font-size:1.6rem; margin:0 auto .6rem;">
-                                <i class="pi pi-clock"></i>
+                                <i class="pi pi-clock" style="display:block; line-height:1;"></i>
                             </div>
                             <div style="font-size:1.15rem; font-weight:700;">
                                 #{scheduleController.selectedSchedule.disciplineName}</div>
                             <div style="font-size:.85rem; color:var(--stu-muted);">
                                 #{scheduleController.selectedSchedule.schoolClassName}</div>
                         </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.8rem; font-size:.9rem;">
+                        <div class="stu-view-grid">
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
                                 <div
                                     style="font-size:.72rem; color:var(--stu-muted); text-transform:uppercase; font-weight:700;">
@@ -830,7 +1110,7 @@
                                     itemValue="#{wd}" />
                             </p:selectOneMenu>
                         </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                        <div class="stu-time-grid">
                             <div>
                                 <p:outputLabel value="Hora Início" styleClass="st-label" />
                                 <p:datePicker value="#{scheduleController.schedule.startTime}" timeOnly="true"
@@ -901,7 +1181,7 @@
                                     itemValue="#{wd}" />
                             </p:selectOneMenu>
                         </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                        <div class="stu-time-grid">
                             <div>
                                 <p:outputLabel value="Hora Início" styleClass="st-label" />
                                 <p:datePicker value="#{scheduleController.editDto.startTime}" timeOnly="true"
@@ -924,7 +1204,8 @@
                         <p:commandButton value="Atualizar" icon="pi pi-save" styleClass="ui-button-success"
                             action="#{scheduleController.saveUpdate}" process="@form"
                             update=":scheduleEditForm :formHorarios:dtHorarios :formHorarios:messages"
-                            oncomplete="if(!args.validationFailed){ PF('editScheduleDialog').hide(); }" />
+                            oncomplete="if(!args.validationFailed){ PF('editScheduleDialog').hide(); }"
+                            rendered="#{sessionBean.pedagogical}" />
                     </div>
                 </p:dialog>
             </h:form>
@@ -932,7 +1213,7 @@
             <!-- DELETE CONFIRMATION -->
             <h:form id="deleteScheduleForm">
                 <p:dialog widgetVar="deleteScheduleDialog" header="Confirmar Eliminação" modal="true" resizable="false"
-                    closable="true" responsive="true" fitViewport="true" style="max-width:420px;">
+                    closable="true" responsive="true" fitViewport="true" style="width:90vw; max-width:420px;">
                     <div style="padding:1rem; text-align:center;">
                         <i class="pi pi-exclamation-triangle" style="font-size:2.5rem; color:var(--stu-red); margin-bottom:.8rem; display:block;"></i>
                         <div style="font-size:1.05rem; font-weight:700; margin-bottom:.4rem;">
@@ -948,7 +1229,8 @@
                         <p:commandButton value="Eliminar" icon="pi pi-trash" styleClass="ui-button-danger"
                             action="#{scheduleController.deleteSchedule}"
                             update=":formHorarios:dtHorarios :formHorarios:messages"
-                            oncomplete="PF('deleteScheduleDialog').hide()" process="@this" />
+                            oncomplete="PF('deleteScheduleDialog').hide()" process="@this"
+                            rendered="#{sessionBean.pedagogical}" />
                     </div>
                 </p:dialog>
             </h:form>

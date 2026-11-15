@@ -5,13 +5,16 @@
     xmlns:p="http://primefaces.org/ui"
     xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:define name="titulo">Mini-Pauta</ui:define>
+    <ui:define name="titulo">#{msg.miniReport}</ui:define>
 
     <ui:define name="content">
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&amp;family=DM+Mono:wght@400;500&amp;display=swap" />
+
         <style type="text/css">
             /* <![CDATA[ */
-            @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&amp;family=DM+Mono:wght@400;500&amp;display=swap');
-
             :root {
                 --enr-black: #141414;
                 --enr-red: #c8102e;
@@ -46,7 +49,7 @@
             }
 
             .enr-page { padding: 1.2rem; }
-            @media(min-width:768px) { .enr-page { padding: 1.6rem 2rem 2.5rem; } }
+            @media (min-width: 768px) { .enr-page { padding: 1.6rem 2rem 2.5rem; } }
 
             .enr-header {
                 display: flex; align-items: flex-start; justify-content: space-between;
@@ -66,8 +69,8 @@
             .enr-stats {
                 display: grid; grid-template-columns: repeat(1, 1fr); gap: .9rem; margin-bottom: 1.4rem;
             }
-            @media(min-width:576px) { .enr-stats { grid-template-columns: repeat(2, 1fr); } }
-            @media(min-width:992px) { .enr-stats { grid-template-columns: repeat(3, 1fr); } }
+            @media (min-width: 576px) { .enr-stats { grid-template-columns: repeat(2, 1fr); } }
+            @media (min-width: 992px) { .enr-stats { grid-template-columns: repeat(3, 1fr); } }
 
             .enr-stat {
                 background: var(--enr-surface); border: 1px solid var(--enr-border);
@@ -78,6 +81,8 @@
             .enr-stat:hover { transform: translateY(-2px); }
             .enr-stat-label { font-size: .72rem; color: var(--enr-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
             .enr-stat-value { font-size: 1.4rem; font-weight: 800; color: var(--enr-text); margin-top: .15rem; font-family: var(--font-mono); }
+            /* Variante compacta (usada quando o texto é "Pauta em Branco") */
+            .enr-stat-value.enr-stat-value--sm { font-size: 1rem; }
             .enr-stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
             .enr-stat-icon.dark { background: var(--enr-black); color: var(--enr-yellow); }
             .enr-stat-icon.green { background: var(--green-pale); color: var(--enr-green); }
@@ -109,65 +114,261 @@
                 margin-left: .5rem;
             }
 
+            /* Aviso de que a pauta atual é a versão em branco (para o professor preencher) */
+            .blank-badge {
+                display: inline-flex; align-items: center; gap: 5px;
+                background: var(--yellow-pale); border: 1px solid rgba(245, 180, 0, .35);
+                color: #8a6400; border-radius: 99px; padding: 3px 12px;
+                font-size: .72rem; font-weight: 700;
+            }
+            .mp-blank-banner {
+                display: flex; align-items: center; gap: .6rem;
+                background: var(--yellow-pale); border: 1px solid rgba(245, 180, 0, .35);
+                color: #8a6400; border-radius: var(--enr-radius);
+                padding: .75rem 1rem; margin-bottom: 1.2rem; font-size: .82rem; font-weight: 600;
+            }
+            .mp-blank-banner i { font-size: 1.1rem; flex-shrink: 0; }
+
+            /* ── Filtros: card com grupos, labels com ícone e widgets PrimeFaces alinhados ── */
             .enr-filters {
-                display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                gap: 1rem; align-items: end;
-                padding: 1.2rem; background: var(--enr-surface-2);
+                display: grid; grid-template-columns: repeat(12, 1fr);
+                gap: 1.1rem 1.2rem;
+                padding: 1.35rem 1.4rem 1.5rem;
+                background: linear-gradient(180deg, var(--enr-surface-2) 0%, #fdfdfe 100%);
                 border-bottom: 1px solid var(--enr-border);
             }
-            .enr-filters .field-actions { display: flex; gap: .5rem; align-items: flex-end; }
-            .sc-label { font-size: .78rem; font-weight: 600; color: var(--enr-muted); display: block; margin-bottom: .3rem; }
-            .sc-input, .sc-select { width: 100%; padding: 8px 10px; border: 1px solid var(--enr-border); border-radius: 6px; font-size: .85rem; background: #fff; outline: none; }
-            .sc-input:focus, .sc-select:focus { border-color: var(--enr-red); box-shadow: 0 0 0 3px rgba(200, 16, 46, .1); }
+            .filter-field { grid-column: span 12; display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+            @media (min-width: 640px)  { .filter-field { grid-column: span 6; } }
+            @media (min-width: 1200px) { .filter-field { grid-column: span 3; } }
 
-            .sc-checkmenu.ui-selectcheckboxmenu { width: 100%; }
-            .sc-checkmenu .ui-selectcheckboxmenu-label-container {
-                width: 100%; padding: 8px 10px; border: 1px solid var(--enr-border); border-radius: 6px;
-                font-size: .85rem; background: #fff; box-sizing: border-box;
+            .sc-label {
+                display: inline-flex; align-items: center; gap: .4rem;
+                font-size: .74rem; font-weight: 700; letter-spacing: .05em;
+                text-transform: uppercase; color: var(--enr-muted);
             }
-            .sc-checkmenu .ui-selectcheckboxmenu-label { color: var(--enr-text); font-family: var(--font); }
-            .sc-checkmenu.ui-state-focus .ui-selectcheckboxmenu-label-container,
-            .sc-checkmenu:focus-within .ui-selectcheckboxmenu-label-container {
-                border-color: var(--enr-red); box-shadow: 0 0 0 3px rgba(200, 16, 46, .1);
+            .sc-label i {
+                width: 20px; height: 20px; border-radius: 6px;
+                background: var(--enr-black); color: var(--enr-yellow);
+                display: inline-flex; align-items: center; justify-content: center;
+                font-size: .62rem; flex-shrink: 0;
             }
-            .ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-item { font-size: .85rem; font-family: var(--font); }
-            .ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-filter-container { margin-bottom: .4rem; }
+            .sc-label .sc-req { color: var(--enr-red); font-weight: 800; }
 
-            .btn-new { background: linear-gradient(135deg, var(--enr-black) 0%, var(--enr-red) 100%); color: #fff; border: none; border-radius: 6px; padding: 8px 18px; font-size: .85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-            .btn-new:hover { filter: brightness(1.08); }
-            .btn-ghost { background: #fff; color: var(--enr-text); border: 1px solid var(--enr-border); border-radius: 6px; padding: 8px 14px; font-size: .85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-            .btn-ghost:hover { background: var(--enr-border); }
-            .btn-print { background: var(--enr-blue); color: #fff; border: none; border-radius: 6px; padding: 8px 18px; font-size: .85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-            .btn-print:hover { background: #154a8c; }
-            .btn-excel { background: var(--enr-green); color: #fff; border: none; border-radius: 6px; padding: 8px 18px; font-size: .85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-            .btn-excel:hover { filter: brightness(1.08); }
+            /* PrimeFaces selectOneMenu — o componente renderiza .ui-selectonemenu,
+               por isso o estilo precisa atingir o wrapper, não o <select> invisível */
+            .sc-select.ui-selectonemenu {
+                width: 100%; border: 1px solid var(--enr-border); border-radius: 8px;
+                background: #fff; box-shadow: 0 1px 2px rgba(20, 20, 20, .05);
+                transition: border-color .15s ease, box-shadow .15s ease;
+            }
+            .sc-select.ui-selectonemenu .ui-selectonemenu-label {
+                padding: 9px 12px; font-family: var(--font); font-size: .85rem;
+                color: var(--enr-text); line-height: 1.2;
+            }
+            .sc-select.ui-selectonemenu .ui-selectonemenu-trigger {
+                width: 2.2rem; border-radius: 0 8px 8px 0;
+                background: transparent; color: var(--enr-muted);
+                transition: background .15s ease, color .15s ease;
+            }
+            .sc-select.ui-selectonemenu.ui-state-hover { border-color: #d3d3d7; }
+            .sc-select.ui-selectonemenu.ui-state-hover .ui-selectonemenu-trigger { background: var(--enr-surface-2); color: var(--enr-text); }
+            .sc-select.ui-selectonemenu.ui-state-focus {
+                border-color: var(--enr-red); box-shadow: 0 0 0 3px rgba(200, 16, 46, .12); outline: none;
+            }
+            .ui-selectonemenu-panel .ui-selectonemenu-items .ui-selectonemenu-item {
+                font-size: .85rem; font-family: var(--font);
+            }
+            .ui-selectonemenu-panel .ui-selectonemenu-item.ui-state-highlight {
+                background: var(--enr-black); color: var(--enr-yellow);
+            }
+
+            /* selectCheckboxMenu */
+            .sc-checkmenu.ui-selectcheckboxmenu {
+                width: 100%; border: 1px solid var(--enr-border); border-radius: 8px;
+                background: #fff; box-shadow: 0 1px 2px rgba(20, 20, 20, .05);
+                transition: border-color .15s ease, box-shadow .15s ease;
+            }
+            .sc-checkmenu.ui-selectcheckboxmenu .ui-selectcheckboxmenu-label-container {
+                display: flex; align-items: center;
+                padding: 9px 12px; font-size: .85rem; background: transparent;
+            }
+            .sc-checkmenu.ui-selectcheckboxmenu .ui-selectcheckboxmenu-label {
+                color: var(--enr-text); font-family: var(--font);
+            }
+            .sc-checkmenu.ui-selectcheckboxmenu .ui-selectcheckboxmenu-trigger {
+                border-radius: 0 8px 8px 0; color: var(--enr-muted); width: 2.2rem;
+            }
+            .sc-checkmenu.ui-selectcheckboxmenu.ui-state-hover { border-color: #d3d3d7; }
+            .sc-checkmenu.ui-selectcheckboxmenu.ui-state-focus,
+            .sc-checkmenu.ui-selectcheckboxmenu.ui-state-hover.ui-state-focus {
+                border-color: var(--enr-red); box-shadow: 0 0 0 3px rgba(200, 16, 46, .12);
+            }
+            .ui-selectcheckboxmenu-panel {
+                border-radius: 10px; border: 1px solid var(--enr-border);
+                box-shadow: 0 10px 30px rgba(20, 20, 20, .18);
+                font-family: var(--font);
+            }
+            .ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-header {
+                padding: .6rem .7rem; border-radius: 10px 10px 0 0;
+            }
+            .ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-filter-container {
+                margin: 0 0 .1rem; float: none;
+            }
+            .ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-filter-container .ui-inputtext {
+                width: 100%; padding: 7px 10px; border: 1px solid var(--enr-border);
+                border-radius: 7px; font-family: var(--font); font-size: .83rem;
+            }
+            .ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-filter-container .ui-inputtext:focus {
+                border-color: var(--enr-red); box-shadow: 0 0 0 3px rgba(200, 16, 46, .1); outline: none;
+            }
+            .ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-items .ui-selectcheckboxmenu-item {
+                font-size: .84rem; font-family: var(--font); padding: .45rem .7rem;
+            }
+            .ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-items .ui-selectcheckboxmenu-item.ui-state-highlight {
+                background: var(--enr-black); color: var(--enr-yellow);
+            }
+
+            /* Ações dos filtros */
+            .field-actions {
+                grid-column: span 12; display: flex; align-items: center; justify-content: flex-end;
+                gap: .75rem; flex-wrap: wrap; padding-top: .9rem;
+                border-top: 1px solid var(--enr-border);
+            }
+            @media (min-width: 1200px) {
+                .field-actions { grid-column: span 12; border-top: none; padding-top: 1.2rem; }
+            }
+
+            /* Botões: sombra sutil, transição e feedback ao clicar */
+            .btn-new, .btn-ghost, .btn-outline-yellow, .btn-print, .btn-excel {
+                border-radius: 8px; padding: 9px 18px; font-size: .85rem; font-weight: 600;
+                cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+                transition: filter .15s ease, transform .1s ease, box-shadow .15s ease, background .15s ease;
+                text-decoration: none;
+            }
+            .btn-new:active, .btn-ghost:active, .btn-outline-yellow:active,
+            .btn-print:active, .btn-excel:active { transform: translateY(1px); }
+            .btn-new { background: linear-gradient(135deg, var(--enr-black) 0%, var(--enr-red) 100%); color: #fff; border: none; box-shadow: 0 3px 10px rgba(200, 16, 46, .28); }
+            .btn-new:hover { filter: brightness(1.12); box-shadow: 0 5px 14px rgba(200, 16, 46, .36); }
+            .btn-ghost { background: #fff; color: var(--enr-text); border: 1px solid var(--enr-border); }
+            .btn-ghost:hover { background: var(--enr-surface-2); border-color: #d3d3d7; }
+            .btn-outline-yellow { background: #fff; color: #8a6400; border: 1px solid rgba(245, 180, 0, .55); }
+            .btn-outline-yellow:hover { background: var(--yellow-pale); border-color: rgba(245, 180, 0, .8); }
+            .btn-print { background: var(--enr-blue); color: #fff; border: none; box-shadow: 0 3px 10px rgba(26, 95, 180, .28); }
+            .btn-print:hover { filter: brightness(1.1); }
+            .btn-excel { background: var(--enr-green); color: #fff; border: none; box-shadow: 0 3px 10px rgba(30, 142, 62, .28); }
+            .btn-excel:hover { filter: brightness(1.1); }
+            .btn-new:focus-visible, .btn-ghost:focus-visible, .btn-outline-yellow:focus-visible,
+            .btn-print:focus-visible, .btn-excel:focus-visible {
+                outline: 2px solid var(--enr-red); outline-offset: 2px;
+            }
+            .field-actions > .ui-button.btn-new,
+            .field-actions > .ui-button.btn-ghost,
+            .field-actions > .btn-outline-yellow {
+                width: 170px; height: 46px; padding: 0; box-sizing: border-box;
+                border: 1px solid var(--enr-red) !important; border-radius: 10px !important;
+                background: linear-gradient(135deg, var(--enr-black), var(--enr-red)) !important;
+                color: #fff !important;
+                box-shadow: 0 4px 12px rgba(200, 16, 46, .24);
+                font-family: var(--font); font-size: .88rem; font-weight: 700;
+                letter-spacing: .01em; transition: transform .16s ease, box-shadow .16s ease,
+                    filter .16s ease, border-color .16s ease;
+            }
+            .field-actions > .ui-button.btn-new:hover,
+            .field-actions > .ui-button.btn-ghost:hover,
+            .field-actions > .btn-outline-yellow:hover {
+                border-color: var(--enr-red) !important;
+                filter: brightness(1.12);
+                color: #fff !important; box-shadow: 0 6px 16px rgba(200, 16, 46, .32);
+                transform: translateY(-1px);
+            }
+            .field-actions > .btn-outline-yellow {
+                display: inline-flex; overflow: hidden;
+            }
+            .field-actions > .btn-outline-yellow .ui-button {
+                height: 44px; box-sizing: border-box; border: 0 !important;
+                border-radius: 0 !important; background: transparent !important;
+                color: #fff !important; font-family: var(--font);
+                font-size: .88rem; font-weight: 700;
+            }
+            .field-actions > .btn-outline-yellow .ui-button:first-child {
+                flex: 1; justify-content: center;
+            }
+            .field-actions > .btn-outline-yellow .ui-button:last-child {
+                width: 42px; border-left: 1px solid rgba(255, 255, 255, .25) !important;
+                color: var(--enr-yellow) !important;
+            }
+            .field-actions > .ui-button .ui-button-icon-left,
+            .field-actions > .btn-outline-yellow .ui-button .ui-button-icon-left {
+                color: var(--enr-yellow);
+            }
+            .field-actions > .btn-outline-yellow .ui-button .ui-button-icon-left,
+            .field-actions > .ui-button .ui-button-icon-left {
+                margin-right: .55rem; font-size: .95rem;
+            }
+            .field-actions > .ui-button.btn-new:active,
+            .field-actions > .ui-button.btn-ghost:active,
+            .field-actions > .btn-outline-yellow:active {
+                transform: translateY(1px);
+            }
+            .field-actions > .ui-button.btn-new:focus-visible,
+            .field-actions > .ui-button.btn-ghost:focus-visible,
+            .field-actions > .btn-outline-yellow:focus-within {
+                outline: 3px solid rgba(245, 180, 0, .5) !important; outline-offset: 2px;
+            }
+            .ui-menu.ui-menu-dynamic {
+                border: 1px solid var(--enr-border); border-radius: 10px;
+                box-shadow: 0 12px 30px rgba(20, 20, 20, .16);
+                padding: .35rem; font-family: var(--font);
+            }
+            .ui-menu.ui-menu-dynamic .ui-menuitem-link {
+                border-radius: 7px; padding: .6rem .75rem;
+                transition: background .15s ease, color .15s ease;
+            }
+            .ui-menu.ui-menu-dynamic .ui-menuitem-link:hover {
+                background: var(--yellow-pale); color: var(--enr-text);
+            }
 
             /* ══════════ MINI-PAUTA — modelo oficial (por disciplina, 3 trimestres) ══════════ */
-            .mp-sheet { padding: 1.2rem 1.2rem 1.6rem; }
+            .mp-report-card { margin-bottom: 1.2rem; border-color: #dedee2; }
+            .mp-sheet { padding: 1.5rem 1.5rem 1.8rem; }
 
-            .mp-inst-header { text-align: center; line-height: 1.35; margin-bottom: .8rem; }
+            .mp-inst-header {
+                text-align: center; line-height: 1.4; margin-bottom: 1rem;
+                padding-bottom: .85rem; border-bottom: 1px solid var(--enr-border);
+            }
             .mp-inst-header .mp-line { font-size: .78rem; font-weight: 600; color: var(--enr-text); letter-spacing: .02em; }
-            .mp-inst-header .mp-title { font-size: 1.05rem; font-weight: 800; color: var(--enr-text); margin-top: 2px; }
-            .mp-inst-header .mp-school { font-size: .85rem; font-weight: 700; color: var(--enr-text); }
+            .mp-inst-header .mp-title { font-size: 1.15rem; font-weight: 800; color: var(--enr-red); margin-top: .3rem; letter-spacing: .08em; }
+            .mp-inst-header .mp-school { font-size: .9rem; font-weight: 700; color: var(--enr-text); }
 
             .mp-meta {
-                display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem;
-                font-size: .78rem; font-weight: 700; color: var(--enr-text);
-                border-top: 2px solid var(--enr-black); border-bottom: 1px solid var(--enr-black);
-                padding: .35rem .2rem; margin-bottom: .6rem;
+                display: flex; justify-content: space-between; flex-wrap: wrap; gap: .55rem;
+                font-size: .76rem; font-weight: 700; color: var(--enr-text);
+                background: var(--enr-surface-2); border: 1px solid var(--enr-border);
+                border-left: 3px solid var(--enr-red); border-radius: 8px;
+                padding: .65rem .75rem; margin-bottom: .75rem;
             }
             .mp-meta .mp-meta-scale { color: var(--enr-muted); font-weight: 600; }
 
-            .enr-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+            .mp-blank-note {
+                text-align: center; font-size: .74rem; font-weight: 600; color: #8a6400;
+                background: var(--yellow-pale); border: 1px solid rgba(245, 180, 0, .3);
+                border-radius: 7px; padding: .5rem .7rem; margin: 0 0 .75rem;
+            }
+
+            .mp-table-wrap { width: 100%; overflow-x: auto; border: 1px solid var(--enr-black); border-radius: 8px; }
+            .enr-table { width: 100%; min-width: 1080px; border-collapse: collapse; font-size: .8rem; }
             .enr-table th, .enr-table td { border: 1px solid var(--enr-black); }
             .enr-table thead th { background: var(--enr-black); color: var(--yellow-lt); font-size: .68rem; text-transform: uppercase; padding: .45rem .3rem; white-space: nowrap; text-align: center; }
-            .enr-table thead th.mp-th-group { background: var(--black-mid); font-size: .7rem; letter-spacing: .04em; }
+            .enr-table thead th.mp-th-group { background: var(--black-mid); color: #fff; font-size: .7rem; letter-spacing: .06em; }
+            .enr-table thead th.mp-th-name { text-align: left; padding-left: .6rem; }
             .enr-table tbody td { padding: .35rem .3rem; text-align: center; height: 22px; }
             .enr-table .cell-num { font-family: var(--font-mono); color: var(--enr-muted); width: 36px; }
             .enr-table .cell-name { text-align: left; font-weight: 600; padding-left: .6rem; min-width: 180px; white-space: nowrap; }
             .enr-table .cell-score { font-family: var(--font-mono); font-weight: 500; width: 46px; }
+            .enr-table .cell-situation { min-width: 82px; font-size: .72rem; font-weight: 600; }
             .enr-table .cell-obs { min-width: 90px; }
             .enr-table tbody tr:nth-child(even) td { background: #fcfcfd; }
+            .enr-table tbody tr:hover td { background: var(--blue-pale); }
 
             .mp-signature {
                 margin-top: 1.6rem; text-align: center; font-size: .78rem; font-weight: 600; color: var(--enr-text);
@@ -218,23 +419,195 @@
                 .enr-toolbar-right .btn-new,
                 .enr-toolbar-right .btn-ghost,
                 .enr-toolbar-right .btn-excel { width: 100%; justify-content: center; }
-                .enr-filters { grid-template-columns: 1fr; }
-                .enr-filters .field-actions { flex-direction: column; align-items: stretch; }
+                .enr-filters { grid-template-columns: 1fr; gap: .95rem; padding: 1.1rem 1rem 1.2rem; }
+                .enr-filters .filter-field { grid-column: span 1; }
+                .enr-filters .field-actions { flex-direction: column; align-items: stretch; border-top: none; padding-top: .25rem; }
+                .enr-filters .field-actions > .ui-button.btn-new,
+                .enr-filters .field-actions > .ui-button.btn-ghost,
+                .enr-filters .field-actions > .btn-outline-yellow { width: 100%; }
+                .mp-sheet { padding: 1rem; }
+                .mp-inst-header .mp-line { font-size: .7rem; }
+                .mp-meta { justify-content: flex-start; gap: .4rem .8rem; }
                 .enr-stat-value { font-size: 1.2rem; }
                 .sc-loading-box { padding: 2rem 1.5rem; min-width: 220px; margin: 0 1rem; }
             }
 
             @media print {
+                @page { size: landscape; margin: 10mm; }
                 .no-print { display: none !important; }
                 body { background: #fff; }
                 .enr-page { padding: 0; }
                 .enr-card { box-shadow: none; border: none; break-inside: avoid; page-break-inside: avoid; margin-bottom: 1rem; }
                 .mp-sheet { padding: 0; }
+                .mp-table-wrap { overflow: visible; border: none; }
+                .enr-table { min-width: 0; }
                 .enr-table { font-size: .72rem; }
                 .enr-table thead th { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 .enr-table thead th.mp-th-group { background: #333 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 .enr-table tbody tr:nth-child(even) td { background: #fff !important; }
                 .enr-table, .enr-table th, .enr-table td { border-color: #000 !important; }
+            }
+
+            /* ══════════════════════════════════════════════════════════
+               RESPONSIVIDADE COMPLETA DA VIEW (somente em tela)
+               Margens laterais e inferior em qualquer dispositivo, sem
+               estouro horizontal. A tabela da pauta rola dentro do próprio
+               cartão. Nada aqui afeta a impressão.
+               ══════════════════════════════════════════════════════════ */
+            @media screen {
+                .enr-page {
+                    box-sizing: border-box;
+                    width: 100%;
+                    max-width: 1600px;
+                    margin: 0 auto;
+                    padding-left: max(1.2rem, env(safe-area-inset-left, 0px));
+                    padding-right: max(1.2rem, env(safe-area-inset-right, 0px));
+                    padding-bottom: max(2.5rem, calc(1.5rem + env(safe-area-inset-bottom, 0px)));
+                }
+                .enr-page form,
+                .enr-page .enr-card,
+                .enr-page .enr-stats,
+                .enr-page .enr-header,
+                .enr-page .enr-filters {
+                    min-width: 0;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                }
+                .enr-stats { grid-template-columns: minmax(0, 1fr); }
+                .enr-header-left { min-width: 0; }
+                .enr-header-title { min-width: 0; }
+                .enr-header-title h1,
+                .enr-header-title p { overflow-wrap: anywhere; }
+                .enr-toolbar-left { min-width: 0; }
+                .enr-toolbar-title,
+                .enr-toolbar-sub { overflow-wrap: anywhere; }
+
+                /* Campos dos filtros sempre ocupam a largura do próprio campo */
+                .filter-field .ui-selectonemenu,
+                .filter-field .ui-selectcheckboxmenu {
+                    width: 100% !important;
+                    min-width: 0;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                }
+                .filter-field .ui-selectonemenu .ui-selectonemenu-label,
+                .filter-field .ui-selectcheckboxmenu .ui-selectcheckboxmenu-label {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+                .filter-field .ui-selectcheckboxmenu .ui-selectcheckboxmenu-label-container {
+                    min-width: 0;
+                    overflow: hidden;
+                }
+
+                /* Painéis suspensos nunca passam da largura do ecrã */
+                .ui-selectonemenu-panel,
+                .ui-selectcheckboxmenu-panel,
+                .ui-menu.ui-menu-dynamic {
+                    max-width: calc(100vw - 1rem);
+                    box-sizing: border-box;
+                }
+                .ui-selectonemenu-panel .ui-selectonemenu-items-wrapper,
+                .ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-items-wrapper {
+                    max-height: min(280px, 45vh) !important;
+                }
+
+                /* Cabeçalho institucional e meta da pauta */
+                .mp-inst-header .mp-line,
+                .mp-inst-header .mp-school,
+                .mp-inst-header .mp-title { overflow-wrap: anywhere; }
+                .mp-meta > span { min-width: 0; overflow-wrap: anywhere; }
+                .mp-report-card { min-width: 0; max-width: 100%; }
+                .mp-sheet { box-sizing: border-box; max-width: 100%; }
+
+                /* Tabela rola só dentro do cartão */
+                .mp-table-wrap {
+                    max-width: 100%;
+                    -webkit-overflow-scrolling: touch;
+                    overscroll-behavior-x: contain;
+                }
+
+                /* Caixa de carregamento */
+                .sc-loading-box {
+                    box-sizing: border-box;
+                    max-width: calc(100vw - 2rem);
+                }
+                .sc-loading-text,
+                .sc-loading-sub { overflow-wrap: anywhere; }
+            }
+
+            /* Tablet: botões de ação dividem a linha */
+            @media screen and (min-width: 577px) and (max-width: 991px) {
+                .field-actions > .ui-button.btn-new,
+                .field-actions > .ui-button.btn-ghost,
+                .field-actions > .btn-outline-yellow {
+                    flex: 1 1 170px;
+                    max-width: 100%;
+                }
+                .field-actions { justify-content: stretch; }
+                .enr-header { gap: .8rem; }
+            }
+
+            /* Telemóvel */
+            @media screen and (max-width: 576px) {
+                .enr-page {
+                    padding-top: 1rem;
+                    padding-left: max(.85rem, env(safe-area-inset-left, 0px));
+                    padding-right: max(.85rem, env(safe-area-inset-right, 0px));
+                    padding-bottom: max(2rem, calc(1.25rem + env(safe-area-inset-bottom, 0px)));
+                }
+                .enr-header { margin-bottom: 1rem; gap: .7rem; }
+                .enr-header-title h1 { font-size: 1.2rem; }
+                .enr-header-title p { font-size: .8rem; }
+                .enr-header .breadcrumb-pill { align-self: flex-start; max-width: 100%; flex-wrap: wrap; }
+                .enr-stats { gap: .7rem; margin-bottom: 1rem; }
+                .enr-stat { padding: .9rem 1rem; }
+                .enr-filters {
+                    grid-template-columns: minmax(0, 1fr);
+                    padding: 1rem .9rem 1.1rem;
+                }
+                .enr-filters .filter-field { grid-column: 1 / -1; }
+                .enr-filters .field-actions {
+                    grid-column: 1 / -1;
+                    width: 100%;
+                    gap: .6rem;
+                }
+                .enr-filters .field-actions > .ui-button.btn-new,
+                .enr-filters .field-actions > .ui-button.btn-ghost,
+                .enr-filters .field-actions > .btn-outline-yellow {
+                    width: 100%;
+                    max-width: 100%;
+                }
+                .enr-toolbar { padding: .85rem 1rem; }
+                .mp-blank-banner { padding: .65rem .8rem; font-size: .78rem; }
+                .mp-sheet { padding: .85rem .8rem 1.2rem; }
+                .mp-inst-header { margin-bottom: .8rem; padding-bottom: .7rem; }
+                .mp-inst-header .mp-title { font-size: 1rem; }
+                .mp-inst-header .mp-school { font-size: .82rem; }
+                .mp-meta { flex-direction: column; align-items: flex-start; font-size: .72rem; }
+                .mp-blank-note { font-size: .7rem; }
+                .mp-signature { margin-top: 1.2rem; }
+                .mp-signature .mp-sig-line { min-width: 150px; }
+                .enr-empty { padding: 2rem .8rem; }
+                .enr-table { font-size: .74rem; }
+            }
+
+            /* Telemóveis muito estreitos */
+            @media screen and (max-width: 380px) {
+                .enr-header-icon { width: 40px; height: 40px; font-size: 1.05rem; }
+                .enr-stat-icon { width: 38px; height: 38px; }
+                .enr-stat-value { font-size: 1.1rem; }
+                .sc-loading-box { padding: 1.5rem 1rem; min-width: 0; margin: 0 .75rem; }
+            }
+
+            /* Ecrãs baixos (telemóvel na horizontal) */
+            @media screen and (max-height: 520px) {
+                .enr-page { padding-top: .8rem; }
+                .enr-header { margin-bottom: .8rem; }
+                .enr-stats { margin-bottom: .8rem; }
+                .enr-filters { gap: .7rem 1rem; padding-top: .9rem; padding-bottom: 1rem; }
+                .sc-loading-box { padding: 1.2rem 1.6rem; gap: .8rem; }
             }
             /* ]]> */
         </style>
@@ -242,8 +615,8 @@
         <div id="scLoadingOverlay" class="sc-loading-overlay no-print">
             <div class="sc-loading-box">
                 <div class="sc-loader-rings"><div class="sc-loader-core"></div></div>
-                <div class="sc-loading-text">A processar<span class="sc-loading-dots"></span></div>
-                <div class="sc-loading-sub">Por favor aguarde</div>
+                <div class="sc-loading-text">#{msg.processing}<span class="sc-loading-dots"></span></div>
+                <div class="sc-loading-sub">#{msg.pleaseWait}</div>
                 <div class="sc-loading-progress"><div class="sc-loading-progress-bar"></div></div>
             </div>
         </div>
@@ -264,6 +637,14 @@
                         <i class="pi pi-home" style="font-size:.65rem"></i> Gestão &#8250; Pedagógico &#8250; Mini-Pauta
                     </span>
                 </div>
+
+                <!-- Aviso: pauta atual é a versão em branco (sem resultados lançados) -->
+                <h:panelGroup rendered="#{miniPautaController.rendered and miniPautaController.blankMode}">
+                    <div class="mp-blank-banner no-print">
+                        <i class="pi pi-info-circle"></i>
+                        <span>Modelo gerado a partir dos alunos matriculados. As notas já lançadas são preenchidas automaticamente; apenas os campos sem notas ficam vazios.</span>
+                    </div>
+                </h:panelGroup>
 
                 <!-- Stats -->
                 <h:panelGroup rendered="#{miniPautaController.rendered}">
@@ -288,12 +669,18 @@
                         </div>
                         <div class="enr-stat">
                             <div>
-                                <div class="enr-stat-label">Trimestres Selecionados</div>
-                                <div class="enr-stat-value">
-                                    <h:outputText value="#{miniPautaController.selectedTrimesters.size()}" />
+                                <div class="enr-stat-label">
+                                    <h:outputText value="Modo" rendered="#{miniPautaController.blankMode}" />
+                                    <h:outputText value="Trimestres Selecionados" rendered="#{not miniPautaController.blankMode}" />
+                                </div>
+                                <!-- EL movida do atributo style para uma classe condicional
+                                     (o validador de CSS do IDE não entende EL dentro de style) -->
+                                <div class="enr-stat-value #{miniPautaController.blankMode ? 'enr-stat-value--sm' : ''}">
+                                    <h:outputText value="Pauta em Branco" rendered="#{miniPautaController.blankMode}" />
+                                    <h:outputText value="#{miniPautaController.selectedTrimesters.size()}" rendered="#{not miniPautaController.blankMode}" />
                                 </div>
                             </div>
-                            <div class="enr-stat-icon yellow"><i class="pi pi-calendar"></i></div>
+                            <div class="enr-stat-icon yellow"><i class="pi #{miniPautaController.blankMode ? 'pi-file-edit' : 'pi-calendar'}"></i></div>
                         </div>
                     </div>
                 </h:panelGroup>
@@ -303,26 +690,34 @@
                     <div class="enr-toolbar">
                         <div class="enr-toolbar-left">
                             <span class="enr-toolbar-title"><i class="pi pi-sliders-h" style="color:var(--enr-red); margin-right:.4rem;"></i> Filtros da Mini-Pauta</span>
-                            <span class="enr-toolbar-sub">Selecione turma, disciplinas e trimestres para gerar</span>
+                            <span class="enr-toolbar-sub">Campos com <span style="color:var(--enr-red); font-weight:800">*</span> são obrigatórios — os demais são opcionais</span>
                         </div>
                     </div>
                     <div class="enr-filters">
-                        <div>
-                            <label class="sc-label" for="formMiniPauta:scTurma">Turma</label>
-                            <p:selectOneMenu id="scTurma" value="#{miniPautaController.selectedSchoolClassId}" styleClass="sc-select">
+                        <div class="filter-field">
+                            <label class="sc-label" for="formMiniPauta:scTurma">
+                                <i class="pi pi-users"></i> Turma <span class="sc-req" title="Obrigatório">*</span>
+                            </label>
+                            <p:selectOneMenu id="scTurma" value="#{miniPautaController.selectedSchoolClassId}"
+                                styleClass="sc-select" autoWidth="false">
                                 <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" />
                                 <f:selectItems value="#{miniPautaController.schoolClasses}" var="t" itemLabel="#{t.className}" itemValue="#{t.pkSchoolClass}" />
                             </p:selectOneMenu>
                         </div>
-                        <div>
-                            <label class="sc-label" for="formMiniPauta:scNivel">Nível de Ensino</label>
-                            <p:selectOneMenu id="scNivel" value="#{miniPautaController.selectedEducationLevel}" styleClass="sc-select">
+                        <div class="filter-field">
+                            <label class="sc-label" for="formMiniPauta:scNivel">
+                                <i class="pi pi-sitemap"></i> Nível de Ensino
+                            </label>
+                            <p:selectOneMenu id="scNivel" value="#{miniPautaController.selectedEducationLevel}"
+                                styleClass="sc-select" autoWidth="false">
                                 <f:selectItem itemLabel="— Auto (pela turma) —" itemValue="#{null}" />
                                 <f:selectItems value="#{miniPautaController.educationLevels}" var="lvl" itemLabel="#{lvl eq 'PRIMARIO' ? 'Primário (0–10)' : 'I Ciclo (0–20)'}" itemValue="#{lvl}" />
                             </p:selectOneMenu>
                         </div>
-                        <div>
-                            <label class="sc-label" for="formMiniPauta:scDisciplina">Disciplina</label>
+                        <div class="filter-field">
+                            <label class="sc-label" for="formMiniPauta:scDisciplina">
+                                <i class="pi pi-book"></i> Disciplinas
+                            </label>
                             <p:selectCheckboxMenu id="scDisciplina"
                                 value="#{miniPautaController.selectedDisciplineIds}"
                                 styleClass="sc-checkmenu"
@@ -335,8 +730,10 @@
                                 <f:selectItems value="#{miniPautaController.disciplines}" var="d" itemLabel="#{d.disciplineName}" itemValue="#{d.pkDiscipline}" />
                             </p:selectCheckboxMenu>
                         </div>
-                        <div>
-                            <label class="sc-label" for="formMiniPauta:scTrimestre">Trimestre</label>
+                        <div class="filter-field">
+                            <label class="sc-label" for="formMiniPauta:scTrimestre">
+                                <i class="pi pi-calendar"></i> Trimestre
+                            </label>
                             <p:selectCheckboxMenu id="scTrimestre"
                                 value="#{miniPautaController.selectedTrimesters}"
                                 styleClass="sc-checkmenu"
@@ -351,6 +748,27 @@
                             <p:commandButton value="Gerar" icon="pi pi-search" styleClass="btn-new"
                                 actionListener="#{miniPautaController.search}"
                                 onstart="showScLoading()" oncomplete="hideScLoading()" update="@form" />
+                            <p:menuButton value="Baixar Pauta" icon="pi pi-file-edit" styleClass="btn-outline-yellow"
+                                title="Gera modelos da turma; a opção Pauta deixa MAC e NPT em branco para preenchimento manual">
+                                <p:menuitem value="Imprimir" icon="pi pi-print"
+                                    actionListener="#{miniPautaController.gerarPautaEmBranco}"
+                                    update="@form" onstart="showScLoading()"
+                                    oncomplete="hideScLoading(); window.print()" />
+                                <p:divider />
+                                <p:menuitem value="Excel" icon="pi pi-file-excel"
+                                    ajax="false" actionListener="#{miniPautaController.exportarMiniPautaEmBrancoExcel}" />
+                                <p:menuitem value="CSV" icon="pi pi-file"
+                                    ajax="false" actionListener="#{miniPautaController.exportarMiniPautaEmBrancoCsv}" />
+                                <p:divider />
+                                <p:menuitem value="Mini-Pauta" icon="pi pi-file"
+                                    ajax="false" actionListener="#{miniPautaController.exportarMiniPautaEmBranco}" />
+                                <p:menuitem value="Pauta" icon="pi pi-list"
+                                    ajax="false" actionListener="#{miniPautaController.exportarPautaEmBranco}" />
+                                <p:menuitem value="Mini-Pauta Por Classe" icon="pi pi-sitemap"
+                                    ajax="false" actionListener="#{miniPautaController.exportarMiniPautaPorClasseEmBranco}" />
+                                <p:menuitem value="Pauta-Final" icon="pi pi-file-pdf"
+                                    ajax="false" actionListener="#{miniPautaController.exportarPautaFinalEmBranco}" />
+                            </p:menuButton>
                             <p:commandButton value="Limpar" icon="pi pi-filter-slash" styleClass="btn-ghost"
                                 actionListener="#{miniPautaController.clear}"
                                 onstart="showScLoading()" oncomplete="hideScLoading()" update="@form" />
@@ -358,34 +776,10 @@
                     </div>
                 </div>
 
-                <!-- Exportação: só aparece depois de gerar pelo menos um bloco.
-                     Os botões de download usam ajax="false" (postback normal) porque
-                     o controlador escreve o ficheiro diretamente na resposta HTTP -
-                     uma chamada ajax normal não dispara o download do browser. -->
-                <h:panelGroup rendered="#{miniPautaController.rendered and not empty miniPautaController.reportBlocks}">
-                    <div class="enr-card no-print">
-                        <div class="enr-toolbar">
-                            <div class="enr-toolbar-left">
-                                <span class="enr-toolbar-title"><i class="pi pi-download" style="color:var(--enr-blue); margin-right:.4rem;"></i> Exportar Mini-Pauta</span>
-                                <span class="enr-toolbar-sub">Imprima ou baixe a pauta no modelo oficial</span>
-                            </div>
-                            <div class="enr-toolbar-right">
-                                <p:commandButton value="Imprimir" icon="pi pi-print" styleClass="btn-print" type="button" onclick="window.print()" />
-                                <p:commandButton value="PDF" icon="pi pi-file-pdf" styleClass="btn-new"
-                                    ajax="false" actionListener="#{miniPautaController.exportPdf}" />
-                                <p:commandButton value="Excel" icon="pi pi-file-excel" styleClass="btn-excel"
-                                    ajax="false" actionListener="#{miniPautaController.exportExcel}" />
-                                <p:commandButton value="CSV" icon="pi pi-file" styleClass="btn-ghost"
-                                    ajax="false" actionListener="#{miniPautaController.exportCsv}" />
-                            </div>
-                        </div>
-                    </div>
-                </h:panelGroup>
-
                 <!-- ══════ MINI-PAUTA — modelo oficial: 1 disciplina por folha, 3 trimestres lado a lado ══════ -->
                 <h:panelGroup rendered="#{miniPautaController.rendered}">
                     <ui:repeat value="#{miniPautaController.reportBlocks}" var="block">
-                        <div class="enr-card">
+                        <div class="enr-card mp-report-card">
                             <div class="mp-sheet">
                                 <!-- Cabeçalho institucional -->
                                 <div class="mp-inst-header">
@@ -407,24 +801,29 @@
                                     </span>
                                 </div>
 
+                                <!-- Nota visível apenas na pauta em branco, espelhando a nota do PDF -->
+                                <h:panelGroup rendered="#{miniPautaController.blankMode}">
+                                    <div class="mp-blank-note">Documento para preenchimento manual do professor — MAC, NPT e MT</div>
+                                </h:panelGroup>
+
                                 <h:panelGroup rendered="#{not block.isEmpty()}">
-                                    <div style="overflow-x:auto;">
+                                    <div class="mp-table-wrap">
                                         <table class="enr-table">
                                             <thead>
                                                 <!-- Linha 1: grupos de trimestre -->
                                                 <tr>
                                                     <th rowspan="2">Nº</th>
-                                                    <th rowspan="2" style="text-align:left;padding-left:.6rem">NOME COMPLETO</th>
-                                                    <th class="mp-th-group" colspan="3">1º TRIMESTRE</th>
-                                                    <th class="mp-th-group" colspan="3">2º TRIMESTRE</th>
-                                                    <th class="mp-th-group" colspan="3">3º TRIMESTRE</th>
+                                                    <th rowspan="2" class="mp-th-name">NOME COMPLETO</th>
+                                                    <th class="mp-th-group" colspan="4">1º TRIMESTRE</th>
+                                                    <th class="mp-th-group" colspan="4">2º TRIMESTRE</th>
+                                                    <th class="mp-th-group" colspan="4">3º TRIMESTRE</th>
                                                     <th rowspan="2">OBSERVAÇÃO</th>
                                                 </tr>
-                                                <!-- Linha 2: MAC / NPT / MT -->
+                                                <!-- Linha 2: MAC / NPT / MT / situação -->
                                                 <tr>
-                                                    <th>MAC</th><th>NPT</th><th>MT</th>
-                                                    <th>MAC</th><th>NPT</th><th>MT</th>
-                                                    <th>MAC</th><th>NPT</th><th>MT</th>
+                                                    <th>MAC</th><th>NPT</th><th>MT</th><th>Situação</th>
+                                                    <th>MAC</th><th>NPT</th><th>MT</th><th>Situação</th>
+                                                    <th>MAC</th><th>NPT</th><th>MT</th><th>Situação</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -435,12 +834,15 @@
                                                         <td class="cell-score">#{row.scores['1'].macFormatted}</td>
                                                         <td class="cell-score">#{row.scores['1'].nptFormatted}</td>
                                                         <td class="cell-score">#{row.scores['1'].mtFormatted}</td>
+                                                        <td class="cell-situation">#{row.scores['1'].situation}</td>
                                                         <td class="cell-score">#{row.scores['2'].macFormatted}</td>
                                                         <td class="cell-score">#{row.scores['2'].nptFormatted}</td>
                                                         <td class="cell-score">#{row.scores['2'].mtFormatted}</td>
+                                                        <td class="cell-situation">#{row.scores['2'].situation}</td>
                                                         <td class="cell-score">#{row.scores['3'].macFormatted}</td>
                                                         <td class="cell-score">#{row.scores['3'].nptFormatted}</td>
                                                         <td class="cell-score">#{row.scores['3'].mtFormatted}</td>
+                                                        <td class="cell-situation">#{row.scores['3'].situation}</td>
                                                         <td class="cell-obs"></td>
                                                     </tr>
                                                 </ui:repeat>
@@ -469,7 +871,7 @@
                     <div class="enr-card enr-empty no-print">
                         <i class="pi pi-filter"></i>
                         <div class="enr-empty-title">Selecione os filtros</div>
-                        <div class="enr-empty-sub">Escolha a turma, uma ou mais disciplinas e um ou mais trimestres para gerar a mini-pauta.</div>
+                        <div class="enr-empty-sub">Escolha a turma e, opcionalmente, disciplinas e trimestres, depois clique em "Gerar" (com resultados já lançados) ou "Pauta em Branco" (para o professor preencher à mão).</div>
                     </div>
                 </h:panelGroup>
             </h:form>

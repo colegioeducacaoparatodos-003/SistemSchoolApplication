@@ -18,31 +18,27 @@
             background-color: #fcfcfc !important;
             display: flex;
             flex-direction: column;
-            height: 100vh; /* Viewport fixo, evita recálculo */
+            height: 100vh;
+            height: 100dvh; /* mobile: ignora a barra de endereço */
             max-height: 100vh;
+            max-height: 100dvh;
             position: relative;
             z-index: 100;
-            /* Impede scroll chaining (scroll passar para o body) */
             overscroll-behavior-y: contain;
         }
 
         /* ============================================
-           ÁREA DE SCROLL — O MAIS IMPORTANTE
+           ÁREA DE SCROLL
            ============================================ */
         .sidebar-scroll {
             flex: 1 1 auto;
             overflow-y: auto;
             overflow-x: hidden;
-            /* Scroll suave em iOS */
             -webkit-overflow-scrolling: touch;
-            /* MUITO padding no fim para o último item
-               nunca ficar colado ao rodapé */
             padding: 0.5rem 0.5rem 140px 0.5rem;
-            /* Impede que o rodapé "suba" e intercepte clicks */
             overscroll-behavior-y: contain;
         }
 
-        /* Scrollbar fina e discreta */
         .sidebar-scroll::-webkit-scrollbar { width: 3px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
         .sidebar-scroll::-webkit-scrollbar-thumb {
@@ -66,7 +62,6 @@
         .admin-sidebar-menu .ui-menuitem {
             margin: 2px 0;
             border-radius: 10px;
-            /* Impede seleção de texto acidental */
             user-select: none;
             -webkit-user-select: none;
         }
@@ -75,13 +70,11 @@
             padding: 0.75rem 0.875rem !important;
             border-radius: 10px !important;
             transition: background-color 0.15s ease, color 0.15s ease;
-            /* Touch target mínimo 48px */
             min-height: 48px;
             display: flex !important;
             align-items: center !important;
             gap: 0.65rem;
             text-decoration: none !important;
-            /* Garante que o clique é capturado aqui */
             cursor: pointer;
             position: relative;
             z-index: 2;
@@ -99,20 +92,50 @@
             transition: transform 0.05s ease;
         }
 
-        /* Ícones */
+        /* ============================================
+           ÍCONES
+           - Dourado escuro (#B8860B): o #FFD700 original
+             quase desaparecia sobre o fundo branco.
+           - Fonte primeicons forçada e visibilidade garantida.
+           ============================================ */
         .admin-sidebar-menu .ui-menuitem-icon {
-            color: #FFD700 !important;
-            font-size: 1.1rem;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            visibility: visible !important;
+            opacity: 1 !important;
+            color: #B8860B !important;
+            font-size: 1.1rem !important;
             width: 1.5rem;
             text-align: center;
             flex-shrink: 0;
+            margin: 0 !important;
         }
 
-        .admin-sidebar-menu .ui-menuitem-link:hover .ui-menuitem-icon {
+        .admin-sidebar-menu .ui-menuitem-icon.pi {
+            font-family: 'primeicons' !important;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        .admin-sidebar-menu .ui-menuitem-link:hover .ui-menuitem-icon,
+        .admin-sidebar-menu .ui-menuitem-link:focus .ui-menuitem-icon {
             color: #800020 !important;
         }
 
-        /* Headers de seção */
+        /* ============================================
+           HEADERS DE SEÇÃO
+           O PrimeFaces aplica .ui-state-disabled (opacity .35)
+           aos itens com disabled="true" — isso apagava
+           texto e ícone. Aqui forçamos opacidade normal.
+           ============================================ */
+        .admin-sidebar-menu .sidebar-menu-header,
+        .admin-sidebar-menu .sidebar-menu-header.ui-state-disabled {
+            opacity: 1 !important;
+            filter: none !important;
+        }
+
         .sidebar-menu-header {
             font-size: 0.68rem !important;
             letter-spacing: 0.1em;
@@ -123,9 +146,15 @@
             text-transform: uppercase;
         }
 
-        .sidebar-menu-header .ui-menuitem-icon {
+        .admin-sidebar-menu .sidebar-menu-header .ui-menuitem-link {
+            min-height: 0;
+            padding: 0.25rem 0 !important;
             color: #9ca3af !important;
-            font-size: 0.85rem;
+        }
+
+        .admin-sidebar-menu .sidebar-menu-header .ui-menuitem-icon {
+            color: #9ca3af !important;
+            font-size: 0.85rem !important;
         }
 
         /* ============================================
@@ -141,7 +170,13 @@
         .sidebar-brand-badge {
             background: linear-gradient(135deg, #800020, #a00030);
             box-shadow: 0 4px 12px rgba(128, 0, 32, 0.2);
-            width: 38px; height: 38px;
+            width: 38px;
+            height: 38px;
+        }
+
+        .sidebar-brand-badge .pi {
+            font-family: 'primeicons' !important;
+            color: #FFD700; /* fundo grená: o dourado vivo funciona aqui */
         }
 
         /* ============================================
@@ -151,11 +186,9 @@
             flex-shrink: 0;
             background: #f8f9fa;
             border-top: 1px solid #e9ecef;
-            /* Sombra para separar visualmente do conteúdo */
-            box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
             position: relative;
             z-index: 50;
-            /* Garante que não captura clicks acidentais */
             pointer-events: auto;
         }
 
@@ -175,7 +208,6 @@
             cursor: pointer;
             min-height: 48px;
             transition: background-color 0.2s ease;
-            /* Isola o touch do scroll acima */
             touch-action: manipulation;
         }
 
@@ -187,8 +219,15 @@
         .sidebar-user-avatar {
             background: linear-gradient(135deg, #800020, #a00030) !important;
             box-shadow: 0 2px 8px rgba(128, 0, 32, 0.2);
-            width: 36px; height: 36px;
+            width: 36px;
+            height: 36px;
             font-size: 0.85rem;
+        }
+
+        .sidebar-user-avatar .pi,
+        .sidebar-user-trigger-icon,
+        .sidebar-user-dropdown-item .pi {
+            font-family: 'primeicons' !important;
         }
 
         /* Dropdown */
@@ -197,7 +236,6 @@
             padding-top: 0.5rem;
             margin-top: 0.5rem;
             border-top: 1px solid #e9ecef;
-            /* Animação suave */
             opacity: 0;
             transform: translateY(-4px);
             transition: opacity 0.2s ease, transform 0.2s ease;
@@ -224,6 +262,10 @@
             touch-action: manipulation;
         }
 
+        .sidebar-user-dropdown-item .pi {
+            color: #B8860B;
+        }
+
         .sidebar-user-dropdown-item:hover,
         .sidebar-user-dropdown-item:focus {
             background-color: #800020 !important;
@@ -231,12 +273,16 @@
             text-decoration: none;
         }
 
-        .sidebar-user-dropdown-item:hover i,
-        .sidebar-user-dropdown-item:focus i {
+        .sidebar-user-dropdown-item:hover .pi,
+        .sidebar-user-dropdown-item:focus .pi {
             color: #FFD700 !important;
         }
 
         .sidebar-user-dropdown-item.text-danger {
+            color: #dc3545;
+        }
+
+        .sidebar-user-dropdown-item.text-danger .pi {
             color: #dc3545;
         }
 
@@ -274,13 +320,16 @@
     </style>
 
     <!-- ============================================
-         SCRIPT CRÍTICO — CORREÇÃO DO CLIQUE MOBILE
+         SCRIPT — CORREÇÃO DO CLIQUE MOBILE
+         O bloco CDATA permite usar && e comparações
+         diretamente, sem &amp;amp; (que o editor lê
+         como JavaScript inválido).
          ============================================ -->
     <script type="text/javascript">
-        (function() {
+    //<![CDATA[
+        (function () {
             'use strict';
 
-            // Variáveis de controle de scroll
             var scrollContainer = null;
             var isScrolling = false;
             var scrollTimeout = null;
@@ -288,29 +337,31 @@
             var touchStartX = 0;
             var touchStartTime = 0;
             var touchTarget = null;
-            var SCROLL_THRESHOLD = 10; // pixels de movimento para considerar scroll
+            var SCROLL_THRESHOLD = 10; // px de movimento para considerar scroll
             var TIME_THRESHOLD = 300;  // ms máximo para considerar tap rápido
 
             function init() {
                 scrollContainer = document.querySelector('.sidebar-scroll');
-                if (!scrollContainer) return;
+                if (!scrollContainer) {
+                    return;
+                }
 
-                // Intercepta touchstart para guardar o alvo original
-                scrollContainer.addEventListener('touchstart', function(e) {
+                // Guarda o alvo original do toque
+                scrollContainer.addEventListener('touchstart', function (e) {
                     var touch = e.touches[0];
                     touchStartX = touch.clientX;
                     touchStartY = touch.clientY;
                     touchStartTime = Date.now();
-                    // Guarda o elemento exato onde o dedo tocou
                     touchTarget = document.elementFromPoint(touch.clientX, touch.clientY);
                     isScrolling = false;
 
-                    // Cancela qualquer timeout pendente
-                    if (scrollTimeout) clearTimeout(scrollTimeout);
+                    if (scrollTimeout) {
+                        clearTimeout(scrollTimeout);
+                    }
                 }, { passive: true });
 
-                // Detecta movimento — se passar do threshold, é scroll, não click
-                scrollContainer.addEventListener('touchmove', function(e) {
+                // Movimento acima do limite = scroll, não click
+                scrollContainer.addEventListener('touchmove', function (e) {
                     var touch = e.touches[0];
                     var deltaY = Math.abs(touch.clientY - touchStartY);
                     var deltaX = Math.abs(touch.clientX - touchStartX);
@@ -321,36 +372,35 @@
                 }, { passive: true });
 
                 // No touchend, se houve scroll, bloqueia o click fantasma
-                scrollContainer.addEventListener('touchend', function(e) {
+                scrollContainer.addEventListener('touchend', function () {
                     var touchDuration = Date.now() - touchStartTime;
 
-                    // Se foi um scroll ou um toque muito longo, marca como scrolling
                     if (isScrolling || touchDuration > TIME_THRESHOLD) {
                         isScrolling = true;
-                        // Bloqueia clicks por 150ms após o scroll parar
                         scrollContainer.classList.add('scrolling-active');
-                        if (scrollTimeout) clearTimeout(scrollTimeout);
-                        scrollTimeout = setTimeout(function() {
+                        if (scrollTimeout) {
+                            clearTimeout(scrollTimeout);
+                        }
+                        scrollTimeout = setTimeout(function () {
                             scrollContainer.classList.remove('scrolling-active');
                             isScrolling = false;
                         }, 150);
                     }
                 }, { passive: true });
 
-                // Intercepta clicks na sidebar durante scroll
-                scrollContainer.addEventListener('click', function(e) {
+                // Intercepta clicks durante/logo após scroll
+                scrollContainer.addEventListener('click', function (e) {
                     if (scrollContainer.classList.contains('scrolling-active')) {
                         e.preventDefault();
                         e.stopPropagation();
                         return false;
                     }
-                    // Verifica se o target do click é o mesmo do touchstart
-                    // Se não for, provavelmente é um click fantasma
-                    if (touchTarget &amp;&amp; !touchTarget.contains(e.target) &amp;&amp; !e.target.contains(touchTarget)) {
-                        // Permite se for dentro do mesmo menuitem
+
+                    // Click cujo alvo difere do touchstart = provável click fantasma
+                    if (touchTarget && !touchTarget.contains(e.target) && !e.target.contains(touchTarget)) {
                         var startItem = touchTarget.closest('.ui-menuitem-link');
                         var endItem = e.target.closest('.ui-menuitem-link');
-                        if (startItem &amp;&amp; endItem &amp;&amp; startItem !== endItem) {
+                        if (startItem && endItem && startItem !== endItem) {
                             e.preventDefault();
                             e.stopPropagation();
                             return false;
@@ -358,37 +408,41 @@
                     }
                 }, true);
 
-                // Fecha dropdown ao scrollar
-                scrollContainer.addEventListener('scroll', function() {
+                // Fecha o dropdown do utilizador ao fazer scroll
+                scrollContainer.addEventListener('scroll', function () {
                     var card = document.querySelector('.sidebar-user-card');
-                    if (card &amp;&amp; card.classList.contains('open')) {
+                    if (card && card.classList.contains('open')) {
                         card.classList.remove('open');
                         var trigger = card.querySelector('.sidebar-user-trigger');
-                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                        if (trigger) {
+                            trigger.setAttribute('aria-expanded', 'false');
+                        }
                     }
                 }, { passive: true });
             }
 
-            // Inicializa quando o DOM estiver pronto
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', init);
             } else {
                 init();
             }
 
-            // Expõe função global para o botão de toggle
-            window.toggleSidebar = function() {
+            // Função global usada pelo botão de toggle
+            window.toggleSidebar = function () {
                 var layout = document.querySelector('.dashbord-layout');
-                if (layout) layout.classList.toggle('sidebar-visible');
+                if (layout) {
+                    layout.classList.toggle('sidebar-visible');
+                }
             };
         })();
+    //]]>
     </script>
 
     <div class="sidebar">
-        
+
         <!-- Área scrollável -->
         <div class="sidebar-scroll">
-            
+
             <!-- Cabeçalho -->
             <div class="sidebar-header d-flex align-items-center justify-content-between">
                 <h:link outcome="/components/public/dashboard.xhtml"
@@ -417,56 +471,56 @@
                     <!-- Secretaria -->
                     <p:menuitem styleClass="sidebar-menu-header fw-bold"
                         value="#{msg.secretariat}" icon="pi pi-briefcase" disabled="true"
-                        rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.schoolClass}" action="#{schoolClassController.load}" 
+                        rendered="#{sessionBean.isSecretary() or sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.schoolClass}" action="#{schoolClassController.load}"
                         icon="pi pi-sitemap"
-                        rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.student}" action="#{studentController.load}" 
+                        rendered="#{sessionBean.isSecretary() or sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.student}" action="#{studentController.load}"
                         icon="pi pi-users"
-                        rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.enrollments}" action="#{enrolmentController.load}" 
+                        rendered="#{sessionBean.isSecretary() or sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.enrollments}" action="#{enrolmentController.load}"
                         icon="pi pi-id-card"
-                        rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.documents}" action="#{documentController.load}" 
+                        rendered="#{sessionBean.isSecretary() or sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.documents}" action="#{documentController.load}"
                         icon="pi pi-folder-open"
-                        rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.payment}" action="#{pagamentoController.load}" 
+                        rendered="#{sessionBean.isSecretary() or sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.payment}" action="#{pagamentoController.load}"
                         icon="pi pi-credit-card"
                         rendered="#{sessionBean.isSecretary() or sessionBean.isAdmin()}" />
 
                     <!-- Pedagógico -->
                     <p:menuitem styleClass="sidebar-menu-header fw-bold"
                         value="#{msg.pedagogical}" icon="pi pi-book" disabled="true"
-                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.discipline}" action="#{disciplineController.load}" 
+                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.discipline}" action="#{disciplineController.load}"
                         icon="pi pi-bookmark"
-                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.schedule}" action="#{scheduleController.load}" 
+                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.schedule}" action="#{scheduleController.load}"
                         icon="pi pi-clock"
-                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.grades}" action="#{gradeController.load}" 
+                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.grades}" action="#{gradeController.load}"
                         icon="pi pi-graduation-cap"
-                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
+                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdminOrFinancial()}" />
                     <p:menuitem value="#{msg.evaluation}" action="#{evaluationController.load}"
                         icon="pi pi-check-circle"
-                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
+                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdminOrFinancial()}" />
                     <p:menuitem value="#{msg.trimesterResults}" action="#{trimesterResultController.load}"
-                        icon="pi pi-print"
-                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin()}" />
+                        icon="pi pi-chart-bar"
+                        rendered="#{sessionBean.isPedagogical() or sessionBean.isAdmin() or sessionBean.isFinancial()}" />
 
                     <!-- Financeiro -->
                     <p:menuitem styleClass="sidebar-menu-header fw-bold"
                         value="#{msg.financial}" icon="pi pi-wallet" disabled="true"
-                        rendered="#{sessionBean.isFinancial() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.fee}" action="#{feeController.load}" 
+                        rendered="#{sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.fee}" action="#{feeController.load}"
                         icon="pi pi-tag"
-                        rendered="#{sessionBean.isFinancial() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.cashBox}" action="#{cashBoxController.load}" 
+                        rendered="#{sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.cashBox}" action="#{cashBoxController.load}"
                         icon="pi pi-box"
-                        rendered="#{sessionBean.isFinancial() or sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.payment}" action="#{pagamentoController.load}" 
+                        rendered="#{sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.payment}" action="#{pagamentoController.load}"
                         icon="pi pi-dollar"
-                        rendered="#{sessionBean.isFinancial() or sessionBean.isAdmin()}" />
+                        rendered="#{sessionBean.isAdminOrFinancial()}" />
                     <p:menuitem value="#{msg.financialMovement}" action="#{financialMovementController.load}"
                         icon="pi pi-chart-line"
                         rendered="#{sessionBean.isFinancial() or sessionBean.isAdmin()}" />
@@ -474,13 +528,13 @@
                     <!-- Recursos Humanos -->
                     <p:menuitem styleClass="sidebar-menu-header fw-bold"
                         value="#{msg.humanResources}" icon="pi pi-user-edit" disabled="true"
-                        rendered="#{sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.teachers}" action="#{teacherController.load}" 
+                        rendered="#{sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.teachers}" action="#{teacherController.load}"
                         icon="pi pi-user-edit"
-                        rendered="#{sessionBean.isAdmin()}" />
-                    <p:menuitem value="#{msg.users}" outcome="/settings/users.xhtml" 
+                        rendered="#{sessionBean.isAdminOrFinancial()}" />
+                    <p:menuitem value="#{msg.users}" outcome="/settings/users.xhtml"
                         icon="pi pi-user-plus"
-                        rendered="#{sessionBean.isAdmin()}" />
+                        rendered="#{sessionBean.isAdminOrFinancial()}" />
 
                 </p:menu>
             </h:form>

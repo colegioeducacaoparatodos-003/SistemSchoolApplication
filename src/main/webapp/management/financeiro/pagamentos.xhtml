@@ -25,6 +25,28 @@
                 --font-mono: 'DM Mono', monospace;
             }
 
+            .ui-button.pay-button-gerar,
+            .ui-menubutton.pay-button-gerar > .ui-button {
+                color: var(--enr-yellow) !important;
+                background: linear-gradient(135deg, var(--enr-black) 0%, var(--enr-red) 100%) !important;
+                border: none !important;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28) !important;
+                transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
+            }
+
+            .ui-button.pay-button-gerar .ui-button-text,
+            .ui-button.pay-button-gerar .ui-button-icon-left,
+            .ui-menubutton.pay-button-gerar > .ui-button .ui-button-text,
+            .ui-menubutton.pay-button-gerar > .ui-button .ui-button-icon-left {
+                color: var(--enr-yellow) !important;
+            }
+
+            .ui-button.pay-button-gerar:not(.ui-state-disabled):hover,
+            .ui-menubutton.pay-button-gerar > .ui-button:not(.ui-state-disabled):hover {
+                filter: brightness(1.12);
+                box-shadow: 0 5px 14px rgba(200, 16, 46, .36) !important;
+            }
+
             .breadcrumb-pill {
                 display: inline-flex;
                 align-items: center;
@@ -36,6 +58,8 @@
                 padding: 3px 12px;
                 font-size: .72rem;
                 font-weight: 600;
+                max-width: 100%;
+                flex-wrap: wrap;
             }
 
             .t-num {
@@ -56,8 +80,19 @@
                 color: var(--enr-text);
             }
 
-            .enr-page { padding: 1.2rem; }
-            @media(min-width:768px) { .enr-page { padding: 1.6rem 2rem 2.5rem; } }
+            /* ===== PÁGINA: margens laterais e inferior responsivas ===== */
+            .enr-page,
+            .enr-page * {
+                box-sizing: border-box;
+            }
+
+            .enr-page {
+                width: 100%;
+                max-width: 1600px;
+                margin: 0 auto;
+                padding: clamp(.75rem, 3vw, 2rem);
+                padding-bottom: clamp(2rem, 6vw, 3.5rem);
+            }
 
             .enr-header {
                 display: flex;
@@ -67,14 +102,28 @@
                 gap: 1rem;
                 margin-bottom: 1.4rem;
             }
-            .enr-header-left { display: flex; align-items: center; gap: 1rem; }
+            .enr-header-left { display: flex; align-items: center; gap: 1rem; min-width: 0; }
             .enr-header-icon {
                 width: 46px; height: 46px; border-radius: 12px;
                 background: linear-gradient(135deg, var(--enr-black) 0%, var(--enr-red) 100%);
                 display: flex; align-items: center; justify-content: center;
                 color: var(--enr-yellow); font-size: 1.2rem; flex-shrink: 0;
             }
-            .enr-header-title h1 { font-size: 1.35rem; font-weight: 800; margin: 0 0 .2rem; color: var(--enr-text); }
+
+            /* ===== ÍCONES CENTRALIZADOS ===== */
+            .enr-header-icon i,
+            .enr-stat-icon i {
+                display: block;
+                line-height: 1;
+                margin: 0;
+                text-align: center;
+            }
+
+            .enr-header-title { min-width: 0; }
+            .enr-header-title h1 {
+                font-size: clamp(1.1rem, 2.5vw, 1.35rem); font-weight: 800;
+                margin: 0 0 .2rem; color: var(--enr-text); word-break: break-word;
+            }
             .enr-header-title p { font-size: .85rem; color: var(--enr-muted); margin: 0; }
 
             .enr-stats {
@@ -86,11 +135,15 @@
                 background: var(--enr-surface); border: 1px solid var(--enr-border);
                 border-radius: var(--enr-radius); box-shadow: var(--enr-shadow);
                 padding: 1.1rem 1.2rem; display: flex; align-items: center; justify-content: space-between;
+                gap: .6rem; min-width: 0;
                 transition: transform .2s;
             }
             .enr-stat:hover { transform: translateY(-2px); }
             .enr-stat-label { font-size: .72rem; color: var(--enr-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
-            .enr-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--enr-text); margin-top: .15rem; word-break: break-word; }
+            .enr-stat-value {
+                font-size: clamp(1.1rem, 2.6vw, 1.5rem); font-weight: 800; color: var(--enr-text);
+                margin-top: .15rem; word-break: break-word;
+            }
             .enr-stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
             .enr-stat-icon.dark { background: var(--enr-black); color: var(--enr-yellow); }
             .enr-stat-icon.yellow { background: #fff8e1; color: #8a6400; }
@@ -101,6 +154,7 @@
             .enr-card {
                 background: var(--enr-surface); border: 1px solid var(--enr-border);
                 border-radius: var(--enr-radius); box-shadow: var(--enr-shadow); overflow: hidden;
+                width: 100%; max-width: 100%;
             }
 
             .enr-toolbar {
@@ -111,13 +165,54 @@
             .enr-toolbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
             .enr-toolbar-right { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
 
+            /* ===== FILTROS ===== */
             .enr-filters {
                 display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
                 padding: .8rem 1.2rem; background: var(--enr-surface-2);
                 border-bottom: 1px solid var(--enr-border);
             }
-            .enr-filters .ui-inputfield, .enr-filters .ui-selectonemenu { min-width: 160px; }
+            .enr-filters > .ui-inputfield,
+            .enr-filters > .ui-selectonemenu {
+                flex: 1 1 170px;
+                min-width: 0;
+                max-width: 100%;
+            }
+            /* datePicker: campo + botão do calendário sempre na mesma linha */
+            .enr-filters > .ui-datepicker,
+            .enr-filters > .p-datepicker,
+            .enr-filters > .ui-calendar {
+                display: inline-flex !important;
+                flex-wrap: nowrap !important;
+                align-items: stretch;
+                flex: 1 1 170px;
+                min-width: 0;
+                max-width: 100%;
+            }
+            .enr-filters > .ui-datepicker > .ui-inputfield,
+            .enr-filters > .p-datepicker > .ui-inputfield,
+            .enr-filters > .ui-calendar > .ui-inputfield,
+            .enr-filters > .ui-datepicker > input,
+            .enr-filters > .ui-calendar > input {
+                flex: 1 1 auto;
+                width: auto !important;
+                min-width: 0 !important;
+            }
+            .enr-filters > .ui-datepicker > .ui-datepicker-trigger,
+            .enr-filters > .p-datepicker > .ui-datepicker-trigger,
+            .enr-filters > .ui-calendar > .ui-datepicker-trigger,
+            .enr-filters > .ui-datepicker > button,
+            .enr-filters > .ui-calendar > button {
+                flex: 0 0 auto;
+                width: 2.5rem;
+                margin: 0;
+            }
 
+            /* ===== TABELA ===== */
+            .enr-table .ui-datatable-tablewrapper,
+            .enr-table .p-datatable-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
             .enr-table.p-datatable .p-datatable-thead>tr>th {
                 background: var(--enr-black) !important; color: var(--enr-yellow) !important;
                 font-size: .7rem !important; text-transform: uppercase !important;
@@ -127,11 +222,19 @@
                 font-size: .82rem !important; padding: .72rem 1rem !important;
             }
             .enr-table.p-datatable .p-datatable-tbody>tr:hover { background: var(--enr-surface-2) !important; }
+            .enr-table .ui-paginator {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+                gap: .25rem;
+                white-space: normal;
+            }
 
             .enr-avatar {
                 width: 36px; height: 36px; border-radius: 50%;
                 background: var(--enr-black); color: var(--enr-yellow);
-                font-size: .8rem; font-weight: 700;
+                font-size: .8rem; font-weight: 700; line-height: 1;
                 display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
             }
 
@@ -149,11 +252,46 @@
 
             .enr-amount { font-family: 'DM Mono', monospace; font-weight: 700; color: var(--enr-green); }
 
-            .enr-actions { display: flex; align-items: center; gap: 4px; justify-content: center; flex-wrap: wrap; }
-            .enr-act {
-                width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--enr-border);
-                display: inline-flex; align-items: center; justify-content: center;
-                font-size: .8rem; cursor: pointer; transition: all .15s;
+            /* ===== AÇÕES: ícones centralizados ===== */
+            .enr-actions {
+                display: flex; align-items: center; gap: 4px; justify-content: center; flex-wrap: wrap;
+                width: 100%;
+            }
+            .enr-act,
+            .ui-button.enr-act {
+                width: 30px !important;
+                height: 30px !important;
+                min-width: 30px !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border-radius: 6px;
+                border: 1px solid var(--enr-border);
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: .8rem;
+                line-height: 1;
+                cursor: pointer;
+                transition: all .15s;
+                text-align: center;
+            }
+            .enr-act .ui-button-text,
+            .ui-button.enr-act .ui-button-text {
+                display: none !important;
+            }
+            .enr-act .ui-button-icon-left,
+            .enr-act .ui-icon,
+            .ui-button.enr-act .ui-button-icon-left,
+            .ui-button.enr-act .ui-icon {
+                position: static !important;
+                display: block !important;
+                margin: 0 !important;
+                top: auto !important;
+                left: auto !important;
+                transform: none !important;
+                line-height: 1 !important;
+                font-size: .8rem;
+                text-align: center;
             }
             .enr-act:hover { transform: scale(1.08); }
             .enr-act.view { color: var(--enr-blue); background: #eaf1fb; }
@@ -168,6 +306,11 @@
 
             .enr-detail-box { background: #f9fafb; padding: .7rem 1rem; border-radius: 8px; }
             .enr-detail-label { font-size: .72rem; color: var(--enr-muted); text-transform: uppercase; font-weight: 700; }
+
+            /* ===== DIÁLOGOS ===== */
+            .ui-dialog .ui-dialog-content {
+                overflow-x: hidden;
+            }
 
             /* ===== VIEW DIALOG COM MARGENS ===== */
             .sc-view-dialog .ui-dialog-content {
@@ -193,6 +336,7 @@
                 font-size: 1.15rem;
                 font-weight: 700;
                 color: var(--enr-text);
+                word-break: break-word;
             }
             .sc-view-sub {
                 font-size: .85rem;
@@ -206,6 +350,7 @@
             }
             .sc-view-grid .enr-detail-box {
                 min-width: 0;
+                word-break: break-word;
             }
             .sc-view-grid .enr-detail-box.full {
                 grid-column: 1 / -1;
@@ -222,43 +367,9 @@
                 margin: 0 1rem 1rem 1rem;
             }
 
-            @media (max-width: 768px) {
-                .sc-view-body {
-                    padding: 1.2rem;
-                    margin: .8rem .8rem 0 .8rem;
-                    max-height: calc(85vh - 120px);
-                }
-                .sc-view-footer {
-                    padding: .8rem 1.2rem;
-                    margin: 0 .8rem .8rem .8rem;
-                }
-            }
-
-            @media (max-width: 576px) {
-                .sc-view-body {
-                    padding: 1rem;
-                    margin: .6rem .6rem 0 .6rem;
-                }
-                .sc-view-grid {
-                    grid-template-columns: 1fr;
-                    gap: .6rem;
-                }
-                .sc-view-footer {
-                    padding: .8rem 1rem;
-                    margin: 0 .6rem .6rem .6rem;
-                    flex-direction: column;
-                    gap: .5rem;
-                }
-                .sc-view-footer .ui-button {
-                    width: 100%;
-                }
-                .sc-view-name {
-                    font-size: 1.05rem;
-                }
-            }
-
+            /* ===== LOADING ===== */
             .sc-loading-overlay {
-                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
                 z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
                 opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s ease;
@@ -268,6 +379,7 @@
                 background: var(--enr-surface); border-radius: var(--enr-radius); padding: 2.5rem 3rem;
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); display: flex; flex-direction: column;
                 align-items: center; gap: 1.2rem; border: 1px solid var(--enr-border); min-width: 260px;
+                max-width: 90vw;
                 transform: scale(0.9); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
             .sc-loading-overlay.active .sc-loading-box { transform: scale(1); }
@@ -303,20 +415,87 @@
             .sc-loading-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow)); border-radius: 99px; animation: scProgress 2s ease-in-out infinite; }
             @keyframes scProgress { 0% { width: 0%; margin-left: 0%; } 50% { width: 60%; margin-left: 20%; } 100% { width: 0%; margin-left: 100%; } }
 
+            /* ===== TABLET (até 991px) ===== */
+            @media (max-width: 991px) {
+                .enr-toolbar,
+                .enr-filters {
+                    padding-left: 1rem;
+                    padding-right: 1rem;
+                }
+                .enr-table.p-datatable .p-datatable-thead>tr>th,
+                .enr-table.p-datatable .p-datatable-tbody>tr>td {
+                    padding-left: .7rem !important;
+                    padding-right: .7rem !important;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .sc-view-body {
+                    padding: 1.2rem;
+                    margin: .8rem .8rem 0 .8rem;
+                    max-height: calc(85vh - 120px);
+                }
+                .sc-view-footer {
+                    padding: .8rem 1.2rem;
+                    margin: 0 .8rem .8rem .8rem;
+                }
+            }
+
+            /* ===== MOBILE (até 576px) ===== */
             @media (max-width: 576px) {
                 .enr-header { flex-direction: column; align-items: stretch; }
                 .enr-header-left { width: 100%; }
                 .enr-toolbar { flex-direction: column; align-items: stretch; }
                 .enr-toolbar-left, .enr-toolbar-right { width: 100%; }
-                .enr-toolbar-right .ui-button, .enr-toolbar-right .ui-menubutton { width: 100%; }
+                .enr-toolbar-right { flex-direction: column; align-items: stretch; }
+                .enr-toolbar-right > * { width: 100%; }
+                .enr-toolbar-right .ui-button,
+                .enr-toolbar-right .ui-menubutton,
+                .enr-toolbar-right .ui-menubutton > .ui-button { width: 100%; }
+
                 .enr-filters { flex-direction: column; align-items: stretch; gap: .5rem; }
-                .enr-filters .ui-inputfield, .enr-filters .ui-selectonemenu, .enr-filters .p-datepicker, .enr-filters .ui-button { width: 100% !important; min-width: unset !important; }
-                .enr-stat-value { font-size: 1.25rem; }
-                .enr-actions { gap: 6px; }
-                .enr-act { width: 34px; height: 34px; font-size: .9rem; }
+                .enr-filters > .ui-inputfield,
+                .enr-filters > .ui-selectonemenu,
+                .enr-filters > .ui-datepicker,
+                .enr-filters > .p-datepicker,
+                .enr-filters > .ui-calendar,
+                .enr-filters > .ui-button {
+                    width: 100% !important;
+                    min-width: 0 !important;
+                    flex: 0 0 auto;
+                }
+
+                .enr-actions { gap: 6px; justify-content: center; }
                 .enr-dialog-footer { justify-content: stretch; }
                 .enr-dialog-footer .ui-button { flex: 1 1 auto; }
-                .sc-loading-box { padding: 2rem 1.5rem; min-width: 220px; margin: 0 1rem; }
+                .sc-loading-box { padding: 1.8rem 1.4rem; min-width: 0; width: 85vw; margin: 0 1rem; }
+
+                .sc-view-body {
+                    padding: 1rem;
+                    margin: .6rem .6rem 0 .6rem;
+                }
+                .sc-view-grid {
+                    grid-template-columns: 1fr;
+                    gap: .6rem;
+                }
+                .sc-view-footer {
+                    padding: .8rem 1rem;
+                    margin: 0 .6rem .6rem .6rem;
+                    flex-direction: column;
+                    gap: .5rem;
+                }
+                .sc-view-footer .ui-button {
+                    width: 100%;
+                }
+                .sc-view-name {
+                    font-size: 1.05rem;
+                }
+            }
+
+            /* ===== MOBILE PEQUENO (até 420px) ===== */
+            @media (max-width: 420px) {
+                .enr-stat { padding: .9rem 1rem; }
+                .enr-header-icon { width: 40px; height: 40px; }
             }
         </style>
 
@@ -397,7 +576,14 @@
                         </div>
                         <div class="enr-toolbar-right">
                             <p:menuButton value="#{msg.exportPrint}" icon="pi pi-file-export"
-                                styleClass="ui-button-outlined">
+                                styleClass="pay-button-gerar">
+                                <p:menuitem value="Imprimir selecionados" icon="pi pi-print"
+                                    action="#{pagamentoController.imprimirPagamentosSelecionados}" ajax="false"
+                                    process="dtPagamentos" target="_blank" />
+                                <p:menuitem value="Baixar selecionados" icon="pi pi-download"
+                                    action="#{pagamentoController.baixarPagamentosSelecionados}" ajax="false"
+                                    process="dtPagamentos" />
+                                <p:divider />
                                 <p:menuitem value="#{msg.downloadListPdf}" icon="pi pi-file-pdf"
                                     actionListener="#{pagamentoController.baixarListaPdf}" ajax="false" />
                                 <p:menuitem value="#{msg.printList}" icon="pi pi-print"
@@ -413,26 +599,34 @@
                                 actionListener="#{pagamentoController.prepareNewPagamento}"
                                 onstart="showScLoading()"
                                 oncomplete="hideScLoading(); PF('createPagamentoDialog').show()"
-                                update=":pagamentoCreateForm" styleClass="ui-button-success" />
+                                update=":pagamentoCreateForm" styleClass="pay-button-gerar" />
                         </div>
                     </div>
 
                     <div class="enr-filters">
-                        <p:inputText value="#{pagamentoController.filtroNumeroDocumento}" placeholder="#{msg.documentNumber}"
-                            style="min-width:160px;" />
+                        <p:inputText value="#{pagamentoController.filtroNumeroDocumento}" placeholder="#{msg.documentNumber}" />
 
-                        <p:inputText value="#{pagamentoController.filtroStudentName}" placeholder="#{msg.student}"
-                            style="min-width:180px;" />
+                        <p:inputText value="#{pagamentoController.filtroStudentName}" placeholder="#{msg.student}" />
 
-                        <p:selectOneMenu value="#{pagamentoController.filtroFormaPagamento}" placeholder="#{msg.paymentMethod}"
-                            style="min-width:180px;">
+                        <p:selectOneMenu value="#{pagamentoController.filtroSchoolClassId}">
+                            <f:selectItem itemLabel="Todas as turmas" itemValue="#{null}" />
+                            <f:selectItems value="#{pagamentoController.schoolClasses}" var="turma"
+                                itemLabel="#{turma.classCode} - #{turma.className}" itemValue="#{turma.pkSchoolClass}" />
+                        </p:selectOneMenu>
+
+                        <p:selectOneMenu value="#{pagamentoController.filtroMesReferencia}">
+                            <f:selectItem itemLabel="Todos os meses" itemValue="#{null}" />
+                            <f:selectItems value="#{pagamentoController.mesesReferencia}" var="mes"
+                                itemLabel="#{mes.descricao}" itemValue="#{mes}" />
+                        </p:selectOneMenu>
+
+                        <p:selectOneMenu value="#{pagamentoController.filtroFormaPagamento}" placeholder="#{msg.paymentMethod}">
                             <f:selectItem itemLabel="#{msg.allMethods}" itemValue="#{null}" />
                             <f:selectItems value="#{pagamentoController.formasPagamento}" var="fp"
                                 itemLabel="#{fp.descricao}" itemValue="#{fp}" />
                         </p:selectOneMenu>
 
-                        <p:selectOneMenu value="#{pagamentoController.filtroEstado}" placeholder="#{msg.status}"
-                            style="min-width:160px;">
+                        <p:selectOneMenu value="#{pagamentoController.filtroEstado}" placeholder="#{msg.status}">
                             <f:selectItem itemLabel="#{msg.allStatuses}" itemValue="#{null}" />
                             <f:selectItems value="#{pagamentoController.estados}" var="es" itemLabel="#{es}"
                                 itemValue="#{es}" />
@@ -445,11 +639,11 @@
                             pattern="dd/MM/yyyy" showIcon="true" yearNavigator="true" monthNavigator="true" yearRange="2020:2035" />
 
                         <p:commandButton icon="pi pi-filter" value="#{msg.apply}" actionListener="#{pagamentoController.applyFilters}"
-                            process="@form" update="dtPagamentos" styleClass="ui-button-primary" />
+                            process="@form" update="dtPagamentos" styleClass="pay-button-gerar" />
                         <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}"
                             actionListener="#{pagamentoController.limparFiltros}" process="@form"
                             update="dtPagamentos @form"
-                            styleClass="ui-button-outlined ui-button-secondary" />
+                            styleClass="pay-button-gerar" />
                     </div>
 
                     <p:dataTable id="dtPagamentos" widgetVar="dtPagamentos" styleClass="enr-table" var="pagamento"
@@ -457,6 +651,10 @@
                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                         currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
                         rowsPerPageTemplate="5,10,20,50" emptyMessage="#{msg.noPaymentFound}">
+
+                        <p:column headerText="" style="width:42px; text-align:center" exportable="false">
+                            <p:selectBooleanCheckbox value="#{pagamentoController.selecaoPagamentos[pagamento.pkPagamento]}" />
+                        </p:column>
 
                         <p:column headerText="#{msg.paymentNumber}" sortBy="#{pagamento.numeroDocumento}"
                             style="width:130px">
@@ -526,14 +724,15 @@
                                     action="#{pagamentoController.openEditDialog(pagamento.pkPagamento)}"
                                     onstart="showScLoading()"
                                     oncomplete="hideScLoading(); PF('editPagamentoDialog').show()" update=":pagamentoEditForm"
-                                    process="@this" />
+                                    process="@this" rendered="#{sessionBean.financial}" />
 
                                 <p:commandButton styleClass="enr-act delete" icon="pi pi-trash" title="#{msg.delete}"
                                     action="#{pagamentoController.delete(pagamento.pkPagamento)}" process="@this"
                                     update="dtPagamentos messages"
                                     onstart="showScLoading()"
                                     oncomplete="hideScLoading()"
-                                    onclick="return confirm('#{msg.deletePayment}')" />
+                                    onclick="return confirm('#{msg.deletePayment}')"
+                                    rendered="#{sessionBean.financial}" />
                             </div>
                         </p:column>
 

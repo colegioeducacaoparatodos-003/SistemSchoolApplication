@@ -3,8 +3,8 @@ package com.SistemSchool.modulo_secrtaria.service;
 import com.SistemSchool.modulo_secrtaria.dto.PagamentoDTO;
 import com.SistemSchool.modulo_secrtaria.io.MesReferencia;
 import com.SistemSchool.modulo_secrtaria.model.Pagamento;
+import com.SistemSchool.report.OpenPdfAuditPageEvent;
 
-import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -32,11 +32,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class PdfGeneratorService {
 
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     // ─────────────────────────────────────────────────────────────
@@ -44,11 +45,14 @@ public class PdfGeneratorService {
     // ─────────────────────────────────────────────────────────────
 
     private static final String SCHOOL_NAME = "COMPLEXO ESCOLAR PRIVADO EDUCAÇÃO PARA TODOS";
-    private static final String SCHOOL_PHONES = "924 259 557 / 953 087 821";
+    private static final String SCHOOL_PHONES = "947 065 174 / 949 006 643 / 954 460 188 / 954 696 704";
     private static final String LOGO_PATH = "/resources/imgs/logo.jpg";
 
-    private static final float HEADER_HEIGHT = 120f;
+    private static final float RECEIPT_PAGE_WIDTH = PageSize.A5.getWidth() - 30f;
+    private static final float HEADER_HEIGHT = 46f;
     private static final float FOOTER_HEIGHT = 46f;
+    private static final float FOOTER_BOTTOM_INSET = 30f;
+    private static final float RECEIPT_BOTTOM_MARGIN = FOOTER_HEIGHT + 15f + FOOTER_BOTTOM_INSET;
 
     // Paleta do cabeçalho: vinho -> vermelho -> dourado -> preto (gradiente)
     private static final Color GRAD_WINE = new Color(78, 17, 32);
@@ -59,17 +63,20 @@ public class PdfGeneratorService {
     // Cor escura usada nos textos/acentos do corpo do documento
     private static final Color HEADER_NAVY = new Color(58, 22, 26);
     private static final Color ACCENT_GOLD = new Color(214, 153, 45);
+    private static final Color RECEIPT_BORDER = new Color(224, 218, 211);
+    private static final Color RECEIPT_SOFT_BG = new Color(250, 248, 245);
 
-    private static final Font FATURA_TITLE_FONT = new Font(Font.HELVETICA, 17, Font.BOLD, Color.WHITE);
-    private static final Font FATURA_NUMBER_FONT = new Font(Font.HELVETICA, 11, Font.BOLD, new Color(255, 232, 200));
-    private static final Font FATURA_CLIENT_FONT = new Font(Font.HELVETICA, 12, Font.BOLD, HEADER_NAVY);
-    private static final Font FATURA_CLIENT_SUB_FONT = new Font(Font.HELVETICA, 9, Font.NORMAL, Color.DARK_GRAY);
-    private static final Font FATURA_TABLE_HEADER_FONT = new Font(Font.HELVETICA, 9, Font.BOLD, HEADER_NAVY);
-    private static final Font FATURA_TABLE_CELL_FONT = new Font(Font.HELVETICA, 9, Font.NORMAL, Color.DARK_GRAY);
-    private static final Font FATURA_TOTAL_LABEL_FONT = new Font(Font.HELVETICA, 11, Font.BOLD, HEADER_NAVY);
-    private static final Font FATURA_TOTAL_VALUE_FONT = new Font(Font.HELVETICA, 13, Font.BOLD, HEADER_NAVY);
+    private static final Font FATURA_TITLE_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, Color.WHITE);
+    private static final Font FATURA_NUMBER_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, new Color(255, 232, 200));
+    private static final Font FATURA_CLIENT_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, HEADER_NAVY);
+    private static final Font FATURA_CLIENT_SUB_FONT = new Font(Font.HELVETICA, 8, Font.NORMAL, Color.DARK_GRAY);
+    private static final Font FATURA_TABLE_HEADER_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, HEADER_NAVY);
+    private static final Font FATURA_TABLE_CELL_FONT = new Font(Font.HELVETICA, 8, Font.NORMAL, Color.DARK_GRAY);
+    private static final Font FATURA_TOTAL_LABEL_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, HEADER_NAVY);
+    private static final Font FATURA_TOTAL_VALUE_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, HEADER_NAVY);
     private static final Font FATURA_DETAIL_LABEL_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, Color.DARK_GRAY);
     private static final Font FATURA_DETAIL_VALUE_FONT = new Font(Font.HELVETICA, 8, Font.NORMAL, Color.BLACK);
+    private static final Font FATURA_SECTION_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, HEADER_NAVY);
     private static final Font FATURA_FOOTER_TITLE_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, Color.WHITE);
     private static final Font FATURA_FOOTER_SUB_FONT = new Font(Font.HELVETICA, 8, Font.NORMAL, Color.WHITE);
 
@@ -88,16 +95,13 @@ public class PdfGeneratorService {
     // ─────────────────────────────────────────────────────────────
 
     public byte[] generatePagamentoPdf(Pagamento pagamento) {
-        Document document = new Document(PageSize.A5, 36, 36, HEADER_HEIGHT + 15, FOOTER_HEIGHT + 15);
+        Document document = new Document(receiptPageSize(), 36, 36, HEADER_HEIGHT + 15, RECEIPT_BOTTOM_MARGIN);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         try {
             PdfWriter writer = PdfWriter.getInstance(document, out);
+            writer.setPageEvent(new PagamentoPageEvent(pagamento.getNumeroDocumento()));
             document.open();
-
-            PdfContentByte cb = writer.getDirectContent();
-            drawFaturaHeader(cb, document.getPageSize(), pagamento.getNumeroDocumento());
-            drawFaturaFooter(cb, document.getPageSize());
 
             String alunoNome = pagamento.getEnrolment() != null && pagamento.getEnrolment().getStudent() != null
                     ? pagamento.getEnrolment().getStudent().getFullName()
@@ -106,24 +110,16 @@ public class PdfGeneratorService {
                     ? pagamento.getEnrolment().getEnrolmentNumer()
                     : "-";
 
-            Paragraph alunoParagraph = new Paragraph(alunoNome.toUpperCase(), FATURA_CLIENT_FONT);
-            alunoParagraph.setSpacingAfter(2);
-            document.add(alunoParagraph);
+            document.add(buildSectionHeading("DADOS DO CLIENTE"));
+            document.add(buildFaturaClientBlock(alunoNome, matricula));
 
-            Paragraph matriculaParagraph = new Paragraph("Matrícula: " + matricula, FATURA_CLIENT_SUB_FONT);
-            matriculaParagraph.setSpacingAfter(16);
-            document.add(matriculaParagraph);
-
+            document.add(buildSectionHeading("ITENS PAGOS"));
             document.add(buildFaturaItemsTable(pagamento));
+            document.add(buildFaturaTotalBlock(pagamento));
 
-            Paragraph totalParagraph = new Paragraph();
-            totalParagraph.setAlignment(Element.ALIGN_RIGHT);
-            totalParagraph.setSpacingBefore(10);
-            totalParagraph.add(new Chunk("TOTAL   ", FATURA_TOTAL_LABEL_FONT));
-            totalParagraph.add(new Chunk(formatMoeda(pagamento.getTotal()), FATURA_TOTAL_VALUE_FONT));
-            document.add(totalParagraph);
-
+            document.add(buildSectionHeading("DETALHES DA TRANSAÇÃO"));
             document.add(buildFaturaDetailsBlock(pagamento));
+            document.add(buildFaturaOperatorBlock(List.of(pagamento)));
 
             document.close();
 
@@ -134,6 +130,151 @@ public class PdfGeneratorService {
         return out.toByteArray();
     }
 
+    public byte[] generatePagamentosPdf(List<Pagamento> pagamentos) {
+        if (pagamentos == null || pagamentos.isEmpty()) {
+            throw new IllegalArgumentException("É necessário indicar pelo menos um pagamento.");
+        }
+        if (pagamentos.size() == 1) {
+            return generatePagamentoPdf(pagamentos.get(0));
+        }
+
+        Pagamento principal = pagamentos.get(0);
+        Document document = new Document(receiptPageSize(), 36, 36, HEADER_HEIGHT + 15, RECEIPT_BOTTOM_MARGIN);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            PdfWriter writer = PdfWriter.getInstance(document, out);
+            writer.setPageEvent(new PagamentoPageEvent("CONSOLIDADO - " + pagamentos.size() + " PAGAMENTOS"));
+            document.open();
+
+            String alunoNome = principal.getEnrolment() != null && principal.getEnrolment().getStudent() != null
+                    ? principal.getEnrolment().getStudent().getFullName()
+                    : "-";
+            String matricula = principal.getEnrolment() != null
+                    ? principal.getEnrolment().getEnrolmentNumer()
+                    : "-";
+
+            document.add(buildSectionHeading("DADOS DO CLIENTE"));
+            document.add(buildFaturaClientBlock(alunoNome, matricula));
+            document.add(buildSectionHeading("ITENS PAGOS"));
+            document.add(buildFaturaItemsTable(pagamentos));
+            document.add(buildFaturaTotalBlock(pagamentos));
+            document.add(buildSectionHeading("DETALHES DA TRANSAÇÃO"));
+            document.add(buildFaturaDetailsBlock(pagamentos));
+            document.add(buildFaturaOperatorBlock(pagamentos));
+
+            document.close();
+        } catch (DocumentException e) {
+            throw new RuntimeException("Erro ao gerar o PDF dos pagamentos: " + e.getMessage(), e);
+        }
+
+        return out.toByteArray();
+    }
+
+    private Paragraph buildSectionHeading(String text) {
+        Paragraph heading = new Paragraph(text, FATURA_SECTION_FONT);
+        heading.setSpacingBefore(10);
+        heading.setSpacingAfter(5);
+        return heading;
+    }
+
+    private Rectangle receiptPageSize() {
+        return new Rectangle(RECEIPT_PAGE_WIDTH, PageSize.A5.getHeight());
+    }
+
+    private PdfPTable buildFaturaClientBlock(String alunoNome, String matricula) {
+        PdfPTable client = new PdfPTable(2);
+        client.setWidthPercentage(100);
+        client.setSpacingAfter(8);
+        try {
+            client.setWidths(new float[] { 2.2f, 1f });
+        } catch (DocumentException ignored) {
+            // larguras válidas, nunca deve ocorrer
+        }
+
+        PdfPCell alunoCell = new PdfPCell();
+        alunoCell.addElement(new Paragraph("ALUNO", FATURA_DETAIL_LABEL_FONT));
+        alunoCell.addElement(new Paragraph(alunoNome.toUpperCase(), FATURA_CLIENT_FONT));
+        styleReceiptCell(alunoCell, RECEIPT_SOFT_BG);
+        client.addCell(alunoCell);
+
+        PdfPCell matriculaCell = new PdfPCell();
+        matriculaCell.addElement(new Paragraph("MATRÍCULA", FATURA_DETAIL_LABEL_FONT));
+        matriculaCell.addElement(new Paragraph(matricula, FATURA_CLIENT_SUB_FONT));
+        styleReceiptCell(matriculaCell, RECEIPT_SOFT_BG);
+        client.addCell(matriculaCell);
+        return client;
+    }
+
+    private PdfPTable buildFaturaTotalBlock(Pagamento pagamento) {
+        PdfPTable total = new PdfPTable(2);
+        total.setWidthPercentage(100);
+        total.setSpacingBefore(10);
+        total.setSpacingAfter(2);
+        try {
+            total.setWidths(new float[] { 1f, 1.2f });
+        } catch (DocumentException ignored) {
+            // larguras válidas, nunca deve ocorrer
+        }
+
+        PdfPCell label = new PdfPCell(new Phrase("TOTAL RECEBIDO", FATURA_TOTAL_LABEL_FONT));
+        label.setBorder(Rectangle.NO_BORDER);
+        label.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        label.setPadding(10);
+        label.setBackgroundColor(RECEIPT_SOFT_BG);
+        total.addCell(label);
+
+        PdfPCell value = new PdfPCell(new Phrase(formatMoeda(pagamento.getTotal()), FATURA_TOTAL_VALUE_FONT));
+        value.setBorder(Rectangle.NO_BORDER);
+        value.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        value.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        value.setPadding(10);
+        value.setBackgroundColor(RECEIPT_SOFT_BG);
+        total.addCell(value);
+        return total;
+    }
+
+    private PdfPTable buildFaturaTotalBlock(List<Pagamento> pagamentos) {
+        BigDecimal totalRecebido = pagamentos.stream()
+                .map(Pagamento::getTotal)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        PdfPTable total = new PdfPTable(2);
+        total.setWidthPercentage(100);
+        total.setSpacingBefore(10);
+        total.setSpacingAfter(2);
+        try {
+            total.setWidths(new float[] { 1f, 1.2f });
+        } catch (DocumentException ignored) {
+            // larguras válidas, nunca deve ocorrer
+        }
+
+        PdfPCell label = new PdfPCell(new Phrase("TOTAL RECEBIDO", FATURA_TOTAL_LABEL_FONT));
+        label.setBorder(Rectangle.NO_BORDER);
+        label.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        label.setPadding(10);
+        label.setBackgroundColor(RECEIPT_SOFT_BG);
+        total.addCell(label);
+
+        PdfPCell value = new PdfPCell(new Phrase(formatMoeda(totalRecebido), FATURA_TOTAL_VALUE_FONT));
+        value.setBorder(Rectangle.NO_BORDER);
+        value.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        value.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        value.setPadding(10);
+        value.setBackgroundColor(RECEIPT_SOFT_BG);
+        total.addCell(value);
+        return total;
+    }
+
+    private void styleReceiptCell(PdfPCell cell, Color background) {
+        cell.setBackgroundColor(background);
+        cell.setBorderColor(RECEIPT_BORDER);
+        cell.setBorderWidth(0.7f);
+        cell.setPadding(8);
+        cell.setPaddingTop(7);
+        cell.setPaddingBottom(7);
+    }
+
     private void drawFaturaHeader(PdfContentByte cb, Rectangle pageSize, String numeroDocumento) {
         float pageWidth = pageSize.getWidth();
         float pageHeight = pageSize.getHeight();
@@ -142,17 +283,17 @@ public class PdfGeneratorService {
         drawHeaderGradient(cb, 0, headerY, pageWidth, HEADER_HEIGHT);
 
         ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
-                new Phrase("RECIBO DE PAGAMENTO", FATURA_TITLE_FONT), 36, pageHeight - 48, 0);
+                new Phrase("RECIBO DE PAGAMENTO", FATURA_TITLE_FONT), 36, pageHeight - 18, 0);
 
         ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
                 new Phrase(numeroDocumento != null ? numeroDocumento : "-", FATURA_NUMBER_FONT),
-                36, pageHeight - 68, 0);
+                36, pageHeight - 33, 0);
 
         try {
             Image logo = loadLogo();
             if (logo != null) {
                 float maxWidth = 80f;
-                float maxHeight = 55f;
+                float maxHeight = HEADER_HEIGHT - 12f;
                 logo.scaleToFit(maxWidth, maxHeight);
                 float x = pageWidth - 36 - logo.getScaledWidth();
                 float y = pageHeight - (HEADER_HEIGHT / 2) - (logo.getScaledHeight() / 2);
@@ -202,12 +343,12 @@ public class PdfGeneratorService {
         return new Color(r, g, b);
     }
 
-    private void drawFaturaFooter(PdfContentByte cb, Rectangle pageSize) {
+    private void drawFaturaFooter(PdfContentByte cb, Rectangle pageSize, String userLabel, String issuedAt) {
         float pageWidth = pageSize.getWidth();
 
         cb.saveState();
         cb.setColorFill(ACCENT_GOLD);
-        cb.rectangle(0, 0, pageWidth, FOOTER_HEIGHT);
+        cb.rectangle(0, FOOTER_BOTTOM_INSET, pageWidth, FOOTER_HEIGHT);
         cb.fill();
         cb.restoreState();
 
@@ -219,7 +360,7 @@ public class PdfGeneratorService {
             Image logo = loadLogo();
             if (logo != null) {
                 logo.scaleToFit(logoMaxSize, logoMaxSize);
-                float y = (FOOTER_HEIGHT - logo.getScaledHeight()) / 2f;
+                float y = FOOTER_BOTTOM_INSET + (FOOTER_HEIGHT - logo.getScaledHeight()) / 2f;
                 logo.setAbsolutePosition(logoX, y);
                 cb.addImage(logo);
                 textStartX = logoX + logo.getScaledWidth() + 8f;
@@ -229,11 +370,15 @@ public class PdfGeneratorService {
         }
 
         ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
-                new Phrase(SCHOOL_NAME, FATURA_FOOTER_TITLE_FONT), textStartX, FOOTER_HEIGHT / 2f + 2, 0);
+                new Phrase(SCHOOL_NAME, FATURA_FOOTER_TITLE_FONT), textStartX, FOOTER_BOTTOM_INSET + 31, 0);
 
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
+                new Phrase("Contacto: " + SCHOOL_PHONES, FATURA_FOOTER_SUB_FONT), textStartX, FOOTER_BOTTOM_INSET + 17, 0);
+
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
+                new Phrase(issuedAt, FATURA_FOOTER_SUB_FONT), textStartX, FOOTER_BOTTOM_INSET + 5, 0);
         ColumnText.showTextAligned(cb, Element.ALIGN_RIGHT,
-                new Phrase("Contacto: " + SCHOOL_PHONES, FATURA_FOOTER_SUB_FONT),
-                pageWidth - 10, FOOTER_HEIGHT / 2f - 8, 0);
+                new Phrase(userLabel, FATURA_FOOTER_SUB_FONT), pageWidth - 10, FOOTER_BOTTOM_INSET + 5, 0);
     }
 
     private Image loadLogo() {
@@ -256,6 +401,8 @@ public class PdfGeneratorService {
     private PdfPTable buildFaturaItemsTable(Pagamento pagamento) {
         PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100);
+        table.setHeaderRows(1);
+        table.setKeepTogether(true);
         try {
             table.setWidths(new float[] { 3.2f, 1.2f, 1.6f, 1.6f });
         } catch (DocumentException ignored) {
@@ -283,6 +430,52 @@ public class PdfGeneratorService {
         }
 
         return table;
+    }
+
+    private PdfPTable buildFaturaItemsTable(List<Pagamento> pagamentos) {
+        PdfPTable table = new PdfPTable(4);
+        table.setWidthPercentage(100);
+        table.setHeaderRows(1);
+        try {
+            table.setWidths(new float[] { 3.2f, 1.2f, 1.6f, 1.6f });
+        } catch (DocumentException ignored) {
+            // larguras válidas, nunca deve ocorrer
+        }
+
+        String[] headers = { "DESCRIÇÃO", "QTD", "PREÇO", "TAXA" };
+        for (String header : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(header, FATURA_TABLE_HEADER_FONT));
+            cell.setBorder(Rectangle.BOTTOM);
+            cell.setBorderWidth(1.2f);
+            cell.setBorderColor(ACCENT_GOLD);
+            cell.setPaddingBottom(6);
+            cell.setHorizontalAlignment("DESCRIÇÃO".equals(header) ? Element.ALIGN_LEFT : Element.ALIGN_RIGHT);
+            table.addCell(cell);
+        }
+
+        for (Pagamento pagamento : pagamentos) {
+            String descricao = describePagamento(pagamento);
+            addFaturaRow(table, descricao, "01",
+                    formatMoeda(pagamento.getValor()), formatMoeda(pagamento.getValor()));
+
+            if (pagamento.getMulta() != null && pagamento.getMulta().signum() > 0) {
+                addFaturaRow(table, "Multa por atraso - " + descricao, "01",
+                        formatMoeda(pagamento.getMulta()), formatMoeda(pagamento.getMulta()));
+            }
+        }
+        return table;
+    }
+
+    private String describePagamento(Pagamento pagamento) {
+        String descricaoFee = pagamento.getFee() != null ? pagamento.getFee().getDescription() : null;
+        String mesReferencia = describeMesReferencia(pagamento.getMesReferencia());
+        if (descricaoFee == null || descricaoFee.isBlank()) {
+            return mesReferencia;
+        }
+        if (pagamento.getMesReferencia() == null) {
+            return descricaoFee;
+        }
+        return descricaoFee + " - " + mesReferencia;
     }
 
     /**
@@ -353,6 +546,90 @@ public class PdfGeneratorService {
         return details;
     }
 
+    private PdfPTable buildFaturaDetailsBlock(List<Pagamento> pagamentos) {
+        PdfPTable details = new PdfPTable(2);
+        details.setWidthPercentage(100);
+        details.setSpacingBefore(20);
+        try {
+            details.setWidths(new float[] { 1f, 1f });
+        } catch (DocumentException ignored) {
+            // larguras válidas, nunca deve ocorrer
+        }
+
+        addDetailRow(details, "Documentos de origem:",
+                joinDistinct(pagamentos, Pagamento::getNumeroDocumento));
+        addDetailRow(details, "Forma de Pagamento:",
+                joinDistinct(pagamentos, p -> p.getFormaPagamento() != null ? p.getFormaPagamento().toString() : null));
+        addDetailRow(details, "Caixa:",
+                joinDistinct(pagamentos, p -> p.getCashBox() != null ? p.getCashBox().getCashBoxNumber() : null));
+        addDetailRow(details, "Data do Pagamento:",
+                joinDistinct(pagamentos, p -> p.getDataPagamento() != null
+                        ? p.getDataPagamento().format(DATETIME_FMT)
+                        : null));
+        addDetailRow(details, "Estado:",
+                joinDistinct(pagamentos, p -> p.getEstado() != null ? p.getEstado().toString() : null));
+        addDetailRow(details, "Referência:",
+                joinDistinct(pagamentos, Pagamento::getReferencia));
+        return details;
+    }
+
+    private String joinDistinct(List<Pagamento> pagamentos, Function<Pagamento, String> valueMapper) {
+        String values = pagamentos.stream()
+                .map(valueMapper)
+                .filter(value -> value != null && !value.isBlank())
+                .distinct()
+                .collect(Collectors.joining(", "));
+        return values.isEmpty() ? "-" : values;
+    }
+
+    private PdfPTable buildFaturaOperatorBlock(List<Pagamento> pagamentos) {
+        PdfPTable operators = new PdfPTable(2);
+        operators.setWidthPercentage(100);
+        operators.setSpacingBefore(6);
+        try {
+            operators.setWidths(new float[] { 1f, 1f });
+        } catch (DocumentException ignored) {
+            // larguras válidas, nunca deve ocorrer
+        }
+
+        if (pagamentos.size() == 1) {
+            addDetailRow(operators, "Lançado por:", operatorName(pagamentos.get(0)));
+        } else {
+            for (Pagamento pagamento : pagamentos) {
+                String documento = pagamento.getNumeroDocumento() != null
+                        ? pagamento.getNumeroDocumento()
+                        : "Pagamento";
+                addDetailRow(operators, documento + " - Lançado por:", operatorName(pagamento));
+            }
+        }
+        return operators;
+    }
+
+    private String operatorName(Pagamento pagamento) {
+        return pagamento.getRegistradoPor() != null && !pagamento.getRegistradoPor().isBlank()
+                ? pagamento.getRegistradoPor()
+                : "Não informado";
+    }
+
+    private final class PagamentoPageEvent extends OpenPdfAuditPageEvent {
+        private String numeroDocumento;
+
+        private PagamentoPageEvent(String numeroDocumento) {
+            this.numeroDocumento = numeroDocumento;
+        }
+
+        private void setNumeroDocumento(String numeroDocumento) {
+            this.numeroDocumento = numeroDocumento;
+        }
+
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfContentByte canvas = writer.getDirectContent();
+            drawFaturaHeader(canvas, document.getPageSize(), numeroDocumento);
+            drawFaturaFooter(canvas, document.getPageSize(), getUserLabel(), getIssuedAt());
+        }
+    }
+
     private void addDetailRow(PdfPTable table, String label, String value) {
         PdfPCell labelCell = new PdfPCell(new Phrase(label, FATURA_DETAIL_LABEL_FONT));
         labelCell.setBorder(Rectangle.NO_BORDER);
@@ -372,11 +649,12 @@ public class PdfGeneratorService {
     // ─────────────────────────────────────────────────────────────
 
     public byte[] generatePagamentosListPdf(List<PagamentoDTO> pagamentos, String titulo) {
-        Document document = new Document(PageSize.A4.rotate(), 20, 20, 30, 20);
+        Document document = new Document(PageSize.A4, 24, 24, 30, 24);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try {
-            PdfWriter.getInstance(document, baos);
+            PdfWriter writer = PdfWriter.getInstance(document, baos);
+            writer.setPageEvent(new OpenPdfAuditPageEvent());
             document.open();
 
             Paragraph tituloParagraph = new Paragraph(titulo != null ? titulo : "Lista de Pagamentos", LIST_TITLE_FONT);
@@ -391,7 +669,8 @@ public class PdfGeneratorService {
 
             PdfPTable table = new PdfPTable(8);
             table.setWidthPercentage(100);
-            table.setWidths(new float[] { 2.2f, 2.8f, 1.6f, 1.6f, 1.6f, 1.6f, 1.3f, 1.6f });
+            table.setHeaderRows(1);
+            table.setWidths(new float[] { 2.2f, 3.4f, 1.7f, 1.7f, 1.8f, 2.2f, 1.5f, 2.1f });
 
             String[] headers = { "Nº Documento", "Aluno", "Valor Pago", "Total",
                     "Método", "Data Pagamento", "Estado", "Referência" };
@@ -400,6 +679,7 @@ public class PdfGeneratorService {
                 cell.setBackgroundColor(HEADER_BG);
                 cell.setPadding(6);
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
                 table.addCell(cell);
             }
 
@@ -410,6 +690,7 @@ public class PdfGeneratorService {
 
                 addCell(table, p.getNumeroDocumento(), bg);
                 addCell(table, p.getStudentFullName(), bg);
+                addCell(table, formatMoeda(p.getValor()), bg);
                 addCell(table, formatMoeda(p.getTotal()), bg);
                 addCell(table, p.getFormaPagamento() != null ? p.getFormaPagamento().getDescricao() : "-", bg);
                 addCell(table, p.getDataPagamento() != null ? p.getDataPagamento().format(DATETIME_FMT) : "-", bg);

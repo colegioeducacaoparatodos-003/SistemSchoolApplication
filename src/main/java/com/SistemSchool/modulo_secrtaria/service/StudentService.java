@@ -128,6 +128,7 @@ public class StudentService {
     }
 
     public void delete(Long id) {
+            com.SistemSchool.config.AdminDeleteGuard.requireAdmin();
         try {
             Student student = repository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Aluno não encontrado com id: " + id));
@@ -311,9 +312,10 @@ public class StudentService {
         if (biNumber == null || biNumber.isBlank()) {
             return;
         }
-        if (!BIValidator.isValid(biNumber)) {
-            throw new RuntimeException(
-                    "Número de BI inválido. Formato esperado: 9 dígitos + 2 letras + 3 dígitos (ex: 123456789LA041).");
+
+        BIValidator.Resultado resultado = BIValidator.validarOnline(biNumber);
+        if (!resultado.isValido()) {
+            throw new RuntimeException(resultado.getMotivo());
         }
     }
 

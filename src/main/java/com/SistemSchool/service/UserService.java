@@ -8,11 +8,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.SistemSchool.dto.UserDTO;
+import com.SistemSchool.exception.EmailNotVerifiedException;
 import com.SistemSchool.io.Perfil;
 import com.SistemSchool.mapper.UserMapper;
+import com.SistemSchool.model.Person;
 import com.SistemSchool.model.User;
+import com.SistemSchool.repository.PersonRepository;
 import com.SistemSchool.repository.UserRepository;
 
 import jakarta.persistence.EntityManager;
@@ -22,6 +26,9 @@ import jakarta.persistence.Query;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,18 +39,31 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PersonRepository personRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     @PersistenceContext
     private EntityManager entityManager;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PersonRepository personRepository,
+            PasswordEncoder passwordEncoder, EmailService emailService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.personRepository = personRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     public UserDTO.UserResponseDTO createUser(UserDTO.CreateUserDTO createUserDTO) {
+        if (createUserDTO == null) {
+            throw new IllegalArgumentException("Os dados do usuário são obrigatórios.");
+        }
+        if (createUserDTO.getFirstName() == null || createUserDTO.getFirstName().isBlank()
+                || createUserDTO.getLastName() == null || createUserDTO.getLastName().isBlank()) {
+            throw new IllegalArgumentException("Nome e apelido são obrigatórios.");
+        }
         logger.info("Criando novo usuário com email: {}", createUserDTO.getEmail());
 
         if (userRepository.existsByEmailNative(createUserDTO.getEmail()) > 0) {
@@ -52,11 +72,34 @@ public class UserService {
 
         User user = userMapper.toEntity(createUserDTO);
         user.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
+        user.setEmailVerified(false);
+        user.setEmailVerificationToken(generateToken());
+        user.setEmailVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
 
         User savedUser = userRepository.save(user);
+
+        Person person = new Person();
+        person.setFirstName(createUserDTO.getFirstName().trim());
+        person.setMiddleName(trimToNull(createUserDTO.getMiddleName()));
+        person.setLastName(createUserDTO.getLastName().trim());
+        person.setPhone(trimToNull(createUserDTO.getPhone()));
+        person.setAddress(trimToNull(createUserDTO.getAddress()));
+        person.setCity(trimToNull(createUserDTO.getCity()));
+        person.setEmail(savedUser.getEmail());
+        person.setFkUser(savedUser.getPkUser());
+        Person savedPerson = personRepository.save(person);
+
+        savedUser.setFkPerson(savedPerson.getPkPerson());
+        savedUser = userRepository.save(savedUser);
+
+        emailService.sendVerificationEmail(savedUser.getEmail(), savedUser.getEmailVerificationToken());
         logger.info("Usuário criado com ID: {}", savedUser.getPkUser());
 
         return userMapper.toResponseDTO(savedUser);
+    }
+
+    private String trimToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     public UserDTO.UserResponseDTO getUserById(int userId) {
@@ -73,6 +116,76 @@ public class UserService {
 
     public Optional<UserDTO.UserResponseDTO> getUserByEmail(String email) {
         return userRepository.findByEmailNative(email).map(userMapper::toResponseDTO);
+    }
+
+    @Transactional
+    public void requestPasswordReset(String email) {
+        String normalizedEmail = email.trim().toLowerCase();
+        Optional<User> userOptional = userRepository.findByEmail(normalizedEmail);
+        if (userOptional.isEmpty()) {
+            logger.warn("Solicitação de recuperação sem conta encontrada para o email informado");
+            return;
+        }
+
+        userOptional.ifPresent(user -> {
+            String token = generateToken();
+            user.setResetToken(token);
+            user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(30));
+            userRepository.save(user);
+            emailService.sendPasswordResetEmail(user.getEmail(), token);
+            logger.info("Solicitação de recuperação processada para o usuário {}", user.getPkUser());
+        });
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        User user = userRepository.findByResetToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Token de recuperação inválido ou expirado."));
+        if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Token de recuperação inválido ou expirado.");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
+        user.setEmailVerificationTokenExpiry(null);
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void verifyEmail(String token) {
+        User user = userRepository.findByEmailVerificationToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Token de confirmação inválido ou expirado."));
+        if (user.getEmailVerificationTokenExpiry() == null
+                || user.getEmailVerificationTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Token de confirmação inválido ou expirado.");
+        }
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
+        user.setEmailVerificationTokenExpiry(null);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public UserDTO.UserResponseDTO resendEmailVerification(int userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + userId));
+        if (Boolean.TRUE.equals(user.getEmailVerified())) {
+            throw new IllegalStateException("O e-mail deste usuário já está confirmado.");
+        }
+
+        user.setEmailVerificationToken(generateToken());
+        user.setEmailVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
+        User updatedUser = userRepository.save(user);
+        emailService.sendVerificationEmail(updatedUser.getEmail(), updatedUser.getEmailVerificationToken());
+        return userMapper.toResponseDTO(updatedUser);
+    }
+
+    private String generateToken() {
+        byte[] bytes = new byte[32];
+        secureRandom.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
     public UserDTO.UserResponseDTO updateUser(UserDTO.UpdateUserDTO updateUserDTO) {
@@ -99,6 +212,24 @@ public class UserService {
         int updated = userRepository.updateUserStatusNative(userId, active);
         if (updated == 0) {
             throw new RuntimeException("Usuário não encontrado com ID: " + userId);
+        }
+    }
+
+    public void deleteUser(int userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + userId));
+
+        if (user.getPerfil() == Perfil.ADMIN && user.isActive()
+                && userRepository.countByPerfilAndActiveTrue(Perfil.ADMIN) <= 1) {
+            throw new IllegalStateException("Não é possível eliminar o último administrador ativo.");
+        }
+
+        try {
+            userRepository.delete(user);
+            userRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalStateException(
+                    "Não é possível eliminar este usuário porque existem registros associados a ele.", e);
         }
     }
 
@@ -131,8 +262,14 @@ public class UserService {
             throw new RuntimeException("Usuário inativo");
         }
 
+        if (Boolean.FALSE.equals(user.getEmailVerified())) {
+            throw new EmailNotVerifiedException();
+        }
+
         logger.info("Usuário autenticado com sucesso: {}", userId);
-        return userMapper.toResponseDTO(user);
+        UserDTO.UserResponseDTO response = userMapper.toResponseDTO(user);
+        response.setPersonName(userRepository.findPersonNameById(user.getFkPerson()).orElse(null));
+        return response;
     }
 
     public List<UserDTO.UserResponseDTO> getUsersByPerfil(Perfil perfil) {

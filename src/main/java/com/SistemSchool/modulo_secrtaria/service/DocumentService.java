@@ -35,12 +35,10 @@ public class DocumentService {
     /**
      * Pasta onde os ficheiros são gravados. Pode ser sobreposta em
      * application.properties com:
-     *   app.documents.storage-path=/caminho/absoluto/documents_files
-     * Se for um caminho relativo (como o padrão), é resolvido a partir do
-     * diretório de trabalho do processo (user.dir) — NÃO depende de
-     * ExternalContext.getRealPath(), que devolve null em jar empacotado.
+    *   app.documents.storage-path=/caminho/absoluto/documents_files
+    * O padrão aponta para src/main/webapp/documents_files no projeto.
      */
-    @Value("${app.documents.storage-path:webapp/documents_files}")
+    @Value("${app.documents.storage-path:${user.dir}/src/main/webapp/documents_files}")
     private String storageDir;
 
     public DocumentService(DocumentRepository repository) {
@@ -72,9 +70,13 @@ public class DocumentService {
         }
 
         String nomeGravado = salvarFicheiro(uploadedFile);
+        String nomeOriginal = uploadedFile.getFileName();
+        String extensaoOriginal = obterExtensao(nomeOriginal);
 
         if (document.getFileName() == null || document.getFileName().isBlank()) {
-            document.setFileName(uploadedFile.getFileName());
+            document.setFileName(nomeOriginal);
+        } else if (!extensaoOriginal.isEmpty() && obterExtensao(document.getFileName()).isEmpty()) {
+            document.setFileName(document.getFileName() + extensaoOriginal);
         }
         document.setContentType(uploadedFile.getContentType());
         document.setFilePath(nomeGravado);
@@ -100,11 +102,7 @@ public class DocumentService {
         }
 
         String nomeOriginal = uploadedFile.getFileName();
-        String extensao = "";
-        int dotIndex = nomeOriginal.lastIndexOf('.');
-        if (dotIndex >= 0) {
-            extensao = nomeOriginal.substring(dotIndex);
-        }
+        String extensao = obterExtensao(nomeOriginal);
 
         String nomeFinal = UUID.randomUUID() + extensao;
         Path destino = pastaDestino.resolve(nomeFinal);
@@ -114,6 +112,15 @@ public class DocumentService {
         }
 
         return nomeFinal;
+    }
+
+    private String obterExtensao(String nomeFicheiro) {
+        if (nomeFicheiro == null) {
+            return "";
+        }
+
+        int dotIndex = nomeFicheiro.lastIndexOf('.');
+        return dotIndex > 0 ? nomeFicheiro.substring(dotIndex) : "";
     }
 
     private Path resolverPastaDestino() {
@@ -133,6 +140,7 @@ public class DocumentService {
     }
 
     public void delete(int id) {
+            com.SistemSchool.config.AdminDeleteGuard.requireAdmin();
         repository.deleteById(id);
     }
 

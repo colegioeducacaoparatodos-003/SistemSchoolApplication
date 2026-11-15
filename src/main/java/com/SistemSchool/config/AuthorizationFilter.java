@@ -14,7 +14,6 @@ import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
-import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -31,7 +30,6 @@ import org.slf4j.LoggerFactory;
  * real ("loggedUser"). Isto garante isolamento correto por dispositivo/
  * browser, sem qualquer ambiguidade de resolução de scope.
  */
-@WebFilter("/*")
 public class AuthorizationFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthorizationFilter.class);
@@ -50,7 +48,8 @@ public class AuthorizationFilter implements Filter {
     private static final String[] PUBLIC_ROUTES = {
             "/login.xhtml",
             "/components/dashboard/sign_in.xhtml",
-            "/access-denied.xhtml"
+            "/components/dashboard/recuperar_senha.xhtml",
+            "/verify-email.xhtml"
     };
 
     private static final String[] PUBLIC_PREFIXES = {
@@ -97,8 +96,8 @@ public class AuthorizationFilter implements Filter {
 
         Perfil perfil = loggedUser.getPerfil();
 
-        // ADMIN tem acesso irrestrito a todos os módulos
-        if (perfil == Perfil.ADMIN) {
+        // ADMIN e FINANCIAL têm acesso irrestrito a todas as views.
+        if (perfil == Perfil.ADMIN || perfil == Perfil.FINANCIAL) {
             chain.doFilter(req, res);
             return;
         }

@@ -27,11 +27,34 @@
                 --font-mono: 'DM Mono', monospace;
             }
 
+            .ui-button.mov-button-gerar,
+            .ui-menubutton.mov-button-gerar > .ui-button {
+                color: var(--mov-yellow) !important;
+                background: linear-gradient(135deg, var(--mov-black) 0%, var(--mov-red) 100%) !important;
+                border: none !important;
+                box-shadow: 0 3px 10px rgba(200, 16, 46, .28) !important;
+                transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
+            }
+
+            .ui-button.mov-button-gerar .ui-button-text,
+            .ui-button.mov-button-gerar .ui-button-icon-left,
+            .ui-menubutton.mov-button-gerar > .ui-button .ui-button-text,
+            .ui-menubutton.mov-button-gerar > .ui-button .ui-button-icon-left {
+                color: var(--mov-yellow) !important;
+            }
+
+            .ui-button.mov-button-gerar:not(.ui-state-disabled):hover,
+            .ui-menubutton.mov-button-gerar > .ui-button:not(.ui-state-disabled):hover {
+                filter: brightness(1.12);
+                box-shadow: 0 5px 14px rgba(200, 16, 46, .36) !important;
+            }
+
             .breadcrumb-pill {
                 display: inline-flex; align-items: center; gap: 5px;
                 background: #fff8e1; border: 1px solid rgba(245, 180, 0, .35);
                 color: #8a6400; border-radius: 99px; padding: 3px 12px;
                 font-size: .72rem; font-weight: 600;
+                max-width: 100%; flex-wrap: wrap;
             }
 
             .t-num {
@@ -46,21 +69,46 @@
             .t-amount.income { color: var(--mov-green); }
             .t-amount.expense { color: var(--mov-red); }
 
-            .mov-page { padding: 1.2rem; }
-            @media(min-width:768px) { .mov-page { padding: 1.6rem 2rem 2.5rem; } }
+            /* ===== PÁGINA: margens laterais e inferior responsivas ===== */
+            .mov-page,
+            .mov-page * {
+                box-sizing: border-box;
+            }
+
+            .mov-page {
+                width: 100%;
+                max-width: 1600px;
+                margin: 0 auto;
+                padding: clamp(.75rem, 3vw, 2rem);
+                padding-bottom: clamp(2rem, 6vw, 3.5rem);
+            }
 
             .mov-header {
                 display: flex; align-items: flex-start; justify-content: space-between;
                 flex-wrap: wrap; gap: 1rem; margin-bottom: 1.4rem;
             }
-            .mov-header-left { display: flex; align-items: center; gap: 1rem; }
+            .mov-header-left { display: flex; align-items: center; gap: 1rem; min-width: 0; }
             .mov-header-icon {
                 width: 46px; height: 46px; border-radius: 12px;
                 background: linear-gradient(135deg, var(--mov-black) 0%, var(--mov-red) 100%);
                 display: flex; align-items: center; justify-content: center;
                 color: var(--mov-yellow); font-size: 1.2rem; flex-shrink: 0;
             }
-            .mov-header-title h1 { font-size: 1.35rem; font-weight: 800; margin: 0 0 .2rem; color: var(--mov-text); }
+
+            /* ===== ÍCONES CENTRALIZADOS ===== */
+            .mov-header-icon i,
+            .mov-stat-icon i {
+                display: block;
+                line-height: 1;
+                margin: 0;
+                text-align: center;
+            }
+
+            .mov-header-title { min-width: 0; }
+            .mov-header-title h1 {
+                font-size: clamp(1.1rem, 2.5vw, 1.35rem); font-weight: 800;
+                margin: 0 0 .2rem; color: var(--mov-text); word-break: break-word;
+            }
             .mov-header-title p { font-size: .85rem; color: var(--mov-muted); margin: 0; }
 
             .mov-stats {
@@ -73,12 +121,16 @@
                 background: var(--mov-surface); border: 1px solid var(--mov-border);
                 border-radius: var(--mov-radius); box-shadow: var(--mov-shadow);
                 padding: 1.1rem 1.2rem; display: flex; align-items: center; justify-content: space-between;
+                gap: .6rem; min-width: 0;
                 transition: transform .2s;
             }
             .mov-stat:hover { transform: translateY(-2px); }
             .mov-stat-label { font-size: .72rem; color: var(--mov-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
-            .mov-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--mov-text); margin-top: .15rem; }
-            .mov-stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+            .mov-stat-value {
+                font-size: clamp(1.1rem, 2.6vw, 1.5rem); font-weight: 800; color: var(--mov-text);
+                margin-top: .15rem; word-break: break-word;
+            }
+            .mov-stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
             .mov-stat-icon.dark { background: var(--mov-black); color: var(--mov-yellow); }
             .mov-stat-icon.green { background: #e6f4ea; color: var(--mov-green); }
             .mov-stat-icon.red { background: #fdecee; color: var(--mov-red); }
@@ -87,6 +139,7 @@
             .mov-card {
                 background: var(--mov-surface); border: 1px solid var(--mov-border);
                 border-radius: var(--mov-radius); box-shadow: var(--mov-shadow); overflow: hidden;
+                width: 100%; max-width: 100%;
             }
 
             .mov-toolbar {
@@ -103,8 +156,20 @@
                 border-bottom: 1px solid var(--mov-border);
             }
             .mov-filters .ui-inputfield, .mov-filters .ui-selectonemenu { min-width: 160px; }
+            .mov-filters > .ui-inputfield,
+            .mov-filters > .ui-selectonemenu,
+            .mov-filters > .ui-datepicker,
+            .mov-filters > .p-datepicker {
+                flex: 1 1 160px;
+                max-width: 100%;
+            }
 
-            /* ===== TABELA COMPACTA ===== */
+            /* ===== TABELA ===== */
+            .mov-table .ui-datatable-tablewrapper,
+            .mov-table .p-datatable-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
             .mov-table.p-datatable .p-datatable-thead tr th {
                 background: var(--mov-black) !important; color: var(--mov-yellow) !important;
                 font-size: .65rem !important; text-transform: uppercase !important;
@@ -116,6 +181,14 @@
                 vertical-align: middle;
             }
             .mov-table.p-datatable .p-datatable-tbody tr:hover { background: var(--mov-surface-2) !important; }
+            .mov-table .ui-paginator {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+                gap: .25rem;
+                white-space: normal;
+            }
 
             .mov-badge {
                 display: inline-flex; align-items: center; gap: 4px;
@@ -127,11 +200,46 @@
             .mov-badge.cancelled { background: var(--mov-black); color: #fff; }
             .mov-badge.pending { background: #eaf1fb; color: var(--mov-blue); border: 1px solid rgba(26, 95, 180, .25); }
 
-            .mov-actions { display: flex; align-items: center; gap: 3px; justify-content: center; flex-wrap: wrap; }
-            .mov-act {
-                width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--mov-border);
-                display: inline-flex; align-items: center; justify-content: center;
-                font-size: .75rem; cursor: pointer; transition: all .15s; padding: 0 !important;
+            /* ===== AÇÕES: ícones centralizados ===== */
+            .mov-actions {
+                display: flex; align-items: center; gap: 3px; justify-content: center; flex-wrap: wrap;
+                width: 100%;
+            }
+            .mov-act,
+            .ui-button.mov-act {
+                width: 26px !important;
+                height: 26px !important;
+                min-width: 26px !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border-radius: 5px;
+                border: 1px solid var(--mov-border);
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: .75rem;
+                line-height: 1;
+                cursor: pointer;
+                transition: all .15s;
+                text-align: center;
+            }
+            .mov-act .ui-button-text,
+            .ui-button.mov-act .ui-button-text {
+                display: none !important;
+            }
+            .mov-act .ui-button-icon-left,
+            .mov-act .ui-icon,
+            .ui-button.mov-act .ui-button-icon-left,
+            .ui-button.mov-act .ui-icon {
+                position: static !important;
+                display: block !important;
+                margin: 0 !important;
+                top: auto !important;
+                left: auto !important;
+                transform: none !important;
+                line-height: 1 !important;
+                font-size: .75rem;
+                text-align: center;
             }
             .mov-act:hover { transform: scale(1.08); }
             .mov-act.view { color: var(--mov-blue); background: #eaf1fb; }
@@ -143,9 +251,24 @@
 
             .mov-dialog-footer { display: flex; justify-content: flex-end; gap: .6rem; margin-top: .5rem; flex-wrap: wrap; }
 
-            /* Loading Overlay */
+            /* ===== DIÁLOGOS ===== */
+            .ui-dialog .ui-dialog-content {
+                overflow-x: hidden;
+            }
+            .mov-view-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: .8rem;
+                font-size: .9rem;
+            }
+            .mov-view-grid > div {
+                min-width: 0;
+                word-break: break-word;
+            }
+
+            /* ===== LOADING ===== */
             .sc-loading-overlay {
-                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
                 z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
                 opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s ease;
@@ -155,6 +278,7 @@
                 background: var(--mov-surface); border-radius: var(--mov-radius); padding: 2.5rem 3rem;
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); display: flex; flex-direction: column;
                 align-items: center; gap: 1.2rem; border: 1px solid var(--mov-border); min-width: 260px;
+                max-width: 90vw;
                 transform: scale(0.9); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
             .sc-loading-overlay.active .sc-loading-box { transform: scale(1); }
@@ -190,21 +314,43 @@
             .sc-loading-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--mov-red), var(--mov-yellow)); border-radius: 99px; animation: scProgress 2s ease-in-out infinite; }
             @keyframes scProgress { 0% { width: 0%; margin-left: 0%; } 50% { width: 60%; margin-left: 20%; } 100% { width: 0%; margin-left: 100%; } }
 
-            /* Mobile */
+            /* ===== TABLET (até 991px) ===== */
+            @media (max-width: 991px) {
+                .mov-toolbar,
+                .mov-filters {
+                    padding-left: 1rem;
+                    padding-right: 1rem;
+                }
+            }
+
+            /* ===== MOBILE (até 576px) ===== */
             @media (max-width: 576px) {
                 .mov-header { flex-direction: column; align-items: stretch; }
                 .mov-header-left { width: 100%; }
                 .mov-toolbar { flex-direction: column; align-items: stretch; }
                 .mov-toolbar-left, .mov-toolbar-right { width: 100%; }
-                .mov-toolbar-right .ui-button, .mov-toolbar-right .ui-menubutton { width: 100%; }
+                .mov-toolbar-right { flex-direction: column; align-items: stretch; }
+                .mov-toolbar-right > * { width: 100%; }
+                .mov-toolbar-right .ui-button,
+                .mov-toolbar-right .ui-menubutton,
+                .mov-toolbar-right .ui-menubutton > .ui-button { width: 100%; }
                 .mov-filters { flex-direction: column; align-items: stretch; gap: .5rem; }
-                .mov-filters .ui-inputfield, .mov-filters .ui-selectonemenu, .mov-filters .p-datepicker, .mov-filters .ui-button { width: 100% !important; min-width: unset !important; }
-                .mov-stat-value { font-size: 1.25rem; }
-                .mov-actions { gap: 6px; }
-                .mov-act { width: 30px; height: 30px; font-size: .85rem; }
+                .mov-filters .ui-inputfield, .mov-filters .ui-selectonemenu, .mov-filters .p-datepicker, .mov-filters .ui-datepicker, .mov-filters .ui-button { width: 100% !important; min-width: unset !important; }
+                .mov-filters > .ui-inputfield,
+                .mov-filters > .ui-selectonemenu,
+                .mov-filters > .ui-datepicker,
+                .mov-filters > .p-datepicker { flex: 0 0 auto; }
+                .mov-actions { gap: 6px; justify-content: center; }
                 .mov-dialog-footer { justify-content: stretch; }
                 .mov-dialog-footer .ui-button { flex: 1 1 auto; }
-                .sc-loading-box { padding: 2rem 1.5rem; min-width: 220px; margin: 0 1rem; }
+                .sc-loading-box { padding: 1.8rem 1.4rem; min-width: 0; width: 85vw; margin: 0 1rem; }
+            }
+
+            /* ===== MOBILE PEQUENO (até 420px) ===== */
+            @media (max-width: 420px) {
+                .mov-view-grid { grid-template-columns: 1fr; }
+                .mov-stat { padding: .9rem 1rem; }
+                .mov-header-icon { width: 40px; height: 40px; }
             }
             /* ]]> */
         </style>
@@ -282,10 +428,17 @@
                             </span>
                         </div>
                         <div class="mov-toolbar-right">
+                            <p:menuButton value="#{msg.exportPrint}" icon="pi pi-file-export"
+                                styleClass="mov-button-gerar">
+                                <p:menuitem value="#{msg.downloadListPdf}" icon="pi pi-file-pdf"
+                                    actionListener="#{financialMovementController.exportFinancialMovementListPdf}" ajax="false" />
+                                <p:menuitem value="#{msg.printList}" icon="pi pi-print"
+                                    actionListener="#{financialMovementController.printFinancialMovementListPdf}" ajax="false" />
+                            </p:menuButton>
                             <p:commandButton value="#{msg.newMovement}" icon="pi pi-plus"
                                 actionListener="#{financialMovementController.prepareNewMovement}" onstart="showScLoading()"
                                 oncomplete="hideScLoading(); PF('createMovementDialog').show()"
-                                update=":movementCreateForm" process="@this" styleClass="ui-button-success" />
+                                update=":movementCreateForm" process="@this" styleClass="mov-button-gerar" />
                         </div>
                     </div>
 
@@ -317,8 +470,8 @@
                             <p:ajax event="dateSelect" listener="#{financialMovementController.applyFilters}" update="dtMovements messages" process="@this" />
                         </p:datePicker>
 
-                        <p:commandButton icon="pi pi-filter" value="#{msg.apply}" action="#{financialMovementController.applyFilters}" update="dtMovements messages" styleClass="ui-button-primary" />
-                        <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}" action="#{financialMovementController.clearFilters}" update="@form" styleClass="ui-button-outlined ui-button-secondary" />
+                        <p:commandButton icon="pi pi-filter" value="#{msg.apply}" action="#{financialMovementController.applyFilters}" update="dtMovements messages" styleClass="mov-button-gerar" />
+                        <p:commandButton icon="pi pi-filter-slash" value="#{msg.clear}" action="#{financialMovementController.clearFilters}" update="@form" styleClass="mov-button-gerar" />
                     
                     </div>
 
@@ -381,10 +534,12 @@
                                     oncomplete="hideScLoading(); PF('viewMovementDialog').show()" update=":viewForm" process="@this" />
                                 <p:commandButton styleClass="mov-act edit" icon="pi pi-pencil" title="#{msg.edit}"
                                     action="#{financialMovementController.openEditDialog(movement.phMovement)}" onstart="showScLoading()"
-                                    oncomplete="hideScLoading(); PF('editMovementDialog').show()" update=":movementEditForm" process="@this" />
+                                    oncomplete="hideScLoading(); PF('editMovementDialog').show()" update=":movementEditForm" process="@this"
+                                    rendered="#{sessionBean.financial}" />
                                 <p:commandButton styleClass="mov-act delete" icon="pi pi-trash" title="#{msg.delete}"
                                     action="#{financialMovementController.openDeleteDialog(movement.phMovement)}" onstart="showScLoading()"
-                                    oncomplete="hideScLoading(); PF('deleteMovementDialog').show()" update=":deleteForm" process="@this" />
+                                    oncomplete="hideScLoading(); PF('deleteMovementDialog').show()" update=":deleteForm" process="@this"
+                                    rendered="#{sessionBean.financial}" />
                             </div>
                         </p:column>
 
@@ -411,7 +566,8 @@
                         <p:commandButton value="#{msg.cancel}" type="button" onclick="PF('deleteMovementDialog').hide()" styleClass="ui-button-outlined ui-button-secondary" />
                         <p:commandButton value="#{msg.confirmDelete}" icon="pi pi-trash" styleClass="ui-button-danger"
                             action="#{financialMovementController.delete(financialMovementController.selectedId)}" process="@this"
-                            oncomplete="PF('deleteMovementDialog').hide()" update=":formMovements:dtMovements :formMovements:messages" />
+                            oncomplete="PF('deleteMovementDialog').hide()" update=":formMovements:dtMovements :formMovements:messages"
+                            rendered="#{sessionBean.financial}" />
                     </div>
                 </p:dialog>
             </h:form>
@@ -422,13 +578,13 @@
                     style="width: 90vw; max-width: 520px;" closable="true" responsive="true" fitViewport="true">
                     <div style="padding: .5rem 0;">
                         <div style="text-align:center; margin-bottom:1.2rem;">
-                            <div style="width:64px; height:64px; border-radius:50%; background:var(--mov-black); color:var(--mov-yellow); font-size:1.5rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; margin:0 auto .6rem;">
-                                <i class="pi pi-wallet"></i>
+                            <div style="width:64px; height:64px; border-radius:50%; background:var(--mov-black); color:var(--mov-yellow); font-size:1.5rem; font-weight:700; line-height:1; display:inline-flex; align-items:center; justify-content:center; margin:0 auto .6rem;">
+                                <i class="pi pi-wallet" style="display:block; line-height:1;"></i>
                             </div>
-                            <div style="font-size:1.15rem; font-weight:700;"><h:outputText value="#{financialMovementController.selectedMovement.movementNumber}" /></div>
-                            <div style="font-size:.85rem; color:var(--mov-muted);"><h:outputText value="#{financialMovementController.selectedMovement.description}" /></div>
+                            <div style="font-size:1.15rem; font-weight:700; word-break:break-word;"><h:outputText value="#{financialMovementController.selectedMovement.movementNumber}" /></div>
+                            <div style="font-size:.85rem; color:var(--mov-muted); word-break:break-word;"><h:outputText value="#{financialMovementController.selectedMovement.description}" /></div>
                         </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; font-size:.9rem;">
+                        <div class="mov-view-grid">
                             <div style="background:#f9fafb; padding:.7rem 1rem; border-radius:8px;">
                                 <div style="font-size:.72rem; color:var(--mov-muted); text-transform:uppercase; font-weight:700;">#{msg.cashBox}</div>
                                 <div style="font-weight:700;"><h:outputText value="#{financialMovementController.selectedMovement.cashBoxNumber}" /></div>

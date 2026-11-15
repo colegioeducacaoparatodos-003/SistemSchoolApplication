@@ -5,7 +5,7 @@
     xmlns:p="http://primefaces.org/ui"
     xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:define name="titulo">Lançamento de Notas</ui:define>
+    <ui:define name="titulo">#{msg.gradeEntry}</ui:define>
 
     <ui:define name="content">
         <style type="text/css">
@@ -126,6 +126,30 @@
             .enr-card:hover { box-shadow: var(--enr-shadow-lg); }
             .enr-card + .enr-card { margin-top: 1.4rem; }
 
+            .enr-filter-card {
+                position: relative;
+                border-color: #e1e2e6;
+            }
+            .enr-filter-card::before {
+                content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+                background: linear-gradient(90deg, var(--enr-red), var(--enr-yellow));
+                z-index: 1;
+            }
+            .enr-filter-card .enr-filter-header {
+                padding: 1.2rem 1.5rem;
+                background: linear-gradient(135deg, #fff 0%, #fbf9f8 100%);
+            }
+            .enr-filter-heading { display: flex; align-items: center; gap: .85rem; }
+            .enr-filter-icon {
+                width: 42px; height: 42px; border-radius: 12px;
+                display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+                background: linear-gradient(135deg, #fde8e8, #fff3e0);
+                color: var(--enr-red); font-size: 1.05rem;
+                box-shadow: inset 0 0 0 1px rgba(200, 16, 46, .08);
+            }
+            .enr-filter-card .enr-toolbar-title { font-size: 1rem; }
+            .enr-filter-card .enr-toolbar-sub { margin-top: .15rem; line-height: 1.45; }
+
             .enr-toolbar {
                 display: flex; align-items: center; justify-content: space-between;
                 padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--enr-border);
@@ -137,20 +161,52 @@
             .enr-toolbar-right { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; }
 
             .enr-filters {
-                display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 1.1rem; align-items: end; padding: 1.3rem 1.4rem;
-                background: linear-gradient(180deg, var(--enr-surface-2) 0%, #f0f0f2 100%);
-                border-bottom: 1px solid var(--enr-border);
+                display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: .9rem; align-items: stretch; padding: 1.25rem 1.5rem 1.5rem;
+                background: linear-gradient(180deg, #fafafb 0%, #f5f5f7 100%);
             }
-            .enr-filters .field-actions { display: flex; gap: .6rem; align-items: flex-end; }
-            .sc-label { font-size: .78rem; font-weight: 700; color: var(--enr-muted); display: block; margin-bottom: .35rem; letter-spacing: .02em; }
+            .filter-field {
+                min-width: 0; display: flex; flex-direction: column; gap: .5rem;
+                padding: .8rem .85rem .9rem; border: 1px solid #e6e6e9; border-radius: 12px;
+                background: #fff; box-shadow: 0 1px 2px rgba(20, 20, 20, .025);
+                transition: border-color .2s, box-shadow .2s, transform .2s;
+            }
+            .filter-field:hover { border-color: #d5d5da; box-shadow: 0 3px 10px rgba(20, 20, 20, .045); }
+            .filter-field:focus-within {
+                border-color: rgba(200, 16, 46, .55);
+                box-shadow: 0 0 0 3px rgba(200, 16, 46, .07), 0 3px 10px rgba(20, 20, 20, .04);
+            }
+            .enr-filters .field-actions {
+                grid-column: span 2; display: flex; gap: .65rem; align-items: stretch;
+                justify-content: flex-end; min-width: 0; padding-top: .15rem;
+            }
+            .enr-filters .field-actions .enr-btn { flex: 1 1 0; min-width: 0; min-height: 44px; }
+            .sc-label {
+                font-size: .72rem; font-weight: 800; color: #50535a; display: block;
+                margin: 0; letter-spacing: .055em; text-transform: uppercase; line-height: 1.35;
+            }
             .sc-label .optional-tag { font-weight: 500; color: var(--enr-muted); opacity: .7; font-size: .68rem; text-transform: none; letter-spacing: 0; }
             .sc-input, .sc-select {
-                width: 100%; padding: 9px 12px; border: 1.5px solid var(--enr-border); border-radius: 8px;
-                font-size: .88rem; background: #fff; outline: none; font-family: var(--font); transition: all .2s;
+                width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1.5px solid var(--enr-border); border-radius: 9px;
+                font-size: .86rem; background: #fff; outline: none; font-family: var(--font); transition: all .2s;
+            }
+            .sc-input { min-height: 42px; }
+            .filter-field .ui-selectonemenu.sc-select {
+                display: flex; align-items: stretch; width: 100% !important; min-width: 0;
+                max-width: 100%; min-height: 42px; padding: 0; box-sizing: border-box;
+            }
+            .filter-field .ui-selectonemenu.sc-select .ui-selectonemenu-label {
+                flex: 1 1 auto; width: 1%; min-width: 0; padding: 10px 12px;
+                line-height: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            }
+            .filter-field .ui-selectonemenu.sc-select .ui-selectonemenu-trigger {
+                flex: 0 0 2.25rem; width: 2.25rem; display: flex; align-items: center; justify-content: center;
             }
             .sc-input:hover, .sc-select:hover { border-color: var(--enr-border-2); }
             .sc-input:focus, .sc-select:focus { border-color: var(--enr-red); box-shadow: 0 0 0 4px rgba(200, 16, 46, .08); background: #fff; }
+            @media (max-width: 1050px) {
+                .enr-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            }
 
             /* ── Botões: base compartilhada ── */
             .enr-btn {
@@ -413,7 +469,12 @@
                 .enr-toolbar-right { width: 100%; }
                 .enr-toolbar-right .btn-new, .enr-toolbar-right .btn-ghost { width: 100%; justify-content: center; }
                 .enr-filters { grid-template-columns: 1fr; }
+                .enr-filters .field-actions { grid-column: auto; }
                 .enr-filters .field-actions { flex-direction: column; align-items: stretch; }
+                .enr-filter-card .enr-filter-header { align-items: flex-start; padding: 1.1rem 1rem; }
+                .enr-filter-heading { align-items: flex-start; }
+                .enr-filters { padding: 1rem; gap: .75rem; }
+                .filter-field { padding: .75rem; }
                 .enr-stat-value { font-size: 1.3rem; }
                 .enr-footer-actions { flex-direction: column; align-items: stretch; }
                 .footer-left { justify-content: center; text-align: center; }
@@ -424,6 +485,100 @@
                 .quick-btn { width: 42px; height: 42px; font-size: 1rem; }
                 .students-grid { grid-template-columns: 1fr; padding: 1rem; }
                 .launch-student-header { flex-direction: column; text-align: center; }
+            }
+
+            /* ══════════════════════════════════════════════════════════
+               DIÁLOGO DE LANÇAMENTO — RESPONSIVO
+               Largura máx. 480px; em telas menores respeita margem lateral.
+               Altura limitada ao viewport, deixando margem embaixo, com
+               scroll interno quando o conteúdo não couber.
+               ══════════════════════════════════════════════════════════ */
+            .ui-dialog.launch-dialog {
+                width: 480px !important;
+                max-width: calc(100vw - 2rem) !important;
+                max-height: calc(100vh - 2rem);
+                max-height: calc(100dvh - 2rem);
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                margin: 0 auto;
+            }
+            .ui-dialog.launch-dialog .ui-dialog-titlebar {
+                flex: 0 0 auto;
+            }
+            .ui-dialog.launch-dialog .ui-dialog-content {
+                flex: 1 1 auto;
+                box-sizing: border-box;
+                min-height: 0;
+                width: auto !important;
+                max-height: calc(100vh - 7rem) !important;
+                max-height: calc(100dvh - 7rem) !important;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
+            .ui-dialog.launch-dialog .launch-student-info { min-width: 0; }
+            .ui-dialog.launch-dialog .launch-student-info h4 {
+                overflow-wrap: anywhere; word-break: break-word;
+            }
+            .ui-dialog.launch-dialog .launch-nota-input,
+            .ui-dialog.launch-dialog .launch-obs-input {
+                box-sizing: border-box; max-width: 100%;
+            }
+            .launch-actions {
+                display: flex; justify-content: flex-end; gap: .7rem;
+                margin-top: 1.2rem; padding-top: 1rem;
+                border-top: 1px solid var(--enr-border);
+                flex-wrap: wrap;
+            }
+
+            @media (max-width: 576px) {
+                .ui-dialog.launch-dialog {
+                    max-width: calc(100vw - 1.5rem) !important;
+                    max-height: calc(100vh - 1.5rem);
+                    max-height: calc(100dvh - 1.5rem);
+                }
+                .ui-dialog.launch-dialog .ui-dialog-content {
+                    max-height: calc(100vh - 6rem) !important;
+                    max-height: calc(100dvh - 6rem) !important;
+                    padding: .75rem !important;
+                }
+                .ui-dialog.launch-dialog .launch-modal-content { padding: 0; }
+                .ui-dialog.launch-dialog .launch-student-header {
+                    padding: .85rem;
+                    gap: .7rem;
+                    margin-bottom: 1rem;
+                }
+                .ui-dialog.launch-dialog .launch-student-avatar {
+                    width: 48px; height: 48px; font-size: 1.2rem;
+                }
+                .ui-dialog.launch-dialog .launch-student-info h4 { font-size: 1rem; }
+                .ui-dialog.launch-dialog .launch-form-grid { gap: 1rem; }
+                .ui-dialog.launch-dialog .launch-nota-input {
+                    font-size: 1.25rem; padding: 10px 12px;
+                }
+                .launch-actions {
+                    flex-direction: column-reverse;
+                    align-items: stretch;
+                }
+                .launch-actions .enr-btn {
+                    width: 100%; justify-content: center;
+                }
+            }
+
+            /* Telas muito baixas (celular na horizontal) */
+            @media (max-height: 520px) {
+                .ui-dialog.launch-dialog {
+                    max-height: calc(100vh - 1rem);
+                    max-height: calc(100dvh - 1rem);
+                }
+                .ui-dialog.launch-dialog .ui-dialog-content {
+                    max-height: calc(100vh - 5rem) !important;
+                    max-height: calc(100dvh - 5rem) !important;
+                }
+                .ui-dialog.launch-dialog .launch-student-header { margin-bottom: .7rem; }
+                .launch-actions { margin-top: .8rem; padding-top: .7rem; }
             }
             
         </style>
@@ -441,8 +596,8 @@
         <div id="scLoadingOverlay" class="sc-loading-overlay">
             <div class="sc-loading-box">
                 <div class="sc-loader-rings"><div class="sc-loader-core"></div></div>
-                <div class="sc-loading-text">A processar<span class="sc-loading-dots"></span></div>
-                <div class="sc-loading-sub">Por favor aguarde</div>
+                <div class="sc-loading-text">#{msg.processing}<span class="sc-loading-dots"></span></div>
+                <div class="sc-loading-sub">#{msg.pleaseWait}</div>
                 <div class="sc-loading-progress"><div class="sc-loading-progress-bar"></div></div>
             </div>
         </div>
@@ -513,55 +668,58 @@
                 </h:panelGroup>
 
                 <!-- Filtros -->
-                <div class="enr-card">
-                    <div class="enr-toolbar">
-                        <div class="enr-toolbar-left">
-                            <span class="enr-toolbar-title"><i class="pi pi-sliders-h" style="color:var(--enr-red); margin-right:.4rem;"></i> Filtros</span>
-                            <span class="enr-toolbar-sub">Selecione turma, disciplina, trimestre e tipo de avaliação</span>
+                <div class="enr-card enr-filter-card">
+                    <div class="enr-toolbar enr-filter-header">
+                        <div class="enr-filter-heading">
+                            <span class="enr-filter-icon"><i class="pi pi-sliders-h"></i></span>
+                            <div class="enr-toolbar-left">
+                                <span class="enr-toolbar-title">Configurar lançamento</span>
+                                <span class="enr-toolbar-sub">Selecione a turma e os dados da avaliação para carregar os alunos.</span>
+                            </div>
                         </div>
                     </div>
                     <div class="enr-filters">
-                        <div>
+                        <div class="filter-field">
                             <label class="sc-label">Turma <span style="color:var(--enr-red)">*</span></label>
                             <p:selectOneMenu value="#{gradeLancamentoController.selectedSchoolClassId}" styleClass="sc-select">
                                 <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" noSelectionOption="true" />
                                 <f:selectItems value="#{gradeLancamentoController.schoolClasses}" var="t" itemLabel="#{t.className}" itemValue="#{t.pkSchoolClass}" />
                             </p:selectOneMenu>
                         </div>
-                        <div>
+                        <div class="filter-field">
                             <label class="sc-label">Nível de Ensino <span class="optional-tag">(opcional — define a escala)</span></label>
                             <p:selectOneMenu value="#{gradeLancamentoController.selectedEducationLevel}" styleClass="sc-select">
                                 <f:selectItem itemLabel="— Auto (I Ciclo, 0–20) —" itemValue="#{null}" noSelectionOption="true" />
                                 <f:selectItems value="#{gradeLancamentoController.educationLevels}" var="lvl" itemLabel="#{lvl eq 'PRIMARIO' ? 'Primário (0–10)' : 'I Ciclo (0–20)'}" itemValue="#{lvl}" />
                             </p:selectOneMenu>
                         </div>
-                        <div>
+                        <div class="filter-field">
                             <label class="sc-label">Disciplina <span style="color:var(--enr-red)">*</span></label>
                             <p:selectOneMenu value="#{gradeLancamentoController.selectedDisciplineId}" styleClass="sc-select">
                                 <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" noSelectionOption="true" />
                                 <f:selectItems value="#{gradeLancamentoController.disciplines}" var="d" itemLabel="#{d.disciplineName}" itemValue="#{d.pkDiscipline}" />
                             </p:selectOneMenu>
                         </div>
-                        <div>
+                        <div class="filter-field">
                             <label class="sc-label">Horário <span class="optional-tag">(opcional — apenas referência)</span></label>
                             <p:selectOneMenu value="#{gradeLancamentoController.selectedScheduleId}" styleClass="sc-select">
                                 <f:selectItem itemLabel="— Selecionar —" itemValue="#{null}" noSelectionOption="true" />
                                 <f:selectItems value="#{gradeLancamentoController.schedules}" var="sh" itemLabel="#{sh.weekDay}" itemValue="#{sh.pkSchedule}" />
                             </p:selectOneMenu>
                         </div>
-                        <div>
+                        <div class="filter-field">
                             <label class="sc-label">Trimestre <span style="color:var(--enr-red)">*</span></label>
                             <p:selectOneMenu value="#{gradeLancamentoController.selectedTrimester}" styleClass="sc-select">
                                 <f:selectItems value="#{gradeLancamentoController.trimesters}" var="tr" itemLabel="#{tr}" itemValue="#{tr}" />
                             </p:selectOneMenu>
                         </div>
-                        <div>
+                        <div class="filter-field">
                             <label class="sc-label">Tipo <span style="color:var(--enr-red)">*</span></label>
                             <p:selectOneMenu value="#{gradeLancamentoController.selectedEvaluationType}" styleClass="sc-select">
                                 <f:selectItems value="#{gradeLancamentoController.evaluationTypes}" var="tp" itemLabel="#{tp.description}" itemValue="#{tp}" />
                             </p:selectOneMenu>
                         </div>
-                        <div>
+                        <div class="filter-field">
                             <label class="sc-label">Título <span style="color:var(--enr-red)">*</span></label>
                             <p:inputText value="#{gradeLancamentoController.evaluationTitle}" styleClass="sc-input" placeholder="Ex: AC, PT, Prova..." />
                         </div>
@@ -595,7 +753,7 @@
                                     <h:outputText value="#{gradeLancamentoController.studentRows.size()}" /> aluno(s) ·
                                     Escala <strong>#{gradeLancamentoController.escalaLabel}</strong>
                                     <h:panelGroup rendered="#{gradeLancamentoController.educationLevel eq 'PRIMARIO'}">
-                                        · Notas <strong style="color:var(--enr-green)">0–4</strong> <strong style="color:var(--enr-yellow)">5–7</strong> <strong style="color:var(--enr-red)">8–10</strong>
+                                        · Notas <strong style="color:var(--enr-red)">0–4</strong> <strong style="color:var(--enr-yellow)">5–7</strong> <strong style="color:var(--enr-green)">8–10</strong>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{gradeLancamentoController.educationLevel ne 'PRIMARIO'}">
                                         · Notas <strong style="color:var(--enr-green)">14–20</strong> <strong style="color:var(--enr-yellow)">10–13</strong> <strong style="color:var(--enr-red)">0–9</strong>
@@ -683,7 +841,8 @@
 
             <!-- Modal de Lançamento Individual (form próprio, fora do formLancamento, sem appendTo) -->
             <p:dialog widgetVar="launchDialog" modal="true" closable="true" closeOnEscape="true"
-                resizable="false" draggable="false" width="480" styleClass="launch-dialog"
+                resizable="false" draggable="false" responsive="true" fitViewport="true"
+                styleClass="launch-dialog"
                 header="Lançar Nota" showEffect="fade" hideEffect="fade">
                 <h:form id="launchForm">
                     <div class="launch-modal-content">
@@ -712,9 +871,9 @@
                                     </p:inputText>
                                     <div class="launch-scale-hint">
                                         <h:panelGroup rendered="#{gradeLancamentoController.educationLevel eq 'PRIMARIO'}">
-                                            <span class="scale-tag green">0–4 Bom</span>
+                                            <span class="scale-tag red">0–4 Mau</span>
                                             <span class="scale-tag yellow">5–7 Médio</span>
-                                            <span class="scale-tag red">8–10 Mau</span>
+                                            <span class="scale-tag green">8–10 Bom</span>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{gradeLancamentoController.educationLevel ne 'PRIMARIO'}">
                                             <span class="scale-tag red">0–9 Insuficiente</span>
@@ -734,7 +893,7 @@
                         </h:panelGroup>
                     </div>
 
-                    <div style="display:flex; justify-content:flex-end; gap:.7rem; margin-top:1.2rem; padding-top:1rem; border-top:1px solid var(--enr-border);">
+                    <div class="launch-actions">
                         <p:commandButton value="Cancelar" type="button" styleClass="enr-btn btn-ghost"
                             onclick="PF('launchDialog').hide()" />
                         <p:commandButton value="Salvar Nota" icon="pi pi-check" styleClass="enr-btn btn-save-all"
@@ -835,10 +994,10 @@
             });
 
             document.addEventListener('keydown', function (e) {
-                if ((e.ctrlKey || e.metaKey) &amp;&amp; e.key === 's') {
+                if ((e.ctrlKey ? true : e.metaKey) ? e.key === 's' : false) {
                     e.preventDefault();
                     var saveBtn = document.getElementById('formLancamento:btnSaveAll');
-                    if (saveBtn &amp;&amp; !saveBtn.disabled) saveBtn.click();
+                    if (saveBtn ? !saveBtn.disabled : false) saveBtn.click();
                 }
             });
 
@@ -855,14 +1014,14 @@
             }
             function isPrimarioLevel() {
                 var grid = getGridEl();
-                return !!(grid &amp;&amp; grid.getAttribute('data-primario') === 'true');
+                return !!(grid ? grid.getAttribute('data-primario') === 'true' : false);
             }
 
             function getColorClass(val, isPrimario) {
                 if (isPrimario) {
-                    if (val >= 8) return 'red';
+                    if (val >= 8) return 'green';
                     if (val >= 5) return 'yellow';
-                    return 'green';
+                    return 'red';
                 } else {
                     if (val >= 14) return 'green';
                     if (val >= 10) return 'yellow';
@@ -883,7 +1042,7 @@
                     avatar.classList.remove('green', 'yellow', 'red');
                     card.classList.remove('has-note');
 
-                    if (notaVal &amp;&amp; !isNaN(parseFloat(notaVal))) {
+                    if (notaVal ? !isNaN(parseFloat(notaVal)) : false) {
                         var val = parseFloat(notaVal);
                         var color = getColorClass(val, isPrimario);
                         card.classList.add('has-note');
@@ -903,9 +1062,9 @@
 
                 cards.forEach(function (card) {
                     var notaVal = card.getAttribute('data-nota');
-                    if (notaVal &amp;&amp; !isNaN(parseFloat(notaVal))) {
+                    if (notaVal ? !isNaN(parseFloat(notaVal)) : false) {
                         var val = parseFloat(notaVal);
-                        if (val >= 0 &amp;&amp; val &lt;= max) {
+                        if (val >= 0 ? !(val > max) : false) {
                             filled++; sum += val; count++;
                         }
                     }
@@ -929,7 +1088,7 @@
                         statMedia.style.color = '';
                     }
                 }
-                if (progressBar &amp;&amp; total > 0) {
+                if (progressBar ? total > 0 : false) {
                     progressBar.style.width = ((filled / total) * 100) + '%';
                 }
             }
@@ -954,7 +1113,7 @@
 
                 if (isNaN(val) || input.value.trim() === '') {
                     input.classList.add('nota-empty');
-                } else if (val &lt; 0 || val > max) {
+                } else if (!(val >= 0) ? true : val > max) {
                     input.classList.add('nota-red');
                 } else {
                     var color = getColorClass(val, isPrimario);
@@ -970,7 +1129,7 @@
             }
 
             function handleSaveComplete(xhr, status, args, successTitle, successMessage) {
-                if (args &amp;&amp; args.validationFailed) {
+                if (args ? args.validationFailed : false) {
                     showToast('error', 'Erro na Validação', 'Verifique os campos destacados em vermelho.');
                     return;
                 }
@@ -995,7 +1154,7 @@
             }
 
             function handleSingleSave(xhr, status, args) {
-                if (args &amp;&amp; args.validationFailed) {
+                if (args ? args.validationFailed : false) {
                     showToast('error', 'Erro na Validação', 'Verifique a nota inserida.');
                     return;
                 }
@@ -1003,7 +1162,7 @@
                     showToast('error', 'Erro ao Salvar', 'Verifique a mensagem acima para mais detalhes.');
                     return;
                 }
-                if (window.PF &amp;&amp; PF('launchDialog')) {
+                if (window.PF ? PF('launchDialog') : false) {
                     PF('launchDialog').hide();
                 }
                 markDirty();
@@ -1046,11 +1205,11 @@
 
             // Atalho Ctrl+Enter no modal para salvar
             document.addEventListener('keydown', function (e) {
-                if ((e.ctrlKey || e.metaKey) &amp;&amp; e.key === 'Enter') {
+                if ((e.ctrlKey ? true : e.metaKey) ? e.key === 'Enter' : false) {
                     var dialogVisible = document.querySelector('.launch-dialog.ui-dialog-visible, .launch-dialog:not([style*="display: none"])');
                     if (dialogVisible) {
                         var saveBtn = document.querySelector('#launchForm .btn-save-all');
-                        if (saveBtn &amp;&amp; !saveBtn.disabled) saveBtn.click();
+                        if (saveBtn ? !saveBtn.disabled : false) saveBtn.click();
                     }
                 }
             });

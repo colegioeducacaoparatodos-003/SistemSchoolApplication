@@ -1,17 +1,452 @@
 <ui:composition template="/components/dashboard/dashboard-layout.xhtml"
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:p="http://primefaces.org/ui">
+    xmlns:h="http://xmlns.jcp.org/jsf/html">
 
     <ui:define name="titulo">#{msg.status}</ui:define>
 
     <ui:define name="content">
-        <div class="p-4">
-            <h1 class="h3 mb-3">#{msg.status}</h1>
-            <p:card header="#{msg.status}">
-                <p class="mb-0">Sistema operacional e sessão ativos.</p>
-            </p:card>
-        </div>
+        <style>
+            .status-page {
+                max-width: 1120px;
+                margin: 0 auto;
+                padding: clamp(1rem, 3vw, 2.5rem);
+                color: #172033;
+            }
+
+            .status-heading {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                margin-bottom: 1.75rem;
+            }
+
+            .status-heading-icon {
+                display: grid;
+                flex: 0 0 52px;
+                width: 52px;
+                height: 52px;
+                place-items: center;
+                border: 1px solid #f1d9df;
+                border-radius: 16px;
+                background: linear-gradient(145deg, #fff7f8, #f7e7eb);
+                color: #800020;
+                font-size: 1.3rem;
+                box-shadow: 0 6px 16px rgba(128, 0, 32, .1);
+            }
+
+            .status-heading h1 {
+                margin: 0 0 .3rem;
+                font-size: clamp(1.55rem, 3vw, 2rem);
+                font-weight: 750;
+                letter-spacing: -.035em;
+            }
+
+            .status-heading p {
+                margin: 0;
+                color: #64748b;
+                font-size: .95rem;
+            }
+
+            .status-overview {
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1.5rem;
+                margin-bottom: 1.25rem;
+                padding: clamp(1.5rem, 4vw, 2.25rem);
+                border: 1px solid #5e0018;
+                border-radius: 20px;
+                background:
+                    radial-gradient(circle at 90% 18%, rgba(255, 215, 0, .22), transparent 25%),
+                    radial-gradient(circle at 100% 100%, rgba(255, 255, 255, .09), transparent 38%),
+                    linear-gradient(120deg, #3d0010, #800020 58%, #a83232);
+                color: #fff;
+                box-shadow: 0 14px 34px rgba(86, 0, 24, .16);
+            }
+
+            .status-overview::after {
+                position: absolute;
+                right: 14%;
+                bottom: -150px;
+                width: 280px;
+                height: 280px;
+                border: 1px solid rgba(255, 255, 255, .12);
+                border-radius: 50%;
+                box-shadow: 0 0 0 28px rgba(255, 255, 255, .035), 0 0 0 58px rgba(255, 255, 255, .025);
+                content: "";
+                pointer-events: none;
+            }
+
+            .status-overview-main {
+                position: relative;
+                z-index: 1;
+                display: flex;
+                min-width: 0;
+                align-items: center;
+                gap: 1.15rem;
+            }
+
+            .status-overview-icon {
+                display: grid;
+                flex: 0 0 64px;
+                width: 64px;
+                height: 64px;
+                place-items: center;
+                border: 1px solid rgba(255, 255, 255, .3);
+                border-radius: 20px;
+                background: rgba(255, 255, 255, .12);
+                color: #ffe7a3;
+                font-size: 1.6rem;
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
+            }
+
+            .status-overview h2 {
+                margin: 0 0 .35rem;
+                color: #fff;
+                font-size: clamp(1.12rem, 2.5vw, 1.35rem);
+                font-weight: 750;
+                letter-spacing: -.02em;
+            }
+
+            .status-overview p {
+                margin: 0;
+                color: rgba(255, 245, 238, .8);
+                font-size: .9rem;
+                line-height: 1.55;
+            }
+
+            .status-session-badge {
+                position: relative;
+                z-index: 1;
+                display: inline-flex;
+                flex: 0 0 auto;
+                align-items: center;
+                gap: .55rem;
+                padding: .75rem .95rem;
+                border: 1px solid rgba(255, 255, 255, .2);
+                border-radius: 14px;
+                background: rgba(36, 0, 9, .2);
+                color: #fff;
+                font-size: .84rem;
+                font-weight: 700;
+            }
+
+            .status-session-badge i {
+                color: #86efac;
+                font-size: 1rem;
+            }
+
+            .status-section-heading {
+                display: flex;
+                align-items: center;
+                gap: .9rem;
+                margin: 1.6rem 0 1rem;
+            }
+
+            .status-section-icon {
+                display: grid;
+                flex: 0 0 40px;
+                width: 40px;
+                height: 40px;
+                place-items: center;
+                border-radius: 12px;
+                background: #fbf0f2;
+                color: #800020;
+                font-size: 1rem;
+            }
+
+            .status-section-heading h2 {
+                margin: 0;
+                color: #172033;
+                font-size: 1.02rem;
+                font-weight: 750;
+            }
+
+            .status-grid {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: .9rem;
+            }
+
+            .status-card {
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                gap: 1.05rem;
+                min-width: 0;
+                min-height: 176px;
+                padding: 1.25rem;
+                border: 1px solid #e8eaf0;
+                border-radius: 18px;
+                background: #fff;
+                box-shadow: 0 8px 24px rgba(15, 23, 42, .045);
+                transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+            }
+
+            .status-card:hover {
+                transform: translateY(-3px);
+                border-color: #ead2d8;
+                box-shadow: 0 14px 28px rgba(15, 23, 42, .09);
+            }
+
+            .status-card-icon {
+                display: grid;
+                flex: 0 0 44px;
+                width: 44px;
+                height: 44px;
+                place-items: center;
+                border: 1px solid #f1dfe3;
+                border-radius: 14px;
+                background: linear-gradient(145deg, #fff8f9, #f9edf0);
+                color: #800020;
+                font-size: 1rem;
+            }
+
+            .status-card-content {
+                display: flex;
+                flex: 1;
+                flex-direction: column;
+                justify-content: flex-end;
+                min-width: 0;
+            }
+
+            .status-card-label {
+                display: block;
+                margin-bottom: .5rem;
+                color: #64748b;
+                font-size: .72rem;
+                font-weight: 700;
+                letter-spacing: .06em;
+                text-transform: uppercase;
+            }
+
+            .status-card-value {
+                display: block;
+                overflow-wrap: anywhere;
+                color: #172033;
+                font-size: .96rem;
+                font-weight: 700;
+                line-height: 1.45;
+            }
+
+            .status-indicator {
+                display: inline-flex;
+                align-items: center;
+                gap: .55rem;
+                color: #15803d;
+            }
+
+            .status-indicator::before {
+                flex: 0 0 9px;
+                width: 9px;
+                height: 9px;
+                border-radius: 50%;
+                background: #16a34a;
+                box-shadow: 0 0 0 4px #dcfce7;
+                content: "";
+            }
+
+            .status-indicator--inactive {
+                color: #b91c1c;
+            }
+
+            .status-indicator--inactive::before {
+                background: #dc2626;
+                box-shadow: 0 0 0 4px #fee2e2;
+            }
+
+            .status-note {
+                display: flex;
+                align-items: flex-start;
+                gap: .75rem;
+                margin-top: 1.2rem;
+                padding: 1rem 1.1rem;
+                border: 1px solid #e8eaf0;
+                border-radius: 15px;
+                background: #fff;
+                color: #64748b;
+                font-size: .83rem;
+                line-height: 1.55;
+            }
+
+            .status-note i {
+                margin-top: .1rem;
+                color: #800020;
+                font-size: 1rem;
+            }
+
+            @media (max-width: 960px) {
+                .status-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+
+            @media (max-width: 640px) {
+                .status-page {
+                    padding: 1.1rem;
+                }
+
+                .status-overview {
+                    align-items: stretch;
+                    flex-direction: column;
+                    gap: 1.1rem;
+                    padding: 1.3rem;
+                }
+
+                .status-overview-main {
+                    align-items: flex-start;
+                    gap: .9rem;
+                }
+
+                .status-overview-icon {
+                    flex-basis: 52px;
+                    width: 52px;
+                    height: 52px;
+                    border-radius: 16px;
+                    font-size: 1.3rem;
+                }
+
+                .status-session-badge {
+                    align-self: flex-start;
+                    margin-left: 3.7rem;
+                }
+
+                .status-card {
+                    min-height: 160px;
+                    padding: 1rem;
+                }
+
+                .status-heading-icon {
+                    flex-basis: 44px;
+                    width: 44px;
+                    height: 44px;
+                    border-radius: 14px;
+                }
+            }
+
+            @media (max-width: 420px) {
+                .status-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .status-card {
+                    min-height: 0;
+                    flex-direction: row;
+                    align-items: center;
+                    gap: .85rem;
+                }
+
+                .status-card-content {
+                    justify-content: center;
+                }
+
+                .status-session-badge {
+                    margin-left: 0;
+                }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .status-card {
+                    transition: none;
+                }
+
+                .status-card:hover {
+                    transform: none;
+                }
+            }
+        </style>
+
+        <main class="status-page">
+            <header class="status-heading">
+                <span class="status-heading-icon" aria-hidden="true">
+                    <i class="pi pi-chart-bar"></i>
+                </span>
+                <div>
+                    <h1>#{msg.status}</h1>
+                    <p>#{msg.statusDescription}</p>
+                </div>
+            </header>
+
+            <section class="status-overview" aria-label="#{msg.statusOverview}">
+                <div class="status-overview-main">
+                    <div class="status-overview-icon" aria-hidden="true">
+                        <i class="pi pi-lock"></i>
+                    </div>
+                    <div>
+                        <h2>#{msg.sessionActive}</h2>
+                        <p>#{msg.sessionActiveDescription}</p>
+                    </div>
+                </div>
+                <div class="status-session-badge">
+                    <i class="pi pi-check-circle" aria-hidden="true"></i>
+                    <span>#{msg.sessionActive}</span>
+                </div>
+            </section>
+
+            <div class="status-section-heading">
+                <span class="status-section-icon" aria-hidden="true">
+                    <i class="pi pi-user" />
+                </span>
+                <h2>#{msg.accountDetails}</h2>
+            </div>
+
+            <section class="status-grid" aria-label="#{msg.statusOverview}">
+                <article class="status-card">
+                    <div class="status-card-icon" aria-hidden="true">
+                        <i class="pi pi-user"></i>
+                    </div>
+                    <div class="status-card-content">
+                        <span class="status-card-label">#{msg.accountStatus}</span>
+                        <span class="status-card-value status-indicator #{sessionBean.loggedUser.active ? '' : 'status-indicator--inactive'}">
+                            <h:outputText value="#{sessionBean.loggedUser.active ? msg.active : msg.inactive}" />
+                        </span>
+                    </div>
+                </article>
+
+                <article class="status-card">
+                    <div class="status-card-icon" aria-hidden="true">
+                        <i class="pi pi-envelope"></i>
+                    </div>
+                    <div class="status-card-content">
+                        <span class="status-card-label">#{msg.email}</span>
+                        <span class="status-card-value">
+                            <h:outputText value="#{sessionBean.loggedUser.email}" />
+                        </span>
+                    </div>
+                </article>
+
+                <article class="status-card">
+                    <div class="status-card-icon" aria-hidden="true">
+                        <i class="pi pi-shield"></i>
+                    </div>
+                    <div class="status-card-content">
+                        <span class="status-card-label">#{msg.profile}</span>
+                        <span class="status-card-value">
+                            <h:outputText value="#{msg[sessionBean.loggedUser.perfil.toString()]}" />
+                        </span>
+                    </div>
+                </article>
+
+                <article class="status-card">
+                    <div class="status-card-icon" aria-hidden="true">
+                        <i class="pi pi-id-card"></i>
+                    </div>
+                    <div class="status-card-content">
+                        <span class="status-card-label">#{msg.accountIdentifier}</span>
+                        <span class="status-card-value">
+                            <h:outputText value="#{sessionBean.loggedUser.pkUser}" />
+                        </span>
+                    </div>
+                </article>
+            </section>
+
+            <p class="status-note">
+                <i class="pi pi-info-circle" aria-hidden="true"></i>
+                <span>#{msg.statusScopeNote}</span>
+            </p>
+        </main>
     </ui:define>
 </ui:composition>

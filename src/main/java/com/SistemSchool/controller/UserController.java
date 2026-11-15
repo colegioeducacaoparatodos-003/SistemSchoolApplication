@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.primefaces.PrimeFaces;
 import org.slf4j.Logger;
@@ -13,9 +12,11 @@ import org.slf4j.LoggerFactory;
 import com.SistemSchool.config.SessionBean;
 import com.SistemSchool.dto.PersonDTO.PersonResponseDTO;
 import com.SistemSchool.dto.UserDTO;
+import com.SistemSchool.exception.EmailNotVerifiedException;
 import com.SistemSchool.io.Perfil;
 import com.SistemSchool.lazy.UserLazyDataModel;
 import com.SistemSchool.service.UserService;
+import com.SistemSchool.util.EmailValidator;
 import com.SistemSchool.util.PerfilNotDefinedException;
 
 import jakarta.annotation.PostConstruct;
@@ -56,6 +57,9 @@ public class UserController implements Serializable {
     private String newFirstName;
     private String newMiddleName;
     private String newLastName;
+    private String newUserPhone;
+    private String newUserAddress;
+    private String newUserCity;
     private String newUserEmail;
     private String newUserPassword;
     private String newUserConfirmPassword;
@@ -89,8 +93,11 @@ public class UserController implements Serializable {
     private String recoveryEmail;
     private String recoveryPassword;
     private String recoveryConfirmPassword;
+    private String recoveryToken;
     private int recoveryStep = 1;
     private UserDTO.UserResponseDTO recoveryUser;
+    private boolean emailVerificationSuccess;
+    private String emailVerificationMessage;
 
     // ========== LAZY MODEL ==========
     private UserLazyDataModel lazyUsers;
@@ -136,7 +143,7 @@ public class UserController implements Serializable {
 
     public String login() {
         try {
-            logger.info("Tentativa de login com email: {}", loginEmail);
+            logger.info("Tentativa de autenticação recebida.");
 
             if (!isLoginDataValid()) {
                 return null;
@@ -164,6 +171,12 @@ public class UserController implements Serializable {
             addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Login realizado com sucesso!");
             return redirectUrl;
 
+        } catch (EmailNotVerifiedException e) {
+            logger.warn("Autenticação rejeitada");
+            addMessage(FacesMessage.SEVERITY_ERROR, getMessage("loginEmailNotVerifiedTitle"),
+                    getMessage("loginEmailNotVerified"));
+            loginPassword = null;
+
         } catch (PerfilNotDefinedException e) {
             logger.error("Usuário sem perfil definido tentou fazer login: {}", loginEmail, e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro de Acesso",
@@ -172,7 +185,7 @@ public class UserController implements Serializable {
             loginPassword = null;
 
         } catch (RuntimeException e) {
-            logger.error("Falha no login para email: {}", loginEmail, e);
+            logger.warn("Autenticação rejeitada");
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro de Autenticação",
                     "Email ou senha inválidos. Por favor, tente novamente.");
             loginPassword = null;
@@ -299,12 +312,18 @@ public class UserController implements Serializable {
             createUserDTO.setPerfil(newUserPerfil);
             createUserDTO.setActive(newUserActive);
             createUserDTO.setDeviceToken(newUserDeviceToken);
+            createUserDTO.setFirstName(newFirstName);
+            createUserDTO.setMiddleName(newMiddleName);
+            createUserDTO.setLastName(newLastName);
+            createUserDTO.setPhone(newUserPhone);
+            createUserDTO.setAddress(newUserAddress);
+            createUserDTO.setCity(newUserCity);
 
             UserDTO.UserResponseDTO createdUser = userService.createUser(createUserDTO);
             users.add(createdUser);
 
             resetNewUserFields();
-            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Usuário criado com sucesso!");
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", getMessage("userCreatedVerificationSent"));
 
             if (firstSetup) {
                 return "/login.xhtml?faces-redirect=true";
@@ -319,12 +338,22 @@ public class UserController implements Serializable {
     }
 
     private boolean isNewUserDataValid() {
+        if (newFirstName == null || newFirstName.isBlank()
+                || newLastName == null || newLastName.isBlank()) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "Nome e apelido são obrigatórios");
+            return false;
+        }
         if (newUserPassword == null || !newUserPassword.equals(newUserConfirmPassword)) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "As senhas não coincidem");
             return false;
         }
         if (newUserEmail == null || newUserEmail.trim().isEmpty()) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "Email é obrigatório");
+            return false;
+        }
+        EmailValidator.Resultado emailResult = EmailValidator.validar(newUserEmail);
+        if (!emailResult.isValido()) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Email inválido", emailResult.getMotivo());
             return false;
         }
         return true;
@@ -366,24 +395,59 @@ public class UserController implements Serializable {
         }
     }
 
+    public String deleteUser(int userId) {
+        if (userId <= 0) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "Usuário inválido.");
+            return null;
+        }
+
+        try {
+            com.SistemSchool.config.AdminDeleteGuard.requireAdmin();
+            UserDTO.UserResponseDTO loggedUser = sessionBean.getLoggedUser();
+            if (loggedUser != null && loggedUser.getPkUser() == userId) {
+                throw new IllegalStateException("Não é possível eliminar o usuário atualmente conectado.");
+            }
+
+            logger.info("Eliminando usuário ID: {}", userId);
+            userService.deleteUser(userId);
+
+            users.removeIf(user -> user.getPkUser() == userId);
+            if (selectedUser != null && selectedUser.getPkUser() == userId) {
+                selectedUser = null;
+            }
+
+            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Usuário eliminado com sucesso!");
+
+        } catch (RuntimeException e) {
+            logger.error("Erro ao eliminar usuário ID: {}", userId, e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
+        }
+        return null;
+    }
+
     public void deleteUser() {
         if (selectedUser == null) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro", "Nenhum usuário selecionado");
             return;
         }
+        deleteUser(selectedUser.getPkUser());
+    }
 
+    public void resendEmailVerification(int userId) {
         try {
-            logger.info("Desativando usuário ID: {}", selectedUser.getPkUser());
-            userService.updateUserStatus(selectedUser.getPkUser(), false);
-
-            users.removeIf(user -> user.getPkUser() == selectedUser.getPkUser());
-            selectedUser = null;
-
-            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso", "Usuário desativado com sucesso!");
-
+            com.SistemSchool.config.AdminDeleteGuard.requireAdmin();
+            UserDTO.UserResponseDTO updatedUser = userService.resendEmailVerification(userId);
+            for (int i = 0; i < users.size(); i++) {
+                if (users.get(i).getPkUser() == userId) {
+                    users.set(i, updatedUser);
+                    break;
+                }
+            }
+            addMessage(FacesMessage.SEVERITY_INFO, getMessage("success"),
+                    getMessage("verificationEmailResent"));
         } catch (RuntimeException e) {
-            logger.error("Erro ao desativar usuário", e);
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro", e.getMessage());
+            logger.error("Erro ao reenviar confirmação de e-mail para usuário ID: {}", userId, e);
+            addMessage(FacesMessage.SEVERITY_ERROR, getMessage("error"), e.getMessage());
         }
     }
 
@@ -406,23 +470,22 @@ public class UserController implements Serializable {
             return null;
         }
 
-        Optional<UserDTO.UserResponseDTO> userOpt = userService.getUserByEmail(recoveryEmail.trim());
-        if (userOpt.isPresent()) {
-            recoveryUser = userOpt.get();
-            recoveryStep = 2;
-            addMessage(FacesMessage.SEVERITY_INFO, "Sucesso",
-                    "Conta encontrada. Defina a sua nova senha.");
-        } else {
+        try {
+            userService.requestPasswordReset(recoveryEmail.trim());
+            addMessage(FacesMessage.SEVERITY_INFO, "Pedido enviado",
+                    "Se existir uma conta associada, receberá um email com o link para alterar a senha.");
+        } catch (RuntimeException e) {
+            logger.error("Erro ao solicitar recuperação para email: {}", recoveryEmail, e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
-                    "Não existe conta associada a este email.");
+                    "Não foi possível enviar o email de recuperação. Tente novamente.");
         }
         return null;
     }
 
     public String recoverPassword() {
-        if (recoveryUser == null) {
+        if (recoveryToken == null || recoveryToken.isBlank()) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Erro",
-                    "Sessão de recuperação inválida. Tente novamente.");
+                "Link de recuperação inválido. Solicite um novo email.");
             recoveryStep = 1;
             return null;
         }
@@ -444,18 +507,10 @@ public class UserController implements Serializable {
         }
 
         try {
-            UserDTO.UpdateUserDTO updateDTO = new UserDTO.UpdateUserDTO();
-            updateDTO.setPkUser(recoveryUser.getPkUser());
-            updateDTO.setEmail(recoveryUser.getEmail());
-            updateDTO.setPerfil(recoveryUser.getPerfil());
-            updateDTO.setActive(recoveryUser.isActive());
-            updateDTO.setDeviceToken(recoveryUser.getDeviceToken());
-            updateDTO.setPassword(recoveryPassword);
-
-            userService.updateUser(updateDTO);
+            userService.resetPassword(recoveryToken, recoveryPassword);
 
             addMessage(FacesMessage.SEVERITY_INFO, "Sucesso",
-                    "Senha alterada com sucesso! Redirecionando para o login...");
+                    getMessage("passwordChangedEmailVerified"));
             resetRecoveryFields();
 
             PrimeFaces.current().executeScript(
@@ -488,6 +543,19 @@ public class UserController implements Serializable {
         recoveryConfirmPassword = null;
         recoveryStep = 1;
         recoveryUser = null;
+        recoveryToken = null;
+    }
+
+    public String verifyEmailToken() {
+        emailVerificationSuccess = false;
+        try {
+            userService.verifyEmail(recoveryToken);
+            emailVerificationSuccess = true;
+            emailVerificationMessage = "Email confirmado com sucesso. Já pode entrar na sua conta.";
+        } catch (RuntimeException e) {
+            emailVerificationMessage = e.getMessage();
+        }
+        return null;
     }
 
     // ========== RESET DE CAMPOS ==========
@@ -502,6 +570,9 @@ public class UserController implements Serializable {
         newFirstName = null;
         newMiddleName = null;
         newLastName = null;
+        newUserPhone = null;
+        newUserAddress = null;
+        newUserCity = null;
         newUserEmail = null;
         newUserPassword = null;
         newUserConfirmPassword = null;
@@ -580,7 +651,18 @@ public class UserController implements Serializable {
     // ========== MENSAGENS ==========
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context != null) {
+            context.addMessage(null, new FacesMessage(severity, summary, detail));
+        }
+    }
+
+    private String getMessage(String key) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context == null) {
+            return key;
+        }
+        return context.getApplication().getResourceBundle(context, "msg").getString(key);
     }
 
     // ========== GETTERS E SETTERS ==========
@@ -639,6 +721,30 @@ public class UserController implements Serializable {
 
     public void setNewLastName(String newLastName) {
         this.newLastName = newLastName;
+    }
+
+    public String getNewUserPhone() {
+        return newUserPhone;
+    }
+
+    public void setNewUserPhone(String newUserPhone) {
+        this.newUserPhone = newUserPhone;
+    }
+
+    public String getNewUserAddress() {
+        return newUserAddress;
+    }
+
+    public void setNewUserAddress(String newUserAddress) {
+        this.newUserAddress = newUserAddress;
+    }
+
+    public String getNewUserCity() {
+        return newUserCity;
+    }
+
+    public void setNewUserCity(String newUserCity) {
+        this.newUserCity = newUserCity;
     }
 
     public String getNewUserEmail() {
@@ -859,6 +965,25 @@ public class UserController implements Serializable {
 
     public void setRecoveryUser(UserDTO.UserResponseDTO recoveryUser) {
         this.recoveryUser = recoveryUser;
+    }
+
+    public String getRecoveryToken() {
+        return recoveryToken;
+    }
+
+    public void setRecoveryToken(String recoveryToken) {
+        this.recoveryToken = recoveryToken;
+        if (recoveryToken != null && !recoveryToken.isBlank()) {
+            this.recoveryStep = 2;
+        }
+    }
+
+    public boolean isEmailVerificationSuccess() {
+        return emailVerificationSuccess;
+    }
+
+    public String getEmailVerificationMessage() {
+        return emailVerificationMessage;
     }
 
     // ========== LAZY MODEL GETTER ==========

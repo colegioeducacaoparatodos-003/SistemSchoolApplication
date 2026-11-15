@@ -11,6 +11,7 @@ import com.SistemSchool.modulo_pedagogico.service.EvaluationService;
 import com.SistemSchool.modulo_pedagogico.service.GradeService;
 import com.SistemSchool.modulo_secrtaria.dto.EnrolmentDTO;
 import com.SistemSchool.modulo_secrtaria.service.EnrolmentService;
+import com.SistemSchool.report.PdfReportService;
 
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -18,8 +19,11 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Named;
+import com.itextpdf.text.DocumentException;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -293,7 +297,19 @@ public class GradeController implements Serializable {
     // ═══════════════════════════════════════════════════════════════
 
     public void exportPdf() {
-        addMessage(FacesMessage.SEVERITY_INFO, "Exportar", "Funcionalidade PDF em desenvolvimento.");
+        try {
+            List<GradeDTO> grades = getFilteredGrades();
+            if (grades.isEmpty()) {
+                addMessage(FacesMessage.SEVERITY_WARN, "Exportar", "Não existem notas para exportar.");
+                return;
+            }
+
+            byte[] pdf = PdfReportService.generateGradeListReport(grades);
+            PdfReportService.streamToResponse(pdf, "lista_notas_" + LocalDate.now() + ".pdf");
+        } catch (DocumentException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Erro ao gerar PDF das notas", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao gerar PDF", "Não foi possível exportar as notas.");
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -317,7 +333,10 @@ public class GradeController implements Serializable {
     }
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context != null) {
+            context.addMessage(null, new FacesMessage(severity, summary, detail));
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════

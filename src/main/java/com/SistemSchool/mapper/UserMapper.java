@@ -23,6 +23,7 @@ public class UserMapper {
         dto.setPerfil(user.getPerfil());
         dto.setEmail(user.getEmail());
         dto.setActive(user.isActive());
+        dto.setEmailVerified(Boolean.TRUE.equals(user.getEmailVerified()));
         dto.setDeviceToken(user.getDeviceToken());
         dto.setUserCreationDate(user.getUserCreationDate());
         dto.setUserModificationDate(user.getUserModificationDate());

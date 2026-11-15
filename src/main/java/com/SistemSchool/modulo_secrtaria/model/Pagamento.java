@@ -10,6 +10,7 @@ import com.SistemSchool.modulo_secrtaria.io.FormaPagamento;
 import com.SistemSchool.modulo_secrtaria.io.MesReferencia;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -23,6 +24,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+
+import com.SistemSchool.modulo_secrtaria.io.MesReferenciaConverter;
 import java.util.Objects;
 
 @Entity
@@ -74,13 +77,16 @@ public class Pagamento {
     @Enumerated(EnumType.STRING)
     private EstadoPagamento estado;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = MesReferenciaConverter.class)
     @Column(name = "mes_referencia", length = 20)
     private MesReferencia mesReferencia;
 
     private String referencia;
 
     private String observacao;
+
+    @Column(name = "registrado_por", length = 150)
+    private String registradoPor;
 
     private LocalDateTime createdAt;
 
@@ -259,6 +265,14 @@ public class Pagamento {
 
     public void setObservacao(String observacao) {
         this.observacao = observacao;
+    }
+
+    public String getRegistradoPor() {
+        return registradoPor;
+    }
+
+    public void setRegistradoPor(String registradoPor) {
+        this.registradoPor = registradoPor;
     }
 
     public LocalDateTime getCreatedAt() {

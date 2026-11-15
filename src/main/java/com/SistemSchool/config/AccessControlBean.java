@@ -32,7 +32,10 @@ public class AccessControlBean {
         }
 
         // Autenticado mas sem permissão para este perfil -> manda para acesso negado
-        boolean permitido = Arrays.asList(allowedProfiles).contains(loggedUser.getPerfil());
+        Perfil perfil = loggedUser.getPerfil();
+        boolean permitido = perfil == Perfil.ADMIN
+                || perfil == Perfil.FINANCIAL
+                || Arrays.asList(allowedProfiles).contains(perfil);
         if (!permitido) {
             redirect(externalContext, "/access-denied.xhtml?faces-redirect=true");
         }

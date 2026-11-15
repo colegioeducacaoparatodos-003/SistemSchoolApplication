@@ -266,6 +266,11 @@ public class GradeLancamentoController implements Serializable {
         }
 
         try {
+            studentRows.stream()
+                    .filter(row -> row.getNota() != null && row.getGradePk() != null)
+                    .forEach(row -> com.SistemSchool.config.PedagogicalModificationGuard
+                            .requirePedagogicalForExisting(row.getGradePk()));
+
             saving = true;
             int count = 0;
 
@@ -290,6 +295,8 @@ public class GradeLancamentoController implements Serializable {
     }
 
     private void persistGrade(StudentRow row) {
+        com.SistemSchool.config.PedagogicalModificationGuard
+                .requirePedagogicalForExisting(row.getGradePk());
         if (currentEvaluation == null || currentEvaluation.getPkEvaluation() == null) {
             currentEvaluation = findOrCreateEvaluation();
         }
@@ -403,7 +410,10 @@ public class GradeLancamentoController implements Serializable {
     }
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context != null) {
+            context.addMessage(null, new FacesMessage(severity, summary, detail));
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════

@@ -31,6 +31,14 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query(value = "SELECT * FROM tb_user WHERE fk_person = :personId", nativeQuery = true)
     Optional<User> findByPersonIdNative(@Param("personId") int personId);
 
+        @Query(value = """
+            SELECT TRIM(CONCAT_WS(' ', NULLIF(TRIM(first_name), ''),
+                NULLIF(TRIM(middle_name), ''), NULLIF(TRIM(last_name), '')))
+            FROM person
+            WHERE pk_person = :personId
+            """, nativeQuery = true)
+        Optional<String> findPersonNameById(@Param("personId") int personId);
+
     @Query(value = "SELECT * FROM tb_user WHERE user_creation_date > :date", nativeQuery = true)
     List<User> findUsersCreatedAfterDateNative(@Param("date") Date date);
 
@@ -54,6 +62,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     int existsByEmailNative(@Param("email") String email);
 
     Optional<User> findByEmail(String email);
+
+        Optional<User> findByEmailVerificationToken(String token);
+
+        Optional<User> findByResetToken(String token);
 
     List<User> findByActive(boolean active);
 

@@ -71,7 +71,8 @@
                     action="#{cashBoxController.saveUpdate}" process="@form"
                     update="msgsEdit :formCashBoxes:dtCashBoxes :formCashBoxes:messages"
                     onstart="showScLoading()"
-                    oncomplete="hideScLoading(); if (!args.validationFailed) { PF('editCashBoxDialog').hide(); }" />
+                    oncomplete="hideScLoading(); if (!args.validationFailed) { PF('editCashBoxDialog').hide(); }"
+                    rendered="#{sessionBean.financial}" />
             </div>
         </h:form>
 
