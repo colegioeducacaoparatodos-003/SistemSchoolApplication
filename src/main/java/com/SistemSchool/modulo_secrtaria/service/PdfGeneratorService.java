@@ -79,6 +79,8 @@ public class PdfGeneratorService {
     private static final Font FATURA_SECTION_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, HEADER_NAVY);
     private static final Font FATURA_FOOTER_TITLE_FONT = new Font(Font.HELVETICA, 8, Font.BOLD, Color.WHITE);
     private static final Font FATURA_FOOTER_SUB_FONT = new Font(Font.HELVETICA, 8, Font.NORMAL, Color.WHITE);
+    private static final Font FATURA_FOOTER_AUDIT_FONT =
+            new Font(Font.HELVETICA, 6, Font.NORMAL, HEADER_NAVY);
 
     // Fontes usadas apenas no relatório de lista
     private static final Font LIST_TITLE_FONT = new Font(Font.HELVETICA, 16, Font.BOLD);
@@ -373,12 +375,12 @@ public class PdfGeneratorService {
                 new Phrase(SCHOOL_NAME, FATURA_FOOTER_TITLE_FONT), textStartX, FOOTER_BOTTOM_INSET + 31, 0);
 
         ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
-                new Phrase("Contacto: " + SCHOOL_PHONES, FATURA_FOOTER_SUB_FONT), textStartX, FOOTER_BOTTOM_INSET + 17, 0);
+                new Phrase("Contacto: " + SCHOOL_PHONES, FATURA_FOOTER_SUB_FONT), textStartX, FOOTER_BOTTOM_INSET + 21, 0);
 
         ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
-                new Phrase(issuedAt, FATURA_FOOTER_SUB_FONT), textStartX, FOOTER_BOTTOM_INSET + 5, 0);
+                new Phrase(issuedAt, FATURA_FOOTER_AUDIT_FONT), textStartX, FOOTER_BOTTOM_INSET + 9, 0);
         ColumnText.showTextAligned(cb, Element.ALIGN_RIGHT,
-                new Phrase(userLabel, FATURA_FOOTER_SUB_FONT), pageWidth - 10, FOOTER_BOTTOM_INSET + 5, 0);
+                new Phrase(userLabel, FATURA_FOOTER_AUDIT_FONT), pageWidth - 10, FOOTER_BOTTOM_INSET + 9, 0);
     }
 
     private Image loadLogo() {
@@ -649,12 +651,12 @@ public class PdfGeneratorService {
     // ─────────────────────────────────────────────────────────────
 
     public byte[] generatePagamentosListPdf(List<PagamentoDTO> pagamentos, String titulo) {
-        Document document = new Document(PageSize.A4, 24, 24, 30, 24);
+        Document document = new Document(PageSize.A4, 24, 24, 30, 42);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try {
             PdfWriter writer = PdfWriter.getInstance(document, baos);
-            writer.setPageEvent(new OpenPdfAuditPageEvent());
+            writer.setPageEvent(new OpenPdfAuditPageEvent(30f));
             document.open();
 
             Paragraph tituloParagraph = new Paragraph(titulo != null ? titulo : "Lista de Pagamentos", LIST_TITLE_FONT);

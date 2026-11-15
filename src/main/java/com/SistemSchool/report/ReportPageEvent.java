@@ -45,6 +45,12 @@ public class ReportPageEvent extends PdfAuditPageEvent {
 
         public ReportPageEvent(String documentTitle, String brandName, Image logo,
                 float footerTextY, float footerRuleY) {
+                    this(documentTitle, brandName, logo, footerTextY, footerRuleY, 8f);
+            }
+
+            public ReportPageEvent(String documentTitle, String brandName, Image logo,
+                    float footerTextY, float footerRuleY, float auditFooterTextY) {
+            super(auditFooterTextY);
         this.documentTitle = documentTitle;
                 this.brandName = brandName;
                 this.logo = logo;
