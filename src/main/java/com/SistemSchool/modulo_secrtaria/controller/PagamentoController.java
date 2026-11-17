@@ -419,10 +419,14 @@ public class PagamentoController implements Serializable {
     }
 
     private void recalcularMultaTotal(Pagamento p) {
+        /*
         LocalDateTime dataSimulada = resolverDataHoraAtual(dataPagamentoData);
         BigDecimal multa = pagamentoService.calcularMultaPreview(p.getMesReferencia(), dataSimulada);
         p.setMulta(multa);
         p.setTotal(calcularTotal(p.getValor(), multa));
+        */
+        p.setMulta(BigDecimal.ZERO);
+        p.setTotal(calcularTotal(p.getValor(), BigDecimal.ZERO));
     }
 
     public void onFeeChangeEdit() {
@@ -444,10 +448,14 @@ public class PagamentoController implements Serializable {
     }
 
     private void recalcularMultaTotalEdit() {
+        /*
         LocalDateTime dataSimulada = resolverDataHoraAtual(dataPagamentoDataEdit);
         BigDecimal multa = pagamentoService.calcularMultaPreview(editDto.getMesReferencia(), dataSimulada);
         editDto.setMulta(multa);
         editDto.setTotal(calcularTotal(editDto.getValor(), multa));
+        */
+        editDto.setMulta(BigDecimal.ZERO);
+        editDto.setTotal(calcularTotal(editDto.getValor(), BigDecimal.ZERO));
     }
 
     /**

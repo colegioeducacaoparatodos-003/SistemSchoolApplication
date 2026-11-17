@@ -656,7 +656,7 @@ public class PdfGeneratorService {
 
         try {
             PdfWriter writer = PdfWriter.getInstance(document, baos);
-            writer.setPageEvent(new OpenPdfAuditPageEvent(30f));
+            writer.setPageEvent(new OpenPdfAuditPageEvent());
             document.open();
 
             Paragraph tituloParagraph = new Paragraph(titulo != null ? titulo : "Lista de Pagamentos", LIST_TITLE_FONT);

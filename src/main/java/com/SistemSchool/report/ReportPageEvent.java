@@ -30,32 +30,37 @@ public class ReportPageEvent extends PdfAuditPageEvent {
     private static final DateTimeFormatter TIMESTAMP_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private final String documentTitle;
-        private final String brandName;
-        private final Image logo;
-        private final float footerTextY;
-        private final float footerRuleY;
+    private final String brandName;
+    private final Image logo;
+    private final float footerTextY;
+    private final float footerRuleY;
 
     public ReportPageEvent(String documentTitle) {
-                this(documentTitle, "COMPLEXO ESCOLA PRIVADO EDUCAÇÃO PARA TODOS", null, 25, 0);
-        }
+        this(documentTitle, "COMPLEXO ESCOLA PRIVADO EDUCAÇÃO PARA TODOS", null, 25, 0);
+    }
 
-        public ReportPageEvent(String documentTitle, String brandName, Image logo) {
-                this(documentTitle, brandName, logo, 25, 0);
-        }
+    public ReportPageEvent(String documentTitle, String brandName, Image logo) {
+        this(documentTitle, brandName, logo, 25, 0);
+    }
 
-        public ReportPageEvent(String documentTitle, String brandName, Image logo,
-                float footerTextY, float footerRuleY) {
-                    this(documentTitle, brandName, logo, footerTextY, footerRuleY, 8f);
-            }
-
-            public ReportPageEvent(String documentTitle, String brandName, Image logo,
-                    float footerTextY, float footerRuleY, float auditFooterTextY) {
-            super(auditFooterTextY);
+    public ReportPageEvent(String documentTitle, String brandName, Image logo,
+            float footerTextY, float footerRuleY) {
+        super();
         this.documentTitle = documentTitle;
-                this.brandName = brandName;
-                this.logo = logo;
-                this.footerTextY = footerTextY;
-                this.footerRuleY = footerRuleY;
+        this.brandName = brandName;
+        this.logo = logo;
+        this.footerTextY = footerTextY;
+        this.footerRuleY = footerRuleY;
+    }
+
+    public ReportPageEvent(String documentTitle, String brandName, Image logo,
+            float footerTextY, float footerRuleY, float auditFooterTextY) {
+        super(auditFooterTextY);
+        this.documentTitle = documentTitle;
+        this.brandName = brandName;
+        this.logo = logo;
+        this.footerTextY = footerTextY;
+        this.footerRuleY = footerRuleY;
     }
 
     @Override

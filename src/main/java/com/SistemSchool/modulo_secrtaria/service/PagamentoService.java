@@ -109,9 +109,13 @@ public class PagamentoService {
                 ? pagamento.getDataPagamento()
                 : LocalDateTime.now();
         pagamento.setDataPagamento(dataPagamento);
+        /*
         BigDecimal multa = calcularMulta(pagamento.getMesReferencia(), dataPagamento);
         pagamento.setMulta(multa);
         pagamento.setTotal(somarSeguro(pagamento.getValor(), multa));
+        */
+        pagamento.setMulta(BigDecimal.ZERO);
+        pagamento.setTotal(somarSeguro(pagamento.getValor(), BigDecimal.ZERO));
 
         if (pagamento.getNumeroDocumento() == null || pagamento.getNumeroDocumento().isBlank()) {
             pagamento.setNumeroDocumento(generateNumeroDocumento());
@@ -182,9 +186,13 @@ public class PagamentoService {
                 ? pagamento.getDataPagamento()
                 : LocalDateTime.now();
         pagamento.setDataPagamento(dataPagamento);
+        /*
         BigDecimal multa = calcularMulta(pagamento.getMesReferencia(), dataPagamento);
         pagamento.setMulta(multa);
         pagamento.setTotal(somarSeguro(pagamento.getValor(), multa));
+        */
+        pagamento.setMulta(BigDecimal.ZERO);
+        pagamento.setTotal(somarSeguro(pagamento.getValor(), BigDecimal.ZERO));
 
         repository.save(pagamento);
         reconciliarSaldoCaixa(estadoAnterior, totalAnterior, cashBoxAnterior, pagamento);
@@ -220,10 +228,10 @@ public class PagamentoService {
         }
     }
 
+    /*
     // ─────────────────────────────────────────────────────────────
     // CÁLCULO AUTOMÁTICO DE MULTA POR ATRASO
     // ─────────────────────────────────────────────────────────────
-
     public BigDecimal calcularMultaPreview(MesReferencia mesReferencia, LocalDateTime dataPagamento) {
         return calcularMulta(mesReferencia, dataPagamento);
     }
@@ -277,6 +285,7 @@ public class PagamentoService {
                 throw new IllegalArgumentException("Tipo de referência não é um mês: " + mes);
         }
     }
+    */
 
     private BigDecimal somarSeguro(BigDecimal valor, BigDecimal multa) {
         BigDecimal v = valor != null ? valor : BigDecimal.ZERO;
@@ -404,8 +413,12 @@ public class PagamentoService {
         }
 
         LocalDateTime dataPagamento = LocalDateTime.now();
+        /*
         BigDecimal multa = calcularMulta(mesReferencia, dataPagamento);
         BigDecimal total = somarSeguro(valor, multa);
+        */
+        BigDecimal multa = BigDecimal.ZERO;
+        BigDecimal total = somarSeguro(valor, BigDecimal.ZERO);
 
         Pagamento pagamento = new Pagamento();
         pagamento.setEnrolment(enrolment);

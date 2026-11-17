@@ -39,9 +39,11 @@
                             noSelectionOption="true" />
                         <f:selectItems value="#{pagamentoController.mesesReferencia}" var="m" itemLabel="#{m.descricao}"
                             itemValue="#{m}" />
+                        <!--
                         <p:ajax event="change" listener="#{pagamentoController.onMesReferenciaChange}"
                             update="multa totalDisplay totalHidden multaHint"
                             oncomplete="calcularTotalPagamento('Create', 'pagamentoCreateForm')" />
+                        -->
                     </p:selectOneMenu>
                 </p:panelGrid>
 
@@ -75,7 +77,7 @@
                             <f:selectItems value="#{pagamentoController.fees}" var="fee" itemLabel="#{fee.displayLabel}"
                                 itemValue="#{fee.phFee}" />
                             <p:ajax event="change" listener="#{pagamentoController.onFeeChange}"
-                                update="valor multa totalDisplay totalHidden"
+                                update="valor totalDisplay totalHidden"
                                 oncomplete="calcularTotalPagamento('Create', 'pagamentoCreateForm')" />
                         </p:selectOneMenu>
                         <p:message for="fee" display="text" styleClass="sc-field-msg" />
@@ -110,6 +112,7 @@
                             onchange="calcularTotalPagamento('Create', 'pagamentoCreateForm')" />
                         <p:message for="valor" display="text" styleClass="sc-field-msg" />
                     </h:panelGroup>
+                    <!--
                     <p:outputLabel for="multa" value="#{msg.fine}" styleClass="sc-label" />
                     <h:panelGroup>
                         <p:inputNumber id="multa" widgetVar="multaWidgetCreate"
@@ -124,6 +127,7 @@
                             </span>
                         </h:panelGroup>
                     </h:panelGroup>
+                    -->
 
                     <p:outputLabel for="totalDisplay" value="#{msg.total}" styleClass="sc-label" />
                     <h:panelGroup>
@@ -132,7 +136,8 @@
                             <f:convertNumber type="currency" currencySymbol="Kz " groupingUsed="true" />
                         </p:inputText>
                         <h:inputHidden id="totalHidden" value="#{pagamentoController.pagamento.total}" />
-                        <span class="sc-helper-text">#{msg.value} + #{msg.fine}</span>
+                        <!-- <span class="sc-helper-text">#{msg.value} + #{msg.fine}</span> -->
+                        <span class="sc-helper-text">#{msg.value}</span>
                     </h:panelGroup>
 
                     <p:outputLabel for="formaPagamento" value="#{msg.paymentMethod}" styleClass="sc-label req" />
@@ -154,9 +159,11 @@
                         <p:datePicker id="dataPagamento" value="#{pagamentoController.dataPagamentoData}"
                             pattern="dd/MM/yyyy" showIcon="true" style="width:100%;" yearNavigator="true"
                             monthNavigator="true" yearRange="2020:2035">
+                            <!--
                             <p:ajax event="dateSelect" listener="#{pagamentoController.onDataPagamentoChange}"
                                 update="multa totalDisplay totalHidden multaHint"
                                 oncomplete="calcularTotalPagamento('Create', 'pagamentoCreateForm')" />
+                            -->
                         </p:datePicker>
                         <span class="sc-helper-text">A hora é registada automaticamente pelo sistema no momento da
                             gravação.</span>
@@ -361,6 +368,7 @@
         //<![CDATA[
         function calcularTotalPagamento(mode, formId) {
             var valor = 0;
+            /*
             var multa = 0;
             if (window.PF) {
                 var vWidget = PF('valorWidgetCreate');
@@ -369,6 +377,12 @@
                 if (mWidget) multa = mWidget.getValue() || 0;
             }
             var total = parseFloat(valor) + parseFloat(multa);
+            */
+            if (window.PF) {
+                var vWidget = PF('valorWidgetCreate');
+                if (vWidget) valor = vWidget.getValue() || 0;
+            }
+            var total = parseFloat(valor);
             if (isNaN(total)) { total = 0; }
 
             var display = document.getElementById(formId + ':totalDisplay');

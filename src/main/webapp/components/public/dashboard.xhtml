@@ -217,29 +217,100 @@
                 flex-shrink: 0;
             }
 
-            /* Filter Bar */
+            /* ===== Filter Bar (layout em CSS Grid, independente do Bootstrap) ===== */
             .filter-bar {
                 background: #ffffff;
                 border-radius: 14px;
                 border: 1px solid #e2e8f0;
                 box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
-                padding: 1.25rem;
+                padding: 1.25rem 1.5rem;
                 margin-bottom: 1.5rem;
             }
-            .filter-bar .form-label {
+            .filter-bar-header {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                margin-bottom: 1.1rem;
+            }
+            .filter-bar-header .filter-title {
+                font-weight: 700;
+                color: #0f172a;
+            }
+            .filter-bar-header .filter-period {
+                margin-left: auto;
+                font-size: 0.8rem;
+                color: #64748b;
+            }
+
+            .filter-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr);
+                gap: 1rem 1.25rem;
+                align-items: end;
+            }
+            @media (min-width: 576px)  { .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+            @media (min-width: 1200px) { .filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+            .filter-field {
+                display: flex;
+                flex-direction: column;
+                gap: 0.35rem;
+                min-width: 0;
+            }
+            .filter-field .form-label {
                 font-size: 0.875rem;
                 font-weight: 600;
                 color: #374151;
-                margin-bottom: 0.3rem;
+                margin: 0;
                 display: block;
             }
-            .filter-bar .ui-datepicker,
-            .filter-bar .ui-selectonemenu {
+
+            /* Todos os controlos ocupam exatamente a largura da sua coluna */
+            .filter-field .ui-datepicker,
+            .filter-field .ui-selectonemenu {
                 width: 100% !important;
-                max-width: 100%;
+                min-width: 0 !important;
+                max-width: 100% !important;
             }
-            .filter-bar .ui-datepicker input.ui-inputfield {
-                width: 100%;
+            .filter-field .ui-selectonemenu {
+                display: flex;
+                align-items: center;
+                min-height: 2.5rem;
+            }
+            .filter-field .ui-selectonemenu .ui-selectonemenu-label {
+                flex: 1 1 auto;
+                width: 1% !important;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .filter-field .ui-datepicker {
+                display: inline-flex;
+                align-items: stretch;
+            }
+            .filter-field .ui-datepicker input.ui-inputfield {
+                flex: 1 1 auto;
+                width: 1% !important;
+                min-width: 0;
+                min-height: 2.5rem;
+            }
+            .filter-field .ui-datepicker .ui-datepicker-trigger {
+                flex: 0 0 auto;
+                min-height: 2.5rem;
+            }
+
+            .filter-actions {
+                grid-column: 1 / -1;
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                margin-top: 0.25rem;
+                padding-top: 1rem;
+                border-top: 1px solid #f1f5f9;
             }
 
             /* Finance Cards (bottom) */
@@ -372,8 +443,9 @@
             }
 
             @media (max-width: 575.98px) {
-                .filter-bar .filter-actions { flex-direction: column-reverse; }
-                .filter-bar .filter-actions .ui-button { width: 100%; }
+                .filter-bar-header .filter-period { margin-left: 0; width: 100%; }
+                .filter-actions { flex-direction: column-reverse; align-items: stretch; }
+                .filter-actions .ui-button { width: 100%; }
                 .finance-card .card-body { flex-wrap: wrap; }
                 .finance-donut { width: 68px; height: 68px; }
                 .finance-donut .donut-center { width: 55px; height: 55px; }
@@ -501,28 +573,30 @@
 
                 <!-- FILTROS FINANCEIROS -->
                 <div class="filter-bar">
-                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                    <div class="filter-bar-header">
                         <i class="pi pi-filter" style="color: #2563eb; font-size: 1.1rem;"></i>
-                        <span style="font-weight: 700; color: #0f172a;">#{msg.dashboardFinancialFilters}</span>
-                        <span style="font-size: 0.8rem; color: #64748b; margin-left: auto;">
+                        <span class="filter-title">#{msg.dashboardFinancialFilters}</span>
+                        <span class="filter-period">
                             #{msg.dashboardCurrentPeriod}: #{dashboardController.filterPeriodLabel}
                         </span>
                     </div>
 
-                    <div class="row g-3 align-items-end">
-                        <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="filter-grid">
+                        <div class="filter-field">
                             <label class="form-label">#{msg.dashboardStartDate}</label>
                             <p:datePicker value="#{dashboardController.filter.startDate}"
                                           pattern="dd/MM/yyyy" showIcon="true" locale="#{view.locale.language}"
                                           styleClass="w-100" />
                         </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
+
+                        <div class="filter-field">
                             <label class="form-label">#{msg.dashboardEndDate}</label>
                             <p:datePicker value="#{dashboardController.filter.endDate}"
                                           pattern="dd/MM/yyyy" showIcon="true" locale="#{view.locale.language}"
                                           styleClass="w-100" />
                         </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
+
+                        <div class="filter-field">
                             <label class="form-label">#{msg.dashboardCategory}</label>
                             <p:selectOneMenu value="#{dashboardController.filter.category}" styleClass="w-100">
                                 <f:selectItem itemLabel="#{msg.dashboardAllCategories}" itemValue="" />
@@ -530,7 +604,8 @@
                                                var="cat" itemLabel="#{cat}" itemValue="#{cat}" />
                             </p:selectOneMenu>
                         </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
+
+                        <div class="filter-field">
                             <label class="form-label">#{msg.dashboardMovementType}</label>
                             <p:selectOneMenu value="#{dashboardController.filter.movementType}" styleClass="w-100">
                                 <f:selectItem itemLabel="#{msg.dashboardAll}" itemValue="" />
@@ -540,7 +615,8 @@
                                                itemValue="#{t}" />
                             </p:selectOneMenu>
                         </div>
-                        <div class="col-12 d-flex gap-2 justify-content-end mt-2 filter-actions">
+
+                        <div class="filter-actions">
                             <p:commandButton value="#{msg.dashboardClearFilters}" action="#{dashboardController.limparFiltro}"
                                              update="@form" icon="pi pi-refresh"
                                              styleClass="ui-button-outlined ui-button-secondary" />

@@ -14,7 +14,12 @@ import org.mockito.MockedStatic;
 import com.SistemSchool.config.SessionBean;
 import com.SistemSchool.dto.UserDTO.UserResponseDTO;
 import com.SistemSchool.modulo_Financeiro.model.Fee;
+import com.SistemSchool.modulo_secrtaria.dto.PagamentoDTO;
 import com.SistemSchool.modulo_secrtaria.model.Pagamento;
+import com.itextpdf.text.pdf.parser.ImageRenderInfo;
+import com.itextpdf.text.pdf.parser.PdfReaderContentParser;
+import com.itextpdf.text.pdf.parser.RenderListener;
+import com.itextpdf.text.pdf.parser.TextRenderInfo;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
@@ -47,11 +52,61 @@ class PdfGeneratorServiceTest {
             assertTrue(text.contains("Emitido por: Paulino Goncalves (ID 1)"));
             assertTrue(text.contains("Emitido em: "));
             assertFalse(text.contains("teste@example.com"));
+            assertTrue(findTextBaseline(pdf, "Emitido por:") >= 30f);
+            assertTrue(findTextBaseline(pdf, "Emitido em:") >= 30f);
             String totalText = text.substring(text.indexOf("TOTAL RECEBIDO"));
             assertTrue(totalText.matches("(?s).*3\\D*500[,.]00\\s*Kz.*"), totalText);
         } finally {
             reader.close();
         }
+    }
+
+    @Test
+    void positionsPaymentListAuditFooterInsidePrintableArea() throws IOException {
+        PdfGeneratorService service = new PdfGeneratorService();
+        PagamentoDTO pagamento = new PagamentoDTO();
+        pagamento.setNumeroDocumento("DOC-3");
+        pagamento.setValor(new BigDecimal("1000"));
+        pagamento.setTotal(new BigDecimal("1000"));
+        UserResponseDTO user = new UserResponseDTO();
+        user.setPkUser(1);
+        user.setPersonName("Paulino Goncalves");
+
+        byte[] pdf;
+        try (MockedStatic<SessionBean> sessionBean = org.mockito.Mockito.mockStatic(SessionBean.class)) {
+            sessionBean.when(SessionBean::getLoggedUserForCurrentRequest).thenReturn(user);
+            pdf = service.generatePagamentosListPdf(List.of(pagamento), "Lista de pagamentos");
+        }
+
+        assertTrue(findTextBaseline(pdf, "Emitido por:") >= 50f);
+        assertTrue(findTextBaseline(pdf, "Emitido em:") >= 50f);
+    }
+
+    private float findTextBaseline(byte[] pdf, String textPrefix) throws IOException {
+        com.itextpdf.text.pdf.PdfReader reader = new com.itextpdf.text.pdf.PdfReader(pdf);
+        float[] baselineY = { Float.NaN };
+        try {
+            new PdfReaderContentParser(reader).processContent(1, new RenderListener() {
+                @Override
+                public void beginTextBlock() {}
+
+                @Override
+                public void renderText(TextRenderInfo renderInfo) {
+                    if (renderInfo.getText().startsWith(textPrefix)) {
+                        baselineY[0] = renderInfo.getBaseline().getStartPoint().get(1);
+                    }
+                }
+
+                @Override
+                public void endTextBlock() {}
+
+                @Override
+                public void renderImage(ImageRenderInfo renderInfo) {}
+            });
+        } finally {
+            reader.close();
+        }
+        return baselineY[0];
     }
 
     private Pagamento pagamento(String numeroDocumento, String descricao, String valor) {

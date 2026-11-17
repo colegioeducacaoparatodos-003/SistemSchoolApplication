@@ -642,6 +642,32 @@
                 min-width: 0;
             }
 
+            /* ===== CAMPOS DE DATA (Data Inicial / Data Final) — compactos ===== */
+            .enr-filters .enr-date-filter {
+                flex: 0 0 150px !important;
+                width: 150px !important;
+                min-width: 0 !important;
+                max-width: 150px !important;
+                display: inline-flex;
+                align-items: stretch;
+            }
+
+            .enr-filters .enr-date-filter input.ui-inputfield {
+                flex: 1 1 auto;
+                width: 1% !important;
+                min-width: 0 !important;
+                padding-left: .6rem;
+                padding-right: .4rem;
+                font-size: .85rem;
+            }
+
+            .enr-filters .enr-date-filter .ui-datepicker-trigger,
+            .enr-filters .enr-date-filter .ui-button {
+                flex: 0 0 auto;
+                width: 2.2rem !important;
+                min-width: 2.2rem !important;
+            }
+
             /* Tabela: nunca ultrapassa o cartão; rola na horizontal se precisar */
             .enr-card .ui-datatable,
             .enr-card .ui-datatable-tablewrapper {
@@ -702,6 +728,13 @@
                 .enr-filters > .ui-datepicker,
                 .enr-filters > .p-datepicker {
                     flex: 1 1 calc(33.333% - .6rem);
+                }
+
+                /* mantém as datas compactas também no tablet */
+                .enr-filters .enr-date-filter {
+                    flex: 0 0 150px !important;
+                    width: 150px !important;
+                    max-width: 150px !important;
                 }
             }
 
@@ -765,6 +798,19 @@
                     min-width: unset !important;
                     max-width: 100%;
                     flex: 1 1 auto;
+                }
+
+                /* no telemóvel as datas ocupam a largura toda */
+                .enr-filters .enr-date-filter {
+                    flex: 1 1 auto !important;
+                    width: 100% !important;
+                    max-width: 100% !important;
+                }
+
+                .enr-filters .enr-date-filter .ui-datepicker-trigger,
+                .enr-filters .enr-date-filter .ui-button {
+                    width: 2.5rem !important;
+                    min-width: 2.5rem !important;
                 }
 
                 .enr-stat-value {
@@ -1010,13 +1056,13 @@
                         </p:selectOneMenu>
 
                         <p:datePicker value="#{enrolmentController.filterStartDate}" placeholder="#{msg.startDate}"
-                            pattern="dd/MM/yyyy" showIcon="true">
+                            pattern="dd/MM/yyyy" showIcon="true" styleClass="enr-date-filter">
                             <p:ajax event="dateSelect" listener="#{enrolmentController.applyFilters}"
                                 update="dtEnrollments messages" process="@this" />
                         </p:datePicker>
 
                         <p:datePicker value="#{enrolmentController.filterEndDate}" placeholder="#{msg.endDate}"
-                            pattern="dd/MM/yyyy" showIcon="true">
+                            pattern="dd/MM/yyyy" showIcon="true" styleClass="enr-date-filter">
                             <p:ajax event="dateSelect" listener="#{enrolmentController.applyFilters}"
                                 update="dtEnrollments messages" process="@this" />
                         </p:datePicker>
